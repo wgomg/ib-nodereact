@@ -11,8 +11,7 @@ const app = express();
 app.use(express.json({ extended: false }));
 app.use(
   fileupload({
-    useTempFiles: true,
-    tempFileDir: '/tmp/',
+    createParentPath: true,
     limits: { fileSize: 5 * 1024 * 1024 },
     safeFileNames: true,
     preserveExtension: 4

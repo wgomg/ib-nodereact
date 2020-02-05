@@ -13,7 +13,7 @@ function Banner() {
   const schema = {
     banner_id: { pk: true },
     board_id: { type: 'table' },
-    image_uri: { type: 'file|png,jpg,jpeg,gif', length: 45, required: true }
+    image_uri: { type: 'file|png,jpeg,gif', length: 120, required: true }
   };
 
   BaseModel.call(this, classname, schema);

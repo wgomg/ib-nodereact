@@ -16,7 +16,7 @@ function Post() {
     text: { type: 'string', length: 1000, required: true },
     user: { type: 'ip_address', required: true },
     name: { type: 'alphanum', length: 10 },
-    file_uri: { type: 'file|pdf,png,jpg,jpeg,gif,webm,mp4', length: 45 }
+    file_uri: { type: 'file|png,jpeg,gif', length: 45 }
   };
 
   BaseModel.call(this, classname, schema);

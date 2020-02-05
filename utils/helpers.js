@@ -14,8 +14,9 @@ const isIp = require('is-ip');
  * string: string letters, numbers and special chars
  * email: email
  *
- * int: integer
  * bool: boolean or [0, 1]
+ *
+ * ip_address: ipv4 or ipv6
  *
  */
 const isValidDatatype = (value, type) => {
@@ -117,19 +118,20 @@ const processFiles = (
   example
   
   {
-    files: {
+     files: {
       image: {
-        name: '',
-        data: <Buffer >,
-        size: 0,
+        name: 'name.jpg',
+        data: <Buffer ff d8 ff e0 00 10 4a 46 49 46 00 01 01 00 00 01 00 01 00 00 ff e2 02 1c 49 43 43 5f 50 52 4f 46 49 4c 45 00 01 01 00 00 02 0c 6c 63 6d 73 02 10 00 00 ... 84559 more bytes>,
+        size: 84609,
         encoding: '7bit',
-        tempFilePath: '/tmp/tmp-3-1580587211235',
+        tempFilePath: '',
         truncated: false,
-        mimetype: 'text/plain',
-        md5: 'd41d8cd98f00b204e9800998ecf8427e',
+        mimetype: 'image/jpeg',
+        md5: '5c522ecb401095b699c786f3fe5baba4',
         mv: [Function: mv]
       }
     }
+
   }
   */
 
@@ -146,12 +148,11 @@ const processFiles = (
       }),
       null
     );
-  else if (files.length > 0) {
+  else if (Object.keys(files).length > 0) {
     for (let [index, file] of Object.entries(files)) {
       const fileType = file.mimetype.split('/')[0];
-      const fileExtension = file.mimetype.split('/')[1];
 
-      if (!acceptedExtensions.includes(fileExtension) || file.truncated)
+      if (!acceptedMimeType(acceptedExtensions, file) || file.truncated)
         callback(
           error({
             code: 'ER_INVALID_FILE',
@@ -160,7 +161,8 @@ const processFiles = (
           null
         );
       else {
-        const fileName = file.tempFilePath.split('-')[2];
+        const fileName = file.md5;
+        const fileExtension = file.mimetype.split('/')[1];
 
         const fileRelativePath = `${data_dir}/${fileType}/${classname}/${fileName}.${fileExtension}`;
         const fileAbsolutePath = root_dir + fileRelativePath;
@@ -169,6 +171,7 @@ const processFiles = (
           if (err) callback(err, null);
           else {
             entry[field] = fileRelativePath;
+
             delete entry.files;
 
             saveEntry.call(modelInstance, entry, (err, res) => callback(err, res));
@@ -180,6 +183,37 @@ const processFiles = (
     delete entry.files;
     saveEntry.call(modelInstance, entry, (err, res) => callback(err, res));
   }
+};
+
+const acceptedMimeType = (extensions, file) => {
+  const fileExtension = file.mimetype.split('/')[1];
+  if (!extensions.includes(fileExtension)) return false;
+
+  const header = file.data.subarray(0, 4).toString('hex');
+  const fileType = file.mimetype.split('/')[0];
+  if (!matchMagicNumber(header, fileExtension, fileType)) return false;
+
+  return true;
+};
+
+const matchMagicNumber = (header, extension, fileType) => {
+  const numbers = {
+    image: {
+      png: ['89504e47'],
+      gif: ['47494638'],
+      jpeg: ['ffd8ffe0', 'ffd8ffe1', 'ffd8ffe2', 'ffd8ffe3', 'ffd8ffe3']
+    }
+  };
+
+  if (Object.keys(numbers).includes(fileType)) {
+    const typeExtensions = numbers[fileType];
+    if (Object.keys(typeExtensions).includes(extension)) {
+      const typeNumbers = typeExtensions[extension];
+      if (typeNumbers.includes(header)) return true;
+    }
+  }
+
+  return false;
 };
 
 module.exports = {

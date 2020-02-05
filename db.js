@@ -55,9 +55,9 @@ const select = ([table, modelSchema, id], callback) => {
   const ipField = schemaFields.filter(field => modelSchema[field].type === 'ip_address');
 
   let ip_conversion = '';
-  if (ipField.length > 0) ip_conversion = `INET6_NTOA(${ipField[0]}) AS ${ipField[0]}`;
+  if (ipField.length > 0) ip_conversion = `, INET6_NTOA(${ipField[0]}) AS ${ipField[0]}`;
 
-  let sql = `SELECT *, ${ip_conversion} FROM ${table}`;
+  let sql = `SELECT *${ip_conversion} FROM ${table}`;
 
   let foreignTable;
   let foreignTableColumnKey;
