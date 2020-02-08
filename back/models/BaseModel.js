@@ -123,7 +123,7 @@ BaseModel.prototype.deleteEntry = function(id, callback) {
  * Get all entries from database
  */
 BaseModel.prototype.getAllEntries = function(callback) {
-  db.select([this._table, this._schema, null], (err, res) => callback(err, res));
+  db.select([this._table, this._schema], (err, res) => callback(err, res));
 };
 
 module.exports = BaseModel;
