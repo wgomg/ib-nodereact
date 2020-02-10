@@ -30,6 +30,14 @@ module.exports = err => {
         status: 500
       };
 
+    case 'ER_USER_NOTFOUND':
+    case 'ER_INVALID_PASS':
+      return {
+        code: err.code,
+        msg: 'Invalid user/password',
+        status: 400
+      };
+
     default:
       return {
         code: err.code,

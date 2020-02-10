@@ -4,5 +4,6 @@
   "password": "imageboard",
   "database": "imageboard",
   "charset": "utf8_general_ci",
-  "connectionLimit": 10
+  "connectionLimit": 10,
+  "debug": false
 }

@@ -1,0 +1,4 @@
+{
+  "secret": "your-super-strong-secret-key",
+  "expiration": 360000
+}

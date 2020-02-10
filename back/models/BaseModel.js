@@ -108,8 +108,8 @@ BaseModel.prototype.updateEntry = function(entry, callback) {
 /**
  * Get entry by id from database
  */
-BaseModel.prototype.getEntry = function(id, callback) {
-  db.select([this._table, this._schema, id], (err, res) => callback(err, res));
+BaseModel.prototype.getEntry = function([filters, noJoin], callback) {
+  db.select([this._table, this._schema, filters, noJoin], (err, res) => callback(err, res));
 };
 
 /**

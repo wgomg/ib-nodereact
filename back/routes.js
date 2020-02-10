@@ -4,17 +4,52 @@ const models = require('./models');
 
 const { hasFileField } = require('./utils/helpers');
 
+const auth = require('./middlware/authentication');
+
 const routesMap = new Map([
-  ['post', [{ call: 'saveEntry', route: '/__table__' }]],
-  ['put', [{ call: 'updateEntry', route: '/__table__' }]],
+  [
+    'post',
+    [
+      { call: 'login', route: '/staffs/login', model: 'Staff', private: [] },
+      {
+        call: 'saveEntry',
+        route: '/__table__',
+        private: ['Ban', 'Banner', 'Board', 'Complaint', 'Rule', 'Staff']
+      }
+    ]
+  ],
+  [
+    'put',
+    [
+      {
+        call: 'updateEntry',
+        route: '/__table__',
+        private: ['Ban', 'Banner', 'Board', 'Complaint', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
+      }
+    ]
+  ],
   [
     'get',
     [
-      { call: 'getAllEntries', route: '/__table__' },
-      { call: 'getEntry', route: '/__table__/:__entry___id' }
+      { call: 'auth', route: '/staffs/auth', model: 'Staff', private: ['Staff'] },
+      { call: 'getAllEntries', route: '/__table__', private: ['Ban', 'Complaint', 'Report', 'Staff'] },
+      {
+        call: 'getEntry',
+        route: '/__table__/:__entry___id',
+        private: ['Ban', 'Banner', 'Complaint', 'Report', 'Rule', 'Staff']
+      }
     ]
   ],
-  ['delete', [{ call: 'deleteEntry', route: '/__table__/:__entry___id' }]]
+  [
+    'delete',
+    [
+      {
+        call: 'deleteEntry',
+        route: '/__table__/:__entry___id',
+        private: ['Ban', 'Banner', 'Board', 'Complaint', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
+      }
+    ]
+  ]
 ]);
 
 const logAndSendError = (err, res) => {
@@ -37,16 +72,19 @@ module.exports = app => {
 
     for (let [method, endpoints] of routesMap)
       for (let i = 0, length = endpoints.length; i < length; i++) {
+        if (endpoints[i].model && endpoints[i].model !== modelName) continue;
+
         let route = endpoints[i].route.replace('__table__', table);
         const call = endpoints[i].call;
 
         if (route.includes('__entry___id')) route = route.replace('__entry__', entry);
 
-        app[method](route, (req, res) => {
-          const idParam = route.includes('_id') ? req.params[entry_id] : null;
+        const routeCallback = (req, res) => {
+          const idParam = route.includes('_id') ? { [entry_id]: req.params[entry_id] } : null;
           const object = !call.includes('getAll') ? req.body : null;
+          const staff = call.includes('auth') ? req.staff : null;
 
-          const callback = (err, results) => {
+          const modelCallback = (err, results) => {
             if (err) logAndSendError(err, res);
             else {
               if (call.includes('save') || call.includes('update')) getEntry(Model, results, res);
@@ -56,11 +94,19 @@ module.exports = app => {
 
           if (object && hasFileField(Model._schema)) object.files = req.files;
 
-          let args = [callback];
-          if (idParam || object) args.unshift(idParam || object);
+          let modelArgs = [modelCallback];
+          if (idParam || object || staff) modelArgs.unshift(idParam || object || staff);
 
-          Model[call](...args);
-        });
+          Model[call](...modelArgs);
+        };
+
+        let routeArgs = [route];
+
+        if (endpoints[i].private.includes(modelName)) routeArgs.push(auth);
+
+        routeArgs.push(routeCallback);
+
+        app[method](...routeArgs);
       }
   }
 };

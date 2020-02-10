@@ -47,8 +47,9 @@ const update = ([table, fields, values, id], callback) => {
   });
 };
 
-const select = ([table, modelSchema, id], callback) => {
+const select = ([table, modelSchema, filters, noJoin], callback) => {
   const schemaFields = Object.keys(modelSchema);
+  const filtersFields = filters ? Object.keys(filters) : null;
 
   let foreignTables = schemaFields.filter(field => modelSchema[field].type === 'table');
 
@@ -62,7 +63,7 @@ const select = ([table, modelSchema, id], callback) => {
   let foreignTable;
   let foreignTableColumnKey;
 
-  if (foreignTables.length > 0) {
+  if (!noJoin && foreignTables.length > 0) {
     foreignTableColumnKey = foreignTables[0];
     foreignTable =
       foreignTableColumnKey.charAt(0).toUpperCase() + foreignTableColumnKey.slice(1, -3) + 's';
@@ -70,16 +71,19 @@ const select = ([table, modelSchema, id], callback) => {
     sql += ` LEFT JOIN ${foreignTable} ON ${foreignTable}.${foreignTableColumnKey} = ${table}.${foreignTableColumnKey}`;
   }
 
-  if (id) {
-    const idField = table.toLowerCase().slice(0, -1) + '_id';
-    sql += ` WHERE ${table}.${idField} = ?`;
+  if (filtersFields && filtersFields.length > 0) {
+    sql += ' WHERE ';
+    sql += filtersFields.map(field => `${table}.${field} = ?`).join(' AND ');
   }
 
   if (table === 'Threads' || table === 'Posts') sql += ` ORDER BY ${table}.created_on DESC`;
 
   let args = [{ sql, nestTables: true }];
 
-  if (id) args.push(id);
+  if (filtersFields && filtersFields.length > 0) {
+    const values = filtersFields.map(field => filters[field]);
+    args.push(values);
+  }
 
   const cb = (err, res) => {
     if (err) callback(error(err), null);

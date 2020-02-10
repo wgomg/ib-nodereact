@@ -7,7 +7,7 @@ const { server } = require('./config/');
 
 const app = express();
 
-// midlewares
+// middlewares
 app.use(express.json({ extended: false }));
 app.use(
   fileupload({
