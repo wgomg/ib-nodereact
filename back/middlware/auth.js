@@ -1,14 +1,50 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
+const checkStaffPermissions = req => {
+  const modPermissionsMap = new Map([
+    ['POST', ['bans', 'banners', 'boards', 'complaints', 'rules']],
+    ['PUT', ['boards', 'posts', 'reports', 'rules', 'threads']],
+    [
+      'GET',
+      [
+        ['bans', 'reports'], // [0] sin id
+        ['bans', 'complaints', 'reports', 'rules'] // [1] con id
+      ]
+    ],
+    ['DELETE', ['bans', 'banners', 'posts', 'rules', 'threads']]
+  ]);
+
+  if (!req.staff.disabled) return false;
+
+  if (!req.staff.admin && !req.route.path.includes('auth')) {
+    const reqRoute = req.route.path.replace(/(:([^\/]+?))\/?$/g, '').replace('/', '');
+    const method = req.method;
+    const permission = modPermissionsMap.get(req.method);
+
+    if ((method === 'POST' || method === 'PUT') && !permission.includes(reqRoute)) return false;
+
+    if (method === 'GET' || method === 'DELETE') {
+      const permIndex = +req.route.path.includes('id');
+
+      if (!permission[permIndex].includes(reqRoute)) return false;
+    }
+  }
+
+  return true;
+  // console.log(req.params); esto se puede usar después para otras cosas
+};
+
 module.exports = function(req, res, next) {
   const token = req.header('x-auth-token');
 
-  if (!token) return res.status(401).json('No toke, authorization denied');
+  if (!token) return res.status(401).json('Authorization denied');
 
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
     req.staff = decoded.staff;
+
+    if (!checkStaffPermissions(req)) return res.status(401).json('Unauthorized');
 
     return next();
   } catch (error) {

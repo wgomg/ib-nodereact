@@ -4,7 +4,7 @@ const models = require('./models');
 
 const { hasFileField } = require('./utils/helpers');
 
-const auth = require('./middlware/authentication');
+const auth = require('./middlware/auth');
 
 const routesMap = new Map([
   [
@@ -36,7 +36,7 @@ const routesMap = new Map([
       {
         call: 'getEntry',
         route: '/__table__/:__entry___id',
-        private: ['Ban', 'Banner', 'Complaint', 'Report', 'Rule', 'Staff']
+        private: ['Ban', 'Complaint', 'Report', 'Rule', 'Staff']
       }
     ]
   ],
@@ -80,7 +80,7 @@ module.exports = app => {
         if (route.includes('__entry___id')) route = route.replace('__entry__', entry);
 
         const routeCallback = (req, res) => {
-          const idParam = route.includes('_id') ? { [entry_id]: req.params[entry_id] } : null;
+          const idParam = route.includes('_id') ? [{ [entry_id]: req.params[entry_id] }] : null;
           const object = !call.includes('getAll') ? req.body : null;
           const staff = call.includes('auth') ? req.staff : null;
 
