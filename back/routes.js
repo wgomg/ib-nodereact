@@ -57,8 +57,8 @@ const logAndSendError = (err, res) => {
   res.status(err.status).send(err.msg);
 };
 
-const getEntry = (model, results, response) => {
-  model.getEntry(results.updatedId || results.insertId, (err, results) => {
+const getEntry = ([model, results, entry_id, response]) => {
+  model.getEntry([{ [entry_id]: results.updatedId || results.insertId }], (err, results) => {
     if (err) logAndSendError(err, response);
     else response.json(results);
   });
@@ -87,7 +87,8 @@ module.exports = app => {
           const modelCallback = (err, results) => {
             if (err) logAndSendError(err, res);
             else {
-              if (call.includes('save') || call.includes('update')) getEntry(Model, results, res);
+              if (call.includes('save') || call.includes('update'))
+                getEntry([Model, results, entry_id, res]);
               else res.json(results);
             }
           };
