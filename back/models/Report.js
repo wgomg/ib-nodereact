@@ -2,9 +2,8 @@
 
 const BaseModel = require('./BaseModel');
 
-// Constructor
 function Report() {
-  const classname = 'reports';
+  const classname = 'report';
 
   const schema = {
     report_id: { pk: true },

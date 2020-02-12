@@ -14,11 +14,25 @@ module.exports = err => {
 
     case 'ER_INVALID_ID':
     case 'ER_INVALID_FIELDS':
-    case 'ER_INVALID_FILE':
+      return {
+        code: err.code,
+        msg: 'There are invalid fields, please check them and try again',
+        status: 400,
+        date: new Date(Date.now() - tzoffset).toISOString()
+      };
+
     case 'ER_REQUIRED_FILE':
       return {
         code: err.code,
-        msg: err.message,
+        msg: 'No required file provided',
+        status: 400,
+        date: new Date(Date.now() - tzoffset).toISOString()
+      };
+
+    case 'ER_INVALID_FILE':
+      return {
+        code: err.code,
+        msg: 'Provided file type is invalid or file exceeds size limit',
         status: 400,
         date: new Date(Date.now() - tzoffset).toISOString()
       };

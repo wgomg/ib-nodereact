@@ -2,9 +2,8 @@
 
 const BaseModel = require('./BaseModel');
 
-// Constructor
 function Rule() {
-  const classname = 'rules';
+  const classname = 'rule';
 
   const schema = {
     rule_id: { pk: true },

@@ -2,9 +2,8 @@
 
 const BaseModel = require('./BaseModel');
 
-// Constructor
 function Ban() {
-  const classname = 'bans';
+  const classname = 'ban';
 
   const schema = {
     ban_id: { pk: true },

@@ -1,8 +1,48 @@
 'use strict';
 
-const { isValidDatatype } = require('./helpers');
-
 const bcrypt = require('bcrypt');
+
+const ip = require('./ip');
+
+/**
+ * schema validation types
+ *
+ * alpha: string letters only
+ * alphanum: string letters and numbers
+ * string: string letters, numbers and special chars
+ * email: email
+ *
+ * bool: boolean or [0, 1]
+ *
+ * ip_address: ipv4 or ipv6
+ *
+ */
+const isValidDatatype = (value, type) => {
+  switch (type) {
+    case 'alpha':
+      return /^[a-z]+$/i.test(value);
+
+    case 'alphanum':
+      return /^[a-z0-9 ]+$/i.test(value);
+
+    case 'email':
+      return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+        value
+      );
+
+    case 'string':
+      return typeof value === 'string';
+
+    case 'bool':
+      return typeof value === 'boolean' || value == 1 || value == 0;
+
+    case 'ip_address':
+      return ip.isV4(value) || ip.isV6(value);
+
+    default:
+      return false;
+  }
+};
 
 const entryFieldsMatchSchema = (entry, schema) => {
   const entryFields = Object.keys(entry);

@@ -2,11 +2,10 @@
 
 const BaseModel = require('./BaseModel');
 
-const { processFiles, isIPv4, isIPv6, hashIPv4, hashIPv6 } = require('../utils/helpers');
+const ip = require('../utils/ip');
 
-/**
- * Constructor for Post model
- */
+const { processFiles } = require('../utils/files');
+
 function Post() {
   const classname = 'post';
 
@@ -22,7 +21,6 @@ function Post() {
   BaseModel.call(this, classname, schema);
 }
 
-// Inherit methods from BaseModel parent class
 Post.prototype = Object.create(BaseModel.prototype);
 
 // Custom saveEntry method for handling files uploading
@@ -39,38 +37,36 @@ Post.prototype.saveEntry = function(entry, callback) {
 // Custom getEntry method for hashing user
 Post.prototype.getEntry = function([filters], callback) {
   BaseModel.prototype.getEntry.call(this, [filters], (err, res) => {
-    if (err) callback(err, null);
-    else {
-      if (res.length > 0) {
-        const post_user = res[0].user;
+    if (err) return callback(err, null);
 
-        if (isIPv4(post_user)) res[0].user = hashIPv4(post_user);
-        if (isIPv6(post_user)) res[0].user = hashIPv6(post_user);
-      }
+    if (res.length > 0) {
+      const post_user = res[0].user;
 
-      callback(null, res);
+      if (ip.isV4(post_user)) res[0].user = ip.hashV4(post_user);
+      if (ip.isV6(post_user)) res[0].user = ip.hashV6(post_user);
     }
+
+    callback(null, res);
   });
 };
 
 // Custom getAllEntries method for hashing user
 Post.prototype.getAllEntries = function(callback) {
   BaseModel.prototype.getAllEntries.call(this, (err, res) => {
-    if (err) callback(err, null);
-    else {
-      if (res.length > 0) {
-        res = res.map(post => {
-          const post_user = post.user;
+    if (err) return callback(err, null);
 
-          if (isIPv4(post_user)) post.user = hashIPv4(post_user);
-          if (isIPv6(post_user)) post.user = hashIPv6(post_user);
+    if (res.length > 0) {
+      res = res.map(post => {
+        const post_user = post.user;
 
-          return post;
-        });
-      }
+        if (ip.isV4(post_user)) post.user = ip.hashV4(post_user);
+        if (ip.isV6(post_user)) post.user = ip.hashV6(post_user);
 
-      callback(null, res);
+        return post;
+      });
     }
+
+    callback(null, res);
   });
 };
 

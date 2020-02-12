@@ -2,22 +2,22 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 
 const checkStaffPermissions = req => {
-  const modPermissionsMap = new Map([
-    ['POST', ['bans', 'banners', 'boards', 'complaints', 'rules']],
-    ['PUT', ['boards', 'posts', 'reports', 'rules', 'threads']],
-    [
-      'GET',
-      [
-        ['bans', 'reports'], // [0] sin id
-        ['bans', 'complaints', 'reports', 'rules'] // [1] con id
-      ]
-    ],
-    ['DELETE', ['bans', 'banners', 'posts', 'rules', 'threads']]
-  ]);
-
-  if (!req.staff.disabled) return false;
+  if (req.staff.disabled) return false;
 
   if (!req.staff.admin && !req.route.path.includes('auth')) {
+    const modPermissionsMap = new Map([
+      ['POST', ['bans', 'banners', 'boards', 'complaints', 'rules']],
+      ['PUT', ['boards', 'posts', 'reports', 'rules', 'threads']],
+      [
+        'GET',
+        [
+          ['bans', 'reports'], // [0] sin id
+          ['bans', 'complaints', 'reports', 'rules'] // [1] con id
+        ]
+      ],
+      ['DELETE', ['bans', 'banners', 'posts', 'rules', 'threads']]
+    ]);
+
     const reqRoute = req.route.path.replace(/(:([^\/]+?))\/?$/g, '').replace('/', '');
     const method = req.method;
     const permission = modPermissionsMap.get(req.method);
@@ -32,7 +32,6 @@ const checkStaffPermissions = req => {
   }
 
   return true;
-  // console.log(req.params); esto se puede usar después para otras cosas
 };
 
 module.exports = function(req, res, next) {

@@ -2,13 +2,7 @@
 
 const db = require('../db');
 
-const {
-  entryFieldsMatchSchema,
-  requiredFields,
-  requiredEntryDatatypes,
-  requiredLength,
-  requiredUnique
-} = require('../utils/validation');
+const validation = require('../utils/validation');
 
 const error = require('../utils/error');
 
@@ -24,51 +18,36 @@ function BaseModel(classname, schema) {
 }
 
 const validate = (entry, schema, allEntries) => {
-  // check that entry fields are all in schema
-  if (!entryFieldsMatchSchema(entry, schema)) return false;
+  if (!validation.entryFieldsMatchSchema(entry, schema)) return false;
 
-  // check required fields
-  if (!requiredFields(entry, schema)) return false;
+  if (!validation.requiredFields(entry, schema)) return false;
 
-  // check data types
-  if (!requiredEntryDatatypes(entry, schema)) return false;
+  if (!validation.requiredEntryDatatypes(entry, schema)) return false;
 
-  // check length if required
-  if (!requiredLength(entry, schema)) return false;
+  if (!validation.requiredLength(entry, schema)) return false;
 
-  // check unique fields if any
-  if (!requiredUnique(entry, schema, allEntries)) return false;
+  if (!validation.requiredUnique(entry, schema, allEntries)) return false;
 
   return true;
 };
 
-/**
- * Save entry to database
- */
 BaseModel.prototype.saveEntry = function(entry, callback) {
   this.getAllEntries((err, res) => {
-    if (!validate(entry, this._schema, res))
-      callback(
-        error({
-          code: 'ER_INVALID_FIELDS',
-          message: 'There are invalid fields, please check them and try again'
-        }),
-        null
-      );
-    else {
-      const fields = Object.keys(entry)
-        .map(field => '`' + field + '`')
-        .join(', ');
-      const values = Object.keys(entry).map(field => {
-        if (this._schema[field].hashed) entry[field] = bcrypt.hashSync(entry[field], 10);
+    if (!validate(entry, this._schema, res)) return callback(error({ code: 'ER_INVALID_FIELDS' }), null);
 
-        if (this._schema[field].type === 'ip_address') entry[field] = entry[field] + '|ip';
+    const fields = Object.keys(entry)
+      .map(field => '`' + field + '`')
+      .join(', ');
 
-        return entry[field];
-      });
+    const values = Object.keys(entry).map(field => {
+      if (this._schema[field].hashed) entry[field] = bcrypt.hashSync(entry[field], 10);
 
-      db.insert([this._table, fields, values], (err, res) => callback(err, res));
-    }
+      if (this._schema[field].type === 'ip_address') entry[field] = entry[field] + '|ip';
+
+      return entry[field];
+    });
+
+    db.insert([this._table, fields, values], (err, res) => callback(err, res));
   });
 };
 
@@ -77,31 +56,23 @@ BaseModel.prototype.saveEntry = function(entry, callback) {
  */
 BaseModel.prototype.updateEntry = function(entry, callback) {
   this.getAllEntries((err, res) => {
-    if (!validate(entry, this._schema, res))
-      callback(
-        error({
-          code: 'ER_INVALID_FIELDS',
-          message: 'There are invalid fields, please check them and try again'
-        }),
-        null
-      );
-    else {
-      const idField = this._table.toLowerCase().slice(0, -1) + '_id';
-      const id = entry[idField];
+    if (!validate(entry, this._schema, res)) callback(error({ code: 'ER_INVALID_FIELDS' }), null);
 
-      delete entry[idField];
+    const idField = this._table.toLowerCase().slice(0, -1) + '_id';
+    const entryId = entry[idField];
 
-      const fields = Object.keys(entry)
-        .map(field => '`' + field + '`')
-        .join(', ');
-      const values = Object.keys(entry).map(field => {
-        if (this._schema[field].hashed) entry[field] = bcrypt.hashSync(entry[field], 10);
+    delete entry[idField];
 
-        return entry[field];
-      });
+    const fields = Object.keys(entry)
+      .map(field => '`' + field + '`')
+      .join(', ');
+    const values = Object.keys(entry).map(field => {
+      if (this._schema[field].hashed) entry[field] = bcrypt.hashSync(entry[field], 10);
 
-      db.update([this._table, fields, values, id], (err, res) => callback(err, res));
-    }
+      return entry[field];
+    });
+
+    db.update([this._table, fields, values, entryId], (err, res) => callback(err, res));
   });
 };
 

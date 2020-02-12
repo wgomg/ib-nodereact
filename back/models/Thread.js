@@ -2,9 +2,6 @@
 
 const BaseModel = require('./BaseModel');
 
-/**
- * Constructor for Staff model
- */
 function Thread() {
   const classname = 'thread';
 
@@ -17,7 +14,6 @@ function Thread() {
   BaseModel.call(this, classname, schema);
 }
 
-// Inherit methods from BaseModel parent class
 Thread.prototype = Object.create(BaseModel.prototype);
 
 module.exports = new Thread();

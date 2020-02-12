@@ -2,11 +2,8 @@
 
 const BaseModel = require('./BaseModel');
 
-const { processFiles } = require('../utils/helpers');
+const { processFiles } = require('../utils/files');
 
-/**
- * Constructor for Banner model
- */
 function Banner() {
   const classname = 'banner';
 
@@ -19,7 +16,6 @@ function Banner() {
   BaseModel.call(this, classname, schema);
 }
 
-// Inherit methods from BaseModel parent class
 Banner.prototype = Object.create(BaseModel.prototype);
 
 // Custom saveEntry method for handling images uploading
