@@ -2,7 +2,7 @@
 
 const BaseModel = require('./BaseModel');
 
-const { processFiles } = require('../utils/helpers');
+const { processFiles, isIPv4, isIPv6, hashIPv4, hashIPv6 } = require('../utils/helpers');
 
 /**
  * Constructor for Post model
@@ -34,6 +34,44 @@ Post.prototype.saveEntry = function(entry, callback) {
     [required, entry, acceptedExtensions, 'posts', 'file_uri', BaseModel.prototype.saveEntry, this],
     (err, res) => callback(err, res)
   );
+};
+
+// Custom getEntry method for hashing user
+Post.prototype.getEntry = function([filters], callback) {
+  BaseModel.prototype.getEntry.call(this, [filters], (err, res) => {
+    if (err) callback(err, null);
+    else {
+      if (res.length > 0) {
+        const post_user = res[0].user;
+
+        if (isIPv4(post_user)) res[0].user = hashIPv4(post_user);
+        if (isIPv6(post_user)) res[0].user = hashIPv6(post_user);
+      }
+
+      callback(null, res);
+    }
+  });
+};
+
+// Custom getAllEntries method for hashing user
+Post.prototype.getAllEntries = function(callback) {
+  BaseModel.prototype.getAllEntries.call(this, (err, res) => {
+    if (err) callback(err, null);
+    else {
+      if (res.length > 0) {
+        res = res.map(post => {
+          const post_user = post.user;
+
+          if (isIPv4(post_user)) post.user = hashIPv4(post_user);
+          if (isIPv6(post_user)) post.user = hashIPv6(post_user);
+
+          return post;
+        });
+      }
+
+      callback(null, res);
+    }
+  });
 };
 
 module.exports = new Post();

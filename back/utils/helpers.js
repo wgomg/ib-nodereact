@@ -4,7 +4,13 @@ const config = require('../config/');
 
 const error = require('../utils/error');
 
-const isIp = require('is-ip');
+const crypto = require('crypto');
+
+/*** */
+
+const isIPv4 = ip => /\d+\.\d+(\.\d+)?(\.\d+)?/.test(ip);
+
+const isIPv6 = ip => /([0-9a-f]{1,4}:){1,7}[0-9a-f]{1,4}/.test(ip);
 
 /**
  * schema validation types
@@ -39,7 +45,7 @@ const isValidDatatype = (value, type) => {
       return typeof value === 'boolean' || value == 1 || value == 0;
 
     case 'ip_address':
-      return isIp(value);
+      return isIPv4(value) || isIPv6(value);
 
     default:
       return false;
@@ -216,9 +222,49 @@ const matchMagicNumber = (header, extension, fileType) => {
   return false;
 };
 
+const haship = (str, len) => {
+  const md5 = crypto.createHash('md5');
+  md5.update(str);
+  return md5.digest('base64').substring(0, len);
+};
+
+const hashIPv4 = ip => {
+  let parts = ip.split('.');
+  let acc = '';
+
+  parts = parts.map((segment, i) => {
+    const part = haship(acc + segment + i, 3);
+    acc += segment;
+    return part;
+  });
+
+  while (parts.length < 4) parts.push('*');
+
+  return parts.join('.');
+};
+
+const hashIPv6 = (str, len) => {
+  let parts = ip.split(':');
+  parts.splice(4, 4);
+  let acc = '';
+
+  parts = parts.map((segment, i) => {
+    const part = iphash(acc + segment + i, 4);
+    acc += segment;
+    return part;
+  });
+
+  while (parts.length < 4) parts.push('*');
+  return parts.join(':');
+};
+
 module.exports = {
   isValidDatatype,
   processNestedResults,
   hasFileField,
-  processFiles
+  processFiles,
+  isIPv4,
+  isIPv6,
+  hashIPv4,
+  hashIPv6
 };
