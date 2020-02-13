@@ -31,7 +31,7 @@ const routesMap = new Map([
   [
     'get',
     [
-      { call: 'auth', route: '/staffs/auth', model: 'Staff', private: ['Staff'] },
+      { call: 'auth', route: '/staffs/auth', private: ['Staff'], model: 'Staff' },
       { call: 'getAllEntries', route: '/__table__', private: ['Ban', 'Complaint', 'Report', 'Staff'] },
       {
         call: 'getEntry',

@@ -9,6 +9,7 @@ function Rule() {
     rule_id: { pk: true },
     board_id: { type: 'table' },
     text: { type: 'alphanum', length: 45, required: true },
+    duration: { type: 'num', required: true },
     details: { type: 'string', length: 250 }
   };
 

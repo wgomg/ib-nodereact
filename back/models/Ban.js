@@ -8,7 +8,7 @@ function Ban() {
   const schema = {
     ban_id: { pk: true },
     staff_id: { type: 'table', required: true },
-    post_id: { type: 'table', required: true },
+    post_id: { type: 'table', required: true, ip_field: 'user' },
     rule_id: { type: 'table', required: true },
     comment: { type: 'alphanum', length: 45, required: true }
   };

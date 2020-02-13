@@ -10,6 +10,8 @@ const ip = require('./ip');
  * alpha: string letters only
  * alphanum: string letters and numbers
  * string: string letters, numbers and special chars
+ * num: numbers only
+ *
  * email: email
  *
  * bool: boolean or [0, 1]
@@ -24,6 +26,9 @@ const isValidDatatype = (value, type) => {
 
     case 'alphanum':
       return /^[a-z0-9 ]+$/i.test(value);
+
+    case 'num':
+      return /^[0-9]+$/i.test(value);
 
     case 'email':
       return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(

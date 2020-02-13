@@ -50,25 +50,32 @@ const select = ([table, modelSchema, filters, noJoin], callback) => {
   const schemaFields = Object.keys(modelSchema);
   const filtersFields = filters ? Object.keys(filters) : null;
 
-  let foreignTables = schemaFields.filter(field => modelSchema[field].type === 'table');
+  let foreignTables = schemaFields
+    .filter(field => modelSchema[field].type === 'table')
+    .map(table_field => {
+      return {
+        tableIdField: table_field,
+        tableName: table_field.charAt(0).toUpperCase() + table_field.slice(1, -3) + 's'
+      };
+    });
 
   const ipField = schemaFields.filter(field => modelSchema[field].type === 'ip_address');
-
   let ip_conversion = '';
   if (ipField.length > 0) ip_conversion = `, INET6_NTOA(${ipField[0]}) AS ${ipField[0]}`;
 
-  let sql = `SELECT *${ip_conversion} FROM ${table}`;
+  let sqlSelect = `SELECT *${ip_conversion}`;
+  let sqlFrom = ` FROM ${table}`;
+  let sqlJoin = '';
 
-  let foreignTable;
-  let foreignTableColumnKey;
+  if (!noJoin && foreignTables.length > 0)
+    for (const { tableIdField, tableName } of foreignTables) {
+      if (modelSchema[tableIdField].ip_field)
+        sqlSelect += `, INET6_NTOA(${tableName}.${modelSchema[tableIdField].ip_field}) AS ${modelSchema[tableIdField].ip_field}`;
 
-  if (!noJoin && foreignTables.length > 0) {
-    foreignTableColumnKey = foreignTables[0];
-    foreignTable =
-      foreignTableColumnKey.charAt(0).toUpperCase() + foreignTableColumnKey.slice(1, -3) + 's';
+      sqlJoin += ` LEFT JOIN ${tableName} ON ${tableName}.${tableIdField} = ${table}.${tableIdField}`;
+    }
 
-    sql += ` LEFT JOIN ${foreignTable} ON ${foreignTable}.${foreignTableColumnKey} = ${table}.${foreignTableColumnKey}`;
-  }
+  let sql = sqlSelect + sqlFrom + sqlJoin;
 
   if (filtersFields && filtersFields.length > 0) {
     sql += ' WHERE ';
@@ -86,7 +93,7 @@ const select = ([table, modelSchema, filters, noJoin], callback) => {
 
   const cb = (err, res) => {
     if (err) callback(error(err), null);
-    else callback(null, processNestedResults([table, res, foreignTable]));
+    else callback(null, processNestedResults([table, res, foreignTables]));
   };
 
   args.push(cb);
