@@ -38,17 +38,15 @@ const processNestedResults = ([table, results, foreignTable]) => {
       processedIds.push(entry[idField]);
     } else {
       processedResults.map(res => {
-        if (res[idField] === entry[idField]) {
-          if (foreignTable !== undefined) {
-            const foreignTableColumnKey = foreignTable.toLowerCase().slice(0, -1) + '_id';
+        if (res[idField] === entry[idField] && foreignTable !== undefined) {
+          const foreignTableColumnKey = foreignTable.toLowerCase().slice(0, -1) + '_id';
 
-            if (
-              !res[foreignTable].some(
-                obj => obj[foreignTableColumnKey] === entry[foreignTable][foreignTableColumnKey]
-              )
+          if (
+            !res[foreignTable].some(
+              obj => obj[foreignTableColumnKey] === entry[foreignTable][foreignTableColumnKey]
             )
-              res[foreignTable].push(entry[foreignTable]);
-          }
+          )
+            res[foreignTable].push(entry[foreignTable]);
         }
       });
     }

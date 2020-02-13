@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
-const checkStaffPermissions = req => {
+const isStaffAuthorized = req => {
   if (req.staff.disabled) return false;
 
   if (!req.staff.admin && !req.route.path.includes('auth')) {
@@ -11,23 +11,23 @@ const checkStaffPermissions = req => {
       [
         'GET',
         [
-          ['bans', 'reports'], // [0] sin id
-          ['bans', 'complaints', 'reports', 'rules'] // [1] con id
+          ['bans', 'complaints', 'reports', 'rules'], // [0] con id: /example/:example_id
+          ['bans', 'reports'] // [1] sin id: /example
         ]
       ],
-      ['DELETE', ['bans', 'banners', 'posts', 'rules', 'threads']]
+      ['DELETE', [['bans', 'banners', 'posts', 'rules', 'threads']]]
     ]);
 
-    const reqRoute = req.route.path.replace(/(:([^\/]+?))\/?$/g, '').replace('/', '');
+    const baseRoute = req.route.path.replace(/(:([^\/]+?))\/?$/g, '').replace('/', '');
     const method = req.method;
     const permission = modPermissionsMap.get(req.method);
 
-    if ((method === 'POST' || method === 'PUT') && !permission.includes(reqRoute)) return false;
+    if ((method === 'POST' || method === 'PUT') && !permission.includes(baseRoute)) return false;
 
     if (method === 'GET' || method === 'DELETE') {
-      const permIndex = +req.route.path.includes('id');
+      const permIndex = +!req.route.path.includes('id');
 
-      if (!permission[permIndex].includes(reqRoute)) return false;
+      if (!permission[permIndex].includes(baseRoute)) return false;
     }
   }
 
@@ -43,7 +43,7 @@ module.exports = function(req, res, next) {
     const decoded = jwt.verify(token, config.jwt.secret);
     req.staff = decoded.staff;
 
-    if (!checkStaffPermissions(req)) return res.status(401).json('Unauthorized');
+    if (!isStaffAuthorized(req)) return res.status(401).json('Unauthorized');
 
     return next();
   } catch (error) {

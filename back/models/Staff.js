@@ -47,16 +47,14 @@ Staff.prototype.getEntry = function(filters, callback) {
 // Login staff
 Staff.prototype.login = function(object, callback) {
   BaseModel.prototype.getEntry.call(this, [{ email: object.email }, true], (err, res) => {
-    if (err) callback(err, null);
-    else {
-      if (res.length === 0) callback(error({ code: 'ER_USER_NOTFOUND' }), null);
-      else {
-        const passwordMatch = bcrypt.compareSync(object.password, res[0].password);
+    if (err) return callback(err, null);
 
-        if (!passwordMatch) callback(error({ code: 'ER_INVALID_PASS' }));
-        else setJwtToken(res[0], (err, res) => callback(err, res));
-      }
-    }
+    if (res.length === 0) return callback(error({ code: 'ER_USER_NOTFOUND' }), null);
+
+    const passwordMatch = bcrypt.compareSync(object.password, res[0].password);
+
+    if (!passwordMatch) callback(error({ code: 'ER_INVALID_PASS' }));
+    else setJwtToken(res[0], (err, res) => callback(err, res));
   });
 };
 

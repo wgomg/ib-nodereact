@@ -10,7 +10,7 @@ const routesMap = new Map([
   [
     'post',
     [
-      { call: 'login', route: '/staffs/login', model: 'Staff', private: [] },
+      { call: 'login', route: '/staffs/login', private: [], model: 'Staff' },
       {
         call: 'saveEntry',
         route: '/__table__',
@@ -85,12 +85,11 @@ module.exports = app => {
           const staff = call.includes('auth') ? req.staff : null;
 
           const modelCallback = (err, results) => {
-            if (err) logAndSendError(err, res);
-            else {
-              if (call.includes('save') || call.includes('update'))
-                getEntry([Model, results, entry_id, res]);
-              else res.json(results);
-            }
+            if (err) return logAndSendError(err, res);
+
+            if (call.includes('save') || call.includes('update'))
+              getEntry([Model, results, entry_id, res]);
+            else res.json(results);
           };
 
           if (object && hasFileField(Model._schema)) object.files = req.files;

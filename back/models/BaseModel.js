@@ -8,16 +8,13 @@ const error = require('../utils/error');
 
 const bcrypt = require('bcrypt');
 
-/**
- * Constructor for BaseModel
- */
 function BaseModel(classname, schema) {
   this._table = classname.charAt(0).toUpperCase() + classname.slice(1) + 's';
 
   this._schema = schema;
 }
 
-const validate = (entry, schema, allEntries) => {
+const isEntryValid = ([entry, schema, allEntries]) => {
   if (!validation.entryFieldsMatchSchema(entry, schema)) return false;
 
   if (!validation.requiredFields(entry, schema)) return false;
@@ -33,7 +30,8 @@ const validate = (entry, schema, allEntries) => {
 
 BaseModel.prototype.saveEntry = function(entry, callback) {
   this.getAllEntries((err, res) => {
-    if (!validate(entry, this._schema, res)) return callback(error({ code: 'ER_INVALID_FIELDS' }), null);
+    if (!isEntryValid([entry, this._schema, res]))
+      return callback(error({ code: 'ER_INVALID_FIELDS' }), null);
 
     const fields = Object.keys(entry)
       .map(field => '`' + field + '`')
@@ -56,7 +54,8 @@ BaseModel.prototype.saveEntry = function(entry, callback) {
  */
 BaseModel.prototype.updateEntry = function(entry, callback) {
   this.getAllEntries((err, res) => {
-    if (!validate(entry, this._schema, res)) callback(error({ code: 'ER_INVALID_FIELDS' }), null);
+    if (!isEntryValid([entry, this._schema, res]))
+      return callback(error({ code: 'ER_INVALID_FIELDS' }), null);
 
     const idField = this._table.toLowerCase().slice(0, -1) + '_id';
     const entryId = entry[idField];

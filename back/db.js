@@ -39,11 +39,10 @@ const update = ([table, fields, values, id], callback) => {
   const sql = `Update ${table} SET ${sqlFieldsValues} WHERE ${idField} = ${id}`;
 
   pool.query(sql, values, (err, res) => {
-    if (err) callback(error(err), null);
-    else {
-      res.updatedId = id;
-      callback(null, res);
-    }
+    if (err) return callback(error(err), null);
+
+    res.updatedId = id;
+    callback(null, res);
   });
 };
 
