@@ -6,12 +6,12 @@ const isStaffAuthorized = req => {
 
   if (!req.staff.admin && !req.route.path.includes('auth')) {
     const modPermissionsMap = new Map([
-      ['POST', ['bans', 'banners', 'boards', 'complaints', 'rules']],
+      ['POST', ['bans', 'banners', 'boards', 'rules']],
       ['PUT', ['boards', 'posts', 'reports', 'rules', 'threads']],
       [
         'GET',
         [
-          ['bans', 'complaints', 'reports', 'rules'], // [0] con id: /example/:example_id
+          ['bans', 'reports', 'rules'], // [0] con id: /example/:example_id
           ['bans', 'reports'] // [1] sin id: /example
         ]
       ],

@@ -49,9 +49,6 @@ BaseModel.prototype.saveEntry = function(entry, callback) {
   });
 };
 
-/**
- * Updates an entry
- */
 BaseModel.prototype.updateEntry = function(entry, callback) {
   this.getAllEntries((err, res) => {
     if (!isEntryValid([entry, this._schema, res]))
@@ -75,25 +72,23 @@ BaseModel.prototype.updateEntry = function(entry, callback) {
   });
 };
 
-/**
- * Get entry by id from database
- */
 BaseModel.prototype.getEntry = function([filters, noJoin], callback) {
   db.select([this._table, this._schema, filters, noJoin], (err, res) => callback(err, res));
 };
 
-/**
- * Delete entry from database by id
- */
 BaseModel.prototype.deleteEntry = function(id, callback) {
   db.remove([this._table, id], (err, res) => callback(err, res));
 };
 
-/**
- * Get all entries from database
- */
-BaseModel.prototype.getAllEntries = function(callback) {
-  db.select([this._table, this._schema], (err, res) => callback(err, res));
+// en este caso el array [filters, noJoin] se ha puesto como segundo argumento
+// porque sólo hay una ocasión en que se utiliza
+BaseModel.prototype.getAllEntries = function(callback, extra) {
+  extra = extra || [];
+
+  const filters = extra[0] || null;
+  const noJoin = extra[1] || null;
+
+  db.select([this._table, this._schema, filters, noJoin], (err, res) => callback(err, res));
 };
 
 module.exports = BaseModel;

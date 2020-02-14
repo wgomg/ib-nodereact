@@ -46,10 +46,8 @@ Post.prototype.getEntry = function([filters], callback) {
     if (err) return callback(err, null);
 
     if (res.length > 0) {
-      const post_user = res[0].user;
-
-      if (ip.isV4(post_user)) res[0].user = ip.hashV4(post_user);
-      if (ip.isV6(post_user)) res[0].user = ip.hashV6(post_user);
+      if (ip.isV4(res[0].user)) res[0].user = ip.hashV4(res[0].user);
+      if (ip.isV6(res[0].user)) res[0].user = ip.hashV6(res[0].user);
     }
 
     callback(null, res);
@@ -57,23 +55,25 @@ Post.prototype.getEntry = function([filters], callback) {
 };
 
 // Custom getAllEntries method for hashing user
-Post.prototype.getAllEntries = function(callback) {
-  BaseModel.prototype.getAllEntries.call(this, (err, res) => {
-    if (err) return callback(err, null);
+Post.prototype.getAllEntries = function(callback, extra) {
+  BaseModel.prototype.getAllEntries.call(
+    this,
+    (err, res) => {
+      if (err) return callback(err, null);
 
-    if (res.length > 0) {
-      res = res.map(post => {
-        const post_user = post.user;
+      if (res.length > 0) {
+        res = res.map(post => {
+          if (ip.isV4(post.user)) post.user = ip.hashV4(post.user);
+          if (ip.isV6(post.user)) post.user = ip.hashV6(post.user);
 
-        if (ip.isV4(post_user)) post.user = ip.hashV4(post_user);
-        if (ip.isV6(post_user)) post.user = ip.hashV6(post_user);
+          return post;
+        });
+      }
 
-        return post;
-      });
-    }
-
-    callback(null, res);
-  });
+      callback(null, res);
+    },
+    extra
+  );
 };
 
 const checkBannedUsers = (user, callback) => {

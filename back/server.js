@@ -7,7 +7,6 @@ const { server } = require('./config/');
 
 const app = express();
 
-// middlewares
 app.use(express.json({ extended: false }));
 app.use(
   fileupload({
@@ -18,7 +17,6 @@ app.use(
   })
 );
 
-// get routes
 require('./routes.js')(app);
 
 const PORT = process.env.PORT || server.port;

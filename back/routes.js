@@ -14,7 +14,7 @@ const routesMap = new Map([
       {
         call: 'saveEntry',
         route: '/__table__',
-        private: ['Ban', 'Banner', 'Board', 'Complaint', 'Rule', 'Staff']
+        private: ['Ban', 'Banner', 'Board', 'Rule', 'Staff']
       }
     ]
   ],
@@ -24,7 +24,7 @@ const routesMap = new Map([
       {
         call: 'updateEntry',
         route: '/__table__',
-        private: ['Ban', 'Banner', 'Board', 'Complaint', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
+        private: ['Ban', 'Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
       }
     ]
   ],
@@ -32,11 +32,16 @@ const routesMap = new Map([
     'get',
     [
       { call: 'auth', route: '/staffs/auth', private: ['Staff'], model: 'Staff' },
-      { call: 'getAllEntries', route: '/__table__', private: ['Ban', 'Complaint', 'Report', 'Staff'] },
+      {
+        call: 'getAllEntries',
+        route: '/__table__',
+        private: ['Ban', 'Report', 'Staff'],
+        ignore: ['Thread', 'Post']
+      },
       {
         call: 'getEntry',
         route: '/__table__/:__entry___id',
-        private: ['Ban', 'Complaint', 'Report', 'Rule', 'Staff']
+        private: ['Ban', 'Report', 'Rule', 'Staff']
       }
     ]
   ],
@@ -46,7 +51,7 @@ const routesMap = new Map([
       {
         call: 'deleteEntry',
         route: '/__table__/:__entry___id',
-        private: ['Ban', 'Banner', 'Board', 'Complaint', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
+        private: ['Ban', 'Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
       }
     ]
   ]
@@ -57,8 +62,8 @@ const logAndSendError = (err, res) => {
   res.status(err.status).send(err.msg);
 };
 
-const getEntry = ([model, results, entry_id, response]) => {
-  model.getEntry([{ [entry_id]: results.updatedId || results.insertId }], (err, results) => {
+const getEntry = ([Model, results, entry_id, response]) => {
+  Model.getEntry([{ [entry_id]: results.updatedId || results.insertId }], (err, results) => {
     if (err) logAndSendError(err, response);
     else response.json(results);
   });
@@ -72,7 +77,11 @@ module.exports = app => {
 
     for (let [method, endpoints] of routesMap)
       for (let i = 0, length = endpoints.length; i < length; i++) {
-        if (endpoints[i].model && endpoints[i].model !== modelName) continue;
+        if (
+          (endpoints[i].model && endpoints[i].model !== modelName) ||
+          (endpoints[i].ignore && endpoints[i].ignore.includes(modelName))
+        )
+          continue;
 
         let route = endpoints[i].route.replace('__table__', table);
         const call = endpoints[i].call;
