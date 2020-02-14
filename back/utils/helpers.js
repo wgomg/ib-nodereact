@@ -9,7 +9,7 @@ const processNestedResults = ([table, results, foreignTables]) => {
     const row = results[i];
     let entry = row[table];
 
-    const generatedColumns = Object.keys(results[0]).filter(key => key === '');
+    const generatedColumns = Object.keys(row).filter(key => key === '');
 
     if (generatedColumns.length > 0)
       for (let i = 0, length = generatedColumns.length; i < length; i++) {
@@ -52,6 +52,10 @@ module.exports = {
   hasFileField
 };
 
+/**************************************************************************************/
+/**************************************************************************************/
+/**************************************************************************************/
+/**************************************************************************************/
 // if (!processedIds.includes(entry[idField])) {
 //   if (foreignTable !== undefined) entry[foreignTable] = [entry[foreignTable]];
 

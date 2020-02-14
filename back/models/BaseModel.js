@@ -45,7 +45,7 @@ BaseModel.prototype.saveEntry = function(entry, callback) {
       return entry[field];
     });
 
-    db.insert([this._table, fields, values], (err, res) => callback(err, res));
+    db.insert([this._table, fields, values], (err, res) => callback(err, [res]));
   });
 };
 
@@ -71,7 +71,7 @@ BaseModel.prototype.updateEntry = function(entry, callback) {
       return entry[field];
     });
 
-    db.update([this._table, fields, values, entryId], (err, res) => callback(err, res));
+    db.update([this._table, fields, values, entryId], (err, res) => callback(err, [res]));
   });
 };
 

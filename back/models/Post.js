@@ -2,6 +2,8 @@
 
 const BaseModel = require('./BaseModel');
 
+const Ban = require('./Ban');
+
 const ip = require('../utils/ip');
 
 const { processFiles } = require('../utils/files');
@@ -28,10 +30,14 @@ Post.prototype.saveEntry = function(entry, callback) {
   const acceptedExtensions = this._schema.file_uri.type.split('|')[1].split(',');
   const required = this._schema.file_uri.required;
 
-  processFiles(
-    [required, entry, acceptedExtensions, 'posts', 'file_uri', BaseModel.prototype.saveEntry, this],
-    (err, res) => callback(err, res)
-  );
+  checkBannedUsers(entry.user, (err, res) => {
+    if (err || res[0].banned) return callback(err, res);
+
+    processFiles(
+      [required, entry, acceptedExtensions, 'posts', 'file_uri', BaseModel.prototype.saveEntry, this],
+      (err, res) => callback(err, res)
+    );
+  });
 };
 
 // Custom getEntry method for hashing user
@@ -67,6 +73,13 @@ Post.prototype.getAllEntries = function(callback) {
     }
 
     callback(null, res);
+  });
+};
+
+const checkBannedUsers = (user, callback) => {
+  Ban.getByUser(user, (err, res) => {
+    if (err) callback(err, null);
+    else callback(null, [{ banned: res.length > 0 }]);
   });
 };
 

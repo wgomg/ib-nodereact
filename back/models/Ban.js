@@ -18,4 +18,10 @@ function Ban() {
 
 Ban.prototype = Object.create(BaseModel.prototype);
 
+Ban.prototype.getByUser = function(user, callback) {
+  BaseModel.prototype.getEntry.call(this, [{ 'Posts.user': `INET6_ATON('${user}')` }], (err, res) =>
+    callback(err, res)
+  );
+};
+
 module.exports = new Ban();

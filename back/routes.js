@@ -87,8 +87,8 @@ module.exports = app => {
           const modelCallback = (err, results) => {
             if (err) return logAndSendError(err, res);
 
-            if (call.includes('save') || call.includes('update'))
-              getEntry([Model, results, entry_id, res]);
+            if (!results[0].banned && (call.includes('save') || call.includes('update')))
+              getEntry([Model, results[0], entry_id, res]);
             else res.json(results);
           };
 

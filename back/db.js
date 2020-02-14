@@ -79,15 +79,17 @@ const select = ([table, modelSchema, filters, noJoin], callback) => {
 
   if (filtersFields && filtersFields.length > 0) {
     sql += ' WHERE ';
-    sql += filtersFields.map(field => `${table}.${field} = ?`).join(' AND ');
+    sql += filtersFields
+      .map(field => (field.includes('.') ? `${field} = ${filters[field]}` : `${table}.${field} = ?`))
+      .join(' AND ');
   }
 
-  if (table === 'Threads' || table === 'Posts') sql += ` ORDER BY ${table}.created_on DESC`;
+  if (table === 'Posts') sql += ` ORDER BY ${table}.created_on ASC`;
 
   let args = [{ sql, nestTables: true }];
 
   if (filtersFields && filtersFields.length > 0) {
-    const values = filtersFields.map(field => filters[field]);
+    const values = filtersFields.map(field => (!field.includes('.') ? filters[field] : null));
     args.push(values);
   }
 
