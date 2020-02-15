@@ -1,6 +1,23 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
+const auth = (req, res, next) => {
+  const token = req.header('x-auth-token');
+
+  if (!token) return res.status(401).json('Authorization denied');
+
+  try {
+    const decoded = jwt.verify(token, config.jwt.secret);
+    req.staff = decoded.staff;
+
+    if (!isStaffAuthorized(req)) return res.status(401).json('Unauthorized');
+
+    return next();
+  } catch (error) {
+    res.status(401).json('Invalid token');
+  }
+};
+
 const isStaffAuthorized = req => {
   if (req.staff.disabled) return false;
 
@@ -34,19 +51,4 @@ const isStaffAuthorized = req => {
   return true;
 };
 
-module.exports = function(req, res, next) {
-  const token = req.header('x-auth-token');
-
-  if (!token) return res.status(401).json('Authorization denied');
-
-  try {
-    const decoded = jwt.verify(token, config.jwt.secret);
-    req.staff = decoded.staff;
-
-    if (!isStaffAuthorized(req)) return res.status(401).json('Unauthorized');
-
-    return next();
-  } catch (error) {
-    res.status(401).json('Invalid token');
-  }
-};
+module.exports = auth;

@@ -10,11 +10,13 @@ const routesMap = new Map([
   [
     'post',
     [
-      { call: 'login', route: '/staffs/login', private: [], model: 'Staff' },
+      { call: 'login', route: '/staffs/login', private: [], ignore: [], onlyOn: 'Staff' },
       {
         call: 'saveEntry',
         route: '/__table__',
-        private: ['Ban', 'Banner', 'Board', 'Rule', 'Staff']
+        private: ['Ban', 'Banner', 'Board', 'Rule', 'Staff'],
+        ignore: [],
+        onlyOn: ''
       }
     ]
   ],
@@ -24,24 +26,29 @@ const routesMap = new Map([
       {
         call: 'updateEntry',
         route: '/__table__',
-        private: ['Ban', 'Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
+        private: ['Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread'],
+        ignore: ['Ban', 'Banner', 'Thread'],
+        model: ''
       }
     ]
   ],
   [
     'get',
     [
-      { call: 'auth', route: '/staffs/auth', private: ['Staff'], model: 'Staff' },
+      { call: 'auth', route: '/staffs/auth', private: ['Staff'], ignore: [], onlyOn: 'Staff' },
       {
         call: 'getAllEntries',
         route: '/__table__',
-        private: ['Ban', 'Report', 'Staff'],
-        ignore: ['Thread', 'Post']
+        private: ['Report', 'Staff'],
+        ignore: ['Thread', 'Post', 'Ban'],
+        onlyOn: ''
       },
       {
         call: 'getEntry',
         route: '/__table__/:__entry___id',
-        private: ['Ban', 'Report', 'Rule', 'Staff']
+        private: ['Report', 'Rule', 'Staff'],
+        ignore: ['Thread', 'Post', 'Ban', 'Banner', 'Report', 'Rule'],
+        onlyOn: ''
       }
     ]
   ],
@@ -51,25 +58,15 @@ const routesMap = new Map([
       {
         call: 'deleteEntry',
         route: '/__table__/:__entry___id',
-        private: ['Ban', 'Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
+        private: ['Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread'],
+        ignore: ['Ban', 'Report'],
+        onlyOn: ''
       }
     ]
   ]
 ]);
 
-const logAndSendError = (err, res) => {
-  console.error(err);
-  res.status(err.status).send(err.msg);
-};
-
-const getEntry = ([Model, results, entry_id, response]) => {
-  Model.getEntry([{ [entry_id]: results.updatedId || results.insertId }], (err, results) => {
-    if (err) logAndSendError(err, response);
-    else response.json(results);
-  });
-};
-
-module.exports = app => {
+const routes = app => {
   for (let [modelName, Model] of Object.entries(models)) {
     const table = modelName.toLowerCase() + 's';
     const entry = modelName.toLowerCase();
@@ -77,11 +74,7 @@ module.exports = app => {
 
     for (let [method, endpoints] of routesMap)
       for (let i = 0, length = endpoints.length; i < length; i++) {
-        if (
-          (endpoints[i].model && endpoints[i].model !== modelName) ||
-          (endpoints[i].ignore && endpoints[i].ignore.includes(modelName))
-        )
-          continue;
+        if (endpoints[i].onlyOn !== modelName || endpoints[i].ignore.includes(modelName)) continue;
 
         let route = endpoints[i].route.replace('__table__', table);
         const call = endpoints[i].call;
@@ -119,3 +112,17 @@ module.exports = app => {
       }
   }
 };
+
+const getEntry = ([Model, results, entry_id, response]) => {
+  Model.getEntry([{ [entry_id]: results.updatedId || results.insertId }], (err, results) => {
+    if (err) logAndSendError(err, response);
+    else response.json(results);
+  });
+};
+
+const logAndSendError = (err, res) => {
+  console.error(err);
+  res.status(err.status).send(err.msg);
+};
+
+module.exports = routes;

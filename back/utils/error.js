@@ -2,6 +2,8 @@
 
 const tzoffset = new Date().getTimezoneOffset() * 60000;
 
+const now = tzoffset => new Date(Date.now() - tzoffset).toISOString();
+
 module.exports = err => {
   switch (err.code) {
     case 'ECONNREFUSED':
@@ -9,7 +11,7 @@ module.exports = err => {
         code: err.code,
         msg: 'Could no connect to database',
         status: 500,
-        date: new Date(Date.now() - tzoffset).toISOString()
+        date: now(tzoffset)
       };
 
     case 'ER_INVALID_ID':
@@ -18,7 +20,7 @@ module.exports = err => {
         code: err.code,
         msg: 'There are invalid fields, please check them and try again',
         status: 400,
-        date: new Date(Date.now() - tzoffset).toISOString()
+        date: now(tzoffset)
       };
 
     case 'ER_REQUIRED_FILE':
@@ -26,7 +28,7 @@ module.exports = err => {
         code: err.code,
         msg: 'No required file provided',
         status: 400,
-        date: new Date(Date.now() - tzoffset).toISOString()
+        date: now(tzoffset)
       };
 
     case 'ER_INVALID_FILE':
@@ -34,14 +36,15 @@ module.exports = err => {
         code: err.code,
         msg: 'Provided file type is invalid or file exceeds size limit',
         status: 400,
-        date: new Date(Date.now() - tzoffset).toISOString()
+        date: now(tzoffset)
       };
 
     case 'ENOENT':
       return {
         code: err.code,
         msg: 'No such file or directory: ' + err.path,
-        status: 500
+        status: 500,
+        date: now(tzoffset)
       };
 
     case 'ER_USER_NOTFOUND':
@@ -49,7 +52,8 @@ module.exports = err => {
       return {
         code: err.code,
         msg: 'Invalid user/password',
-        status: 400
+        status: 400,
+        date: now(tzoffset)
       };
 
     default:
@@ -57,7 +61,7 @@ module.exports = err => {
         code: err.code,
         msg: { sqlMsg: err.sqlMessage, query: err.sql },
         status: 500,
-        date: new Date(Date.now() - tzoffset).toISOString()
+        date: now(tzoffset)
       };
   }
 };

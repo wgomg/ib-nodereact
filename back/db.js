@@ -39,10 +39,8 @@ const update = ([table, fields, values, id], callback) => {
   const sql = `Update ${table} SET ${sqlFieldsValues} WHERE ${idField} = ${id}`;
 
   pool.query(sql, values, (err, res) => {
-    if (err) return callback(error(err), null);
-
-    res.updatedId = id;
-    callback(null, res);
+    if (err) callback(error(err), null);
+    else callback(null, { ...res, updatedId: id });
   });
 };
 
@@ -75,16 +73,19 @@ const select = ([table, modelSchema, filters, noJoin], callback) => {
       sqlJoin += ` LEFT JOIN ${tableName} ON ${tableName}.${tableIdField} = ${table}.${tableIdField}`;
     }
 
-  let sql = sqlSelect + sqlFrom + sqlJoin;
+  let sqlWhere = '';
 
   if (filtersFields && filtersFields.length > 0) {
-    sql += ' WHERE ';
-    sql += filtersFields
+    sqlWhere += ' WHERE ';
+    sqlWhere += filtersFields
       .map(field => (field.includes('.') ? `${field} = ${filters[field]}` : `${table}.${field} = ?`))
       .join(' AND ');
   }
 
-  if (table === 'Posts') sql += ` ORDER BY ${table}.created_on ASC`;
+  let sqlOrderBy = '';
+  if (table === 'Posts') sqlOrderBy += ` ORDER BY ${table}.created_on ASC`;
+
+  let sql = sqlSelect + sqlFrom + sqlJoin + sqlWhere + sqlOrderBy;
 
   let args = [{ sql, nestTables: true }];
 

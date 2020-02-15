@@ -6,12 +6,6 @@ const isV4 = ip => /\d+\.\d+(\.\d+)?(\.\d+)?/.test(ip);
 
 const isV6 = ip => /([0-9a-f]{1,4}:){1,7}[0-9a-f]{1,4}/.test(ip);
 
-const haship = (str, len) => {
-  const md5 = crypto.createHash('md5');
-  md5.update(str);
-  return md5.digest('base64').substring(0, len);
-};
-
 const hashV4 = ip => {
   let parts = ip.split('.');
   let acc = '';
@@ -40,6 +34,12 @@ const hashV6 = (str, len) => {
 
   while (parts.length < 4) parts.push('*');
   return parts.join(':');
+};
+
+const haship = (str, len) => {
+  const md5 = crypto.createHash('md5');
+  md5.update(str);
+  return md5.digest('base64').substring(0, len);
 };
 
 module.exports = {

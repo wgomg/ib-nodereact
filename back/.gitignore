@@ -4,6 +4,4 @@ config/db.json
 config/server.json
 config/jwt.json
 
-routes
-
 data
