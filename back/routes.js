@@ -10,13 +10,12 @@ const routesMap = new Map([
   [
     'post',
     [
-      { call: 'login', route: '/staffs/login', private: [], ignore: [], onlyOn: 'Staff' },
+      { call: 'login', route: '/staffs/login', applyOn: ['Staff'], private: [] },
       {
         call: 'saveEntry',
         route: '/__table__',
-        private: ['Ban', 'Banner', 'Board', 'Rule', 'Staff'],
-        ignore: [],
-        onlyOn: ''
+        applyOn: ['Ban', 'Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread'],
+        private: ['Ban', 'Banner', 'Board', 'Rule', 'Staff']
       }
     ]
   ],
@@ -26,29 +25,26 @@ const routesMap = new Map([
       {
         call: 'updateEntry',
         route: '/__table__',
-        private: ['Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread'],
-        ignore: ['Ban', 'Banner', 'Thread'],
-        model: ''
+        applyOn: ['Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread'],
+        private: ['Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
       }
     ]
   ],
   [
     'get',
     [
-      { call: 'auth', route: '/staffs/auth', private: ['Staff'], ignore: [], onlyOn: 'Staff' },
+      { call: 'auth', route: '/staffs/auth', applyOn: ['Staff'], private: ['Staff'] },
       {
         call: 'getAllEntries',
         route: '/__table__',
-        private: ['Report', 'Staff'],
-        ignore: ['Thread', 'Post', 'Ban'],
-        onlyOn: ''
+        applyOn: ['Banner', 'Board', 'Report', 'Rule', 'Staff'],
+        private: ['Report', 'Staff']
       },
       {
         call: 'getEntry',
         route: '/__table__/:__entry___id',
-        private: ['Report', 'Rule', 'Staff'],
-        ignore: ['Thread', 'Post', 'Ban', 'Banner', 'Report', 'Rule'],
-        onlyOn: ''
+        applyOn: ['Board', 'Staff'],
+        private: ['Staff']
       }
     ]
   ],
@@ -58,59 +54,59 @@ const routesMap = new Map([
       {
         call: 'deleteEntry',
         route: '/__table__/:__entry___id',
-        private: ['Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread'],
-        ignore: ['Ban', 'Report'],
-        onlyOn: ''
+        applyOn: ['Ban', 'Board', 'Banner', 'Post', 'Rule', 'Staff', 'Thread'],
+        private: ['Banner', 'Board', 'Post', 'Rule', 'Staff', 'Thread']
       }
     ]
   ]
 ]);
 
 const routes = app => {
-  for (let [modelName, Model] of Object.entries(models)) {
-    const table = modelName.toLowerCase() + 's';
-    const entry = modelName.toLowerCase();
+  for (let [method, endpoints] of routesMap)
+    endpoints.forEach(ep => ep.applyOn.forEach(modelName => app[method](...routeArgs(ep, modelName))));
+};
+
+const routeArgs = (endpoint, modelName) => {
+  const entry = modelName.toLowerCase();
+  const table = entry + 's';
+
+  let route = endpoint.route.replace('__table__', table);
+
+  if (route.includes('__entry___id')) route = route.replace('__entry__', entry);
+
+  const routeCallback = (req, res) => {
+    const Model = models[modelName];
+    const call = endpoint.call;
+
     const entry_id = entry + '_id';
 
-    for (let [method, endpoints] of routesMap)
-      for (let i = 0, length = endpoints.length; i < length; i++) {
-        if (endpoints[i].onlyOn !== modelName || endpoints[i].ignore.includes(modelName)) continue;
+    const idParam = route.includes('_id') ? [{ [entry_id]: req.params[entry_id] }] : null;
+    const object = !call.includes('getAll') ? req.body : null;
+    const staff = call.includes('auth') ? req.staff : null;
 
-        let route = endpoints[i].route.replace('__table__', table);
-        const call = endpoints[i].call;
+    const modelCallback = (err, results) => {
+      if (err) return logAndSendError(err, res);
 
-        if (route.includes('__entry___id')) route = route.replace('__entry__', entry);
+      if (results[0] && !results[0].banned && (call.includes('save') || call.includes('update')))
+        getEntry([Model, results[0], entry_id, res]);
+      else res.json(results);
+    };
 
-        const routeCallback = (req, res) => {
-          const idParam = route.includes('_id') ? [{ [entry_id]: req.params[entry_id] }] : null;
-          const object = !call.includes('getAll') ? req.body : null;
-          const staff = call.includes('auth') ? req.staff : null;
+    if (object && hasFileField(Model._schema)) object.files = req.files;
 
-          const modelCallback = (err, results) => {
-            if (err) return logAndSendError(err, res);
+    let modelArgs = [modelCallback];
+    if (idParam || object || staff) modelArgs.unshift(idParam || object || staff);
 
-            if (!results[0].banned && (call.includes('save') || call.includes('update')))
-              getEntry([Model, results[0], entry_id, res]);
-            else res.json(results);
-          };
+    Model[call](...modelArgs);
+  };
 
-          if (object && hasFileField(Model._schema)) object.files = req.files;
+  let routeArgs = [route];
 
-          let modelArgs = [modelCallback];
-          if (idParam || object || staff) modelArgs.unshift(idParam || object || staff);
+  if (endpoint.private.includes(modelName)) routeArgs.push(auth);
 
-          Model[call](...modelArgs);
-        };
+  routeArgs.push(routeCallback);
 
-        let routeArgs = [route];
-
-        if (endpoints[i].private.includes(modelName)) routeArgs.push(auth);
-
-        routeArgs.push(routeCallback);
-
-        app[method](...routeArgs);
-      }
-  }
+  return routeArgs;
 };
 
 const getEntry = ([Model, results, entry_id, response]) => {

@@ -6,7 +6,7 @@ module.exports = (staff, callback) => {
     staff: {
       staff_id: staff.staff_id,
       admin: staff.admin,
-      board: staff.board_id,
+      board_id: staff.board_id,
       disabled: staff.disabled
     }
   };

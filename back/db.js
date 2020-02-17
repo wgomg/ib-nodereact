@@ -6,8 +6,11 @@ const { db } = require('./config/');
 const error = require('./utils/error');
 const { processNestedResults } = require('./utils/helpers');
 
+const util = require('util');
+
 const pool = mysql.createPool(db);
 
+/** Funciones de uso general, asíncronas **/
 const insert = ([table, fields, values], callback) => {
   const sqlValues = values
     .map((v, pos) => {
@@ -96,7 +99,7 @@ const select = ([table, modelSchema, filters, noJoin], callback) => {
 
   const cb = (err, res) => {
     if (err) callback(error(err), null);
-    else callback(null, processNestedResults([table, res, foreignTables]));
+    else callback(null, processNestedResults([table, res, foreignTables, noJoin]));
   };
 
   args.push(cb);
@@ -104,19 +107,34 @@ const select = ([table, modelSchema, filters, noJoin], callback) => {
   pool.query(...args);
 };
 
-const remove = ([table, id], callback) => {
+const remove = ([table, filter], callback) => {
   const idField = table.toLowerCase().slice(0, -1) + '_id';
   const sql = `DELETE FROM ${table} WHERE ${idField} = ?`;
 
-  pool.query(sql, id, (err, res) => {
+  pool.query(sql, filter[idField], (err, res) => {
     if (err) callback(error(err), null);
     else callback(null, res);
   });
+};
+
+/** Función síncrona añadida por necesidad para autentificación **/
+const selectSync = (filters, table) => {
+  const filtersFields = Object.keys(filters).map(f => `\`${f}\` = ?`);
+  const filtersValues = Object.keys(filters).map(f => filters[f]);
+
+  let sql = `SELECT * FROM ${table}`;
+
+  if (filtersFields.length > 0) sql += ` WHERE ${filtersFields.join(' AND ')}`;
+
+  const querySync = util.promisify(pool.query).bind(pool);
+
+  return querySync(sql, filtersValues);
 };
 
 module.exports = {
   insert,
   select,
   update,
-  remove
+  remove,
+  selectSync
 };

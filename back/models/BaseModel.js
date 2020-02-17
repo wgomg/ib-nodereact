@@ -76,8 +76,8 @@ BaseModel.prototype.getEntry = function([filters, noJoin], callback) {
   db.select([this._table, this._schema, filters, noJoin], (err, res) => callback(err, res));
 };
 
-BaseModel.prototype.deleteEntry = function(id, callback) {
-  db.remove([this._table, id], (err, res) => callback(err, res));
+BaseModel.prototype.deleteEntry = function([filter], callback) {
+  db.remove([this._table, filter], (err, res) => callback(err, res));
 };
 
 // en este caso el array [filters, noJoin] se ha puesto como segundo argumento
@@ -89,6 +89,11 @@ BaseModel.prototype.getAllEntries = function(callback, extra) {
   const noJoin = extra[1] || null;
 
   db.select([this._table, this._schema, filters, noJoin], (err, res) => callback(err, res));
+};
+
+//
+BaseModel.getEntrySync = function(filters, table) {
+  return db.selectSync(filters, table);
 };
 
 module.exports = BaseModel;

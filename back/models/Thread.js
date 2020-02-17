@@ -2,6 +2,7 @@
 
 const BaseModel = require('./BaseModel');
 
+const Board = require('./Board');
 const Post = require('./Post');
 
 function Thread() {
@@ -26,28 +27,37 @@ Thread.prototype.getAllEntries = function(callback, extra) {
 
       let threads = [];
 
-      for (let i = 0, length = res.length, thread = res[i]; i < length; i++)
+      for (let i = 0, length = res.length; i < length; i++)
         Post.getAllEntries(
-          (err, res) => {
+          (err, response) => {
             if (err) return callback(err, null);
 
-            thread.posts = res;
-            threads.push(thread);
+            threads.push({ ...res[i], posts: response });
 
             if (i + 1 === length) {
               threads.sort(
                 (a, b) =>
-                  new Date(b.posts[res.length - 1].created_on) -
-                  new Date(a.posts[res.length - 1].created_on)
+                  new Date(b.posts[response.length - 1].created_on) -
+                  new Date(a.posts[response.length - 1].created_on)
               );
               return callback(null, threads);
             }
           },
-          [{ thread_id: thread.thread_id }, true]
+          [{ thread_id: res[i].thread_id }, true]
         );
     },
     extra
   );
+};
+
+Thread.prototype.getBoard = async function(filters) {
+  if (filters.board_id) return Board.getBoard({ board_id: filters.board_id });
+  else {
+    const thread = await BaseModel.getEntrySync({ thread_id: filters.thread_id }, 'Threads');
+    if (thread[0]) return Board.getBoard({ board_id: thread[0].board_id });
+  }
+
+  return [];
 };
 
 module.exports = new Thread();

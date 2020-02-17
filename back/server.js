@@ -17,7 +17,7 @@ app.use(
   })
 );
 
-require('./routes.js')(app);
+require('./routes')(app);
 
 const PORT = process.env.PORT || server.port;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

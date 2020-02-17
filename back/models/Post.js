@@ -3,6 +3,7 @@
 const BaseModel = require('./BaseModel');
 
 const Ban = require('./Ban');
+const Thread = require('./Thread');
 
 const ip = require('../utils/ip');
 
@@ -74,6 +75,16 @@ Post.prototype.getAllEntries = function(callback, extra) {
     },
     extra
   );
+};
+
+Post.prototype.getBoard = async function(filters) {
+  if (filters.thread_id) return Thread.getBoard({ thread_id: filters.thread_id });
+  else {
+    const post = await BaseModel.getEntrySync({ post_id: filters.post_id }, 'Posts');
+    if (post[0]) return Thread.getBoard({ thread_id: post[0].thread_id });
+  }
+
+  return [];
 };
 
 const checkBannedUsers = (user, callback) => {

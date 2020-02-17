@@ -2,7 +2,7 @@
 
 const BaseModel = require('./BaseModel');
 
-const Thread = require('./Thread');
+// const Thread = require('./Thread');
 
 function Board() {
   const classname = 'board';
@@ -32,6 +32,10 @@ Board.prototype.getEntry = function([filters, noJoin], callback) {
       [{ board_id: board.board_id }, true]
     );
   });
+};
+
+Board.prototype.getBoard = function(filters) {
+  return BaseModel.getEntrySync(filters, 'Boards');
 };
 
 module.exports = new Board();

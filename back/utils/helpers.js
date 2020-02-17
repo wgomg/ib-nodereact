@@ -2,7 +2,7 @@
 
 const ip = require('../utils/ip');
 
-const processNestedResults = ([table, results, foreignTables]) => {
+const processNestedResults = ([table, results, foreignTables, noJoin]) => {
   let processedResults = [];
 
   for (let i = 0, length = results.length; i < length; i++) {
@@ -28,7 +28,7 @@ const processNestedResults = ([table, results, foreignTables]) => {
         }
       }
 
-    if (foreignTables && foreignTables.length > 0)
+    if (!noJoin && foreignTables && foreignTables.length > 0)
       for (const { tableIdField, tableName } of foreignTables) {
         entry[tableName] = row[tableName];
         delete entry[tableIdField];
@@ -51,26 +51,3 @@ module.exports = {
   processNestedResults,
   hasFileField
 };
-
-/**************************************************************************************/
-/**************************************************************************************/
-/**************************************************************************************/
-/**************************************************************************************/
-// if (!processedIds.includes(entry[idField])) {
-//   if (foreignTable !== undefined) entry[foreignTable] = [entry[foreignTable]];
-
-//   processedResults.push(entry);
-//   processedIds.push(entry[idField]);
-// } else
-//   processedResults.map(res => {
-//     if (res[idField] === entry[idField] && foreignTable !== undefined) {
-//       const foreignTableColumnKey = foreignTable.toLowerCase().slice(0, -1) + '_id';
-
-//       if (
-//         !res[foreignTable].some(
-//           obj => obj[foreignTableColumnKey] === entry[foreignTable][foreignTableColumnKey]
-//         )
-//       )
-//         res[foreignTable].push(entry[foreignTable]);
-//     }
-//   });

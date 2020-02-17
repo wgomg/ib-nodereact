@@ -24,4 +24,8 @@ Ban.prototype.getByUser = function(user, callback) {
   );
 };
 
+Ban.prototype.getBoard = function(filters) {
+  return Post.getBoard({ post_id: filters.post_id });
+};
+
 module.exports = new Ban();
