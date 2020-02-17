@@ -35,11 +35,13 @@ Thread.prototype.getAllEntries = function(callback, extra) {
             threads.push({ ...res[i], posts: response });
 
             if (i + 1 === length) {
-              threads.sort(
-                (a, b) =>
-                  new Date(b.posts[response.length - 1].created_on) -
-                  new Date(a.posts[response.length - 1].created_on)
-              );
+              threads.sort((a, b) => {
+                if (a.posts.length > 0 && b.posts.length > 0)
+                  return (
+                    new Date(b.posts[response.length - 1].created_on) -
+                    new Date(a.posts[response.length - 1].created_on)
+                  );
+              });
               return callback(null, threads);
             }
           },

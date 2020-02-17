@@ -42,8 +42,14 @@ const routesMap = new Map([
       },
       {
         call: 'getEntry',
+        route: '/boards/:uri',
+        applyOn: ['Board'],
+        private: []
+      },
+      {
+        call: 'getEntry',
         route: '/__table__/:__entry___id',
-        applyOn: ['Board', 'Staff'],
+        applyOn: ['Staff'],
         private: ['Staff']
       }
     ]
@@ -78,9 +84,13 @@ const routeArgs = (endpoint, modelName) => {
     const Model = models[modelName];
     const call = endpoint.call;
 
-    const entry_id = entry + '_id';
+    let paramValue = null;
+    let paramField = null;
+    if (route.includes(':')) {
+      paramField = route.includes('_id') ? entry + '_id' : 'uri';
+      paramValue = [{ [paramField]: req.params[paramField] }];
+    }
 
-    const idParam = route.includes('_id') ? [{ [entry_id]: req.params[entry_id] }] : null;
     const object = !call.includes('getAll') ? req.body : null;
     const staff = call.includes('auth') ? req.staff : null;
 
@@ -88,14 +98,14 @@ const routeArgs = (endpoint, modelName) => {
       if (err) return logAndSendError(err, res);
 
       if (results[0] && !results[0].banned && (call.includes('save') || call.includes('update')))
-        getEntry([Model, results[0], entry_id, res]);
+        getEntry([Model, results[0], paramField, res]);
       else res.json(results);
     };
 
     if (object && hasFileField(Model._schema)) object.files = req.files;
 
     let modelArgs = [modelCallback];
-    if (idParam || object || staff) modelArgs.unshift(idParam || object || staff);
+    if (paramValue || object || staff) modelArgs.unshift(paramValue || object || staff);
 
     Model[call](...modelArgs);
   };
