@@ -1,18 +1,15 @@
 {
-  "name": "ib-nodereact",
+  "name": "back",
   "version": "1.0.0",
-  "description": "Proyecto de imageboard sencillo con fines de aprendizaje de node/react.",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "bcrypt": "^3.0.7",
     "express": "^4.17.1",
     "express-fileupload": "^1.1.6",
     "jsonwebtoken": "^8.5.1",
     "mysql": "^2.18.1"
+  },
+  "scripts": {
+    "start": "node server",
+    "server": "nodemon server"
   }
 }
