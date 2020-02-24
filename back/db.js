@@ -47,7 +47,7 @@ const update = ([table, fields, values, id], callback) => {
   });
 };
 
-const select = ([table, modelSchema, filters, noJoin], callback) => {
+const select = ([table, modelSchema, filters, noJoin, orderBy], callback) => {
   const schemaFields = Object.keys(modelSchema);
   const filtersFields = filters ? Object.keys(filters) : null;
 
@@ -86,7 +86,7 @@ const select = ([table, modelSchema, filters, noJoin], callback) => {
   }
 
   let sqlOrderBy = '';
-  if (table === 'Posts') sqlOrderBy += ` ORDER BY ${table}.created_on ASC`;
+  if (orderBy) sqlOrderBy += ` ORDER BY ${table}.${orderBy.field} ${orderBy.direction}`;
 
   let sql = sqlSelect + sqlFrom + sqlJoin + sqlWhere + sqlOrderBy;
 

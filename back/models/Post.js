@@ -73,7 +73,18 @@ Post.prototype.getAllEntries = function(callback, extra) {
 
       callback(null, res);
     },
-    extra
+    [...extra, { field: 'created_on', direction: 'ASC' }]
+  );
+};
+
+Post.prototype.getAllLatests = function(callback) {
+  BaseModel.prototype.getAllEntries.call(
+    this,
+    (err, res) => {
+      if (err) callback(err, null);
+      else callback(null, res.slice(0, 10));
+    },
+    [null, null, { field: 'created_on', direction: 'DESC' }]
   );
 };
 

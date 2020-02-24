@@ -87,8 +87,9 @@ BaseModel.prototype.getAllEntries = function(callback, extra) {
 
   const filters = extra[0] || null;
   const noJoin = extra[1] || null;
+  const orderBy = extra[2] || null;
 
-  db.select([this._table, this._schema, filters, noJoin], (err, res) => callback(err, res));
+  db.select([this._table, this._schema, filters, noJoin, orderBy], (err, res) => callback(err, res));
 };
 
 //

@@ -33,6 +33,7 @@ const routesMap = new Map([
   [
     'get',
     [
+      { call: 'getAllLatests', route: '/posts/latests', applyOn: ['Post'], private: [] },
       { call: 'auth', route: '/staffs/auth', applyOn: ['Staff'], private: ['Staff'] },
       {
         call: 'getAllEntries',
