@@ -1,0 +1,153 @@
+:root {
+  --general-bg: #0d100f;
+  --general-font: #cecfcc;
+  --general-border: #4d646e;
+  --card-bg: #232522;
+  --card-header-bg: #7da3b3;
+  --card-header-font: #151613;
+  --link: #8be2e4;
+  --link-visited: #436f70;
+  --link-hover: #b6e3e4;
+}
+
+:root {
+  --color1: #636562;
+  --color2: #8d8f8c;
+  --color3: #515350;
+  --color4: #777976;
+  --color5: #414340;
+  --color6: #a7a8a6;
+  --color7: #313330;
+  --color8: #232522;
+  --color11: #030402;
+  --color13: #677275;
+  --color14: #212523;
+  --color15: #566062;
+  --color16: #79868a;
+  --color17: #373c3a;
+  --color18: #484e4f;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.9rem;
+  background-color: var(--general-bg);
+  color: var(--general-font);
+}
+
+body {
+  position: relative;
+  min-height: 100%;
+}
+
+img {
+  display: block;
+}
+
+img.loading {
+  width: 20px;
+  margin: auto;
+  display: block;
+}
+
+.container {
+  padding: 1%;
+}
+
+.logo {
+  max-width: 30%;
+}
+
+.centered {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div.centered {
+  width: 60%;
+}
+
+img.centered {
+  width: 80%;
+}
+
+h1.centered,
+h2.centered,
+h3.centered,
+h4.centered,
+h5.centered,
+h6.centered,
+p.centered {
+  text-align: center;
+}
+
+div.card {
+  border: 1px;
+  border-style: solid;
+  border-color: var(--general-border);
+  background-color: var(--card-bg);
+  margin-left: 1%;
+}
+
+div.card > .card-header {
+  background-color: var(--card-header-bg);
+  color: var(--card-header-font);
+  padding-left: 1%;
+}
+
+div.columns {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+div.columns > .col {
+  flex: 1;
+  min-width: 33%;
+}
+
+div.col.board-list {
+  max-width: 33%;
+}
+
+ul {
+  padding-left: 3%;
+}
+
+ul.no-style {
+  padding-left: 2%;
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:link {
+  color: var(--link);
+}
+
+a:visited {
+  color: var(--link-visited);
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+@media (max-width: 700px) {
+  .logo {
+    max-width: 60%;
+  }
+
+  div.columns {
+    display: block;
+    padding-left: 5%;
+  }
+}
