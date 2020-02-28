@@ -14,24 +14,21 @@ const Navbar = ({ getBoardsList, boards: { boards, loading } }) => {
   const boardsList =
     boards.length > 0 ? (
       <Fragment>
-        [{' '}
         {boards.map((board, index) => (
           <Fragment key={board.board_id}>
             <Link to={`/${board.uri}/`}> {board.uri} </Link>
             {index !== boards.length - 1 ? ' / ' : ''}
           </Fragment>
-        ))}{' '}
-        ]
+        ))}
       </Fragment>
     ) : (
-      <h4 className='centered'>No hay Boards para mostrar</h4>
+      'No hay Boards para mostrar'
     );
-
   const navbar = loading ? (
     <Loading />
   ) : (
     <p className='centered'>
-      [ <Link to='/'>Home</Link> ] {boardsList}
+      [ <Link to='/'>Home</Link> ] [ {boardsList} ]
     </p>
   );
 

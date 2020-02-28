@@ -36,6 +36,13 @@ const routesMap = new Map([
       { call: 'getAllLatests', route: '/posts/latests', applyOn: ['Post'], private: [] },
       { call: 'auth', route: '/staffs/auth', applyOn: ['Staff'], private: ['Staff'] },
       {
+        call: 'getAllForBoard',
+        route: '/banners/:board_id',
+        argModel: 'Board',
+        applyOn: ['Banner'],
+        private: []
+      },
+      {
         call: 'getAllEntries',
         route: '/__table__',
         applyOn: ['Banner', 'Board', 'Report', 'Rule', 'Staff'],
@@ -74,7 +81,7 @@ const routes = app => {
 };
 
 const routeArgs = (endpoint, modelName) => {
-  const entry = modelName.toLowerCase();
+  const entry = endpoint.argModel ? endpoint.argModel.toLowerCase() : modelName.toLowerCase();
   const table = entry + 's';
 
   let route = endpoint.route.replace('__table__', table);
@@ -106,7 +113,9 @@ const routeArgs = (endpoint, modelName) => {
     if (object && hasFileField(Model._schema)) object.files = req.files;
 
     let modelArgs = [modelCallback];
-    if (paramValue || object || staff) modelArgs.unshift(paramValue || object || staff);
+    if (paramValue || object || staff)
+      if (!call.includes('getAll')) modelArgs.unshift(paramValue || object || staff);
+      else modelArgs.push(paramValue || object || staff);
 
     Model[call](...modelArgs);
   };

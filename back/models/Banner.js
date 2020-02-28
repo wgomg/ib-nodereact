@@ -4,6 +4,9 @@ const BaseModel = require('./BaseModel');
 
 const { processFiles } = require('../utils/files');
 
+const fs = require('fs');
+const path = require('path');
+
 function Banner() {
   const classname = 'banner';
 
@@ -26,6 +29,34 @@ Banner.prototype.saveEntry = function(entry, callback) {
   processFiles(
     [required, entry, acceptedExtensions, 'banners', 'image_uri', BaseModel.prototype.saveEntry, this],
     (err, res) => callback(err, res)
+  );
+};
+
+Banner.prototype.getAllForBoard = function(callback, filters) {
+  filters[0].board_id += '|null';
+  BaseModel.prototype.getAllEntries.call(
+    this,
+    (err, res) => {
+      if (err) return callback(err, null);
+
+      let resBanners = res;
+      if (res.length > 0) {
+        resBanners = res.map(banner => {
+          const bannerPathArray = banner.image_uri.split('/');
+          const bannerExtension = path.extname(banner.image_uri).replace('.', '');
+
+          let resBanner = {
+            contentType: bannerPathArray[1] + '/' + bannerExtension,
+            data: fs.readFileSync(banner.image_uri)
+          };
+
+          return resBanner;
+        });
+      }
+
+      callback(err, resBanners);
+    },
+    [...filters, true]
   );
 };
 

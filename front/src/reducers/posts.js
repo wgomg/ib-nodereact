@@ -13,6 +13,9 @@ export default function(state = initState, action) {
     case GET_LATEST_POSTS:
       return { ...state, latests: payload, loading: false };
 
+    case LATEST_POSTS_ERROR:
+      return { ...state, error: payload, loading: false };
+
     default:
       return state;
   }

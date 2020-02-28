@@ -81,7 +81,18 @@ const select = ([table, modelSchema, filters, noJoin, orderBy], callback) => {
   if (filtersFields && filtersFields.length > 0) {
     sqlWhere += ' WHERE ';
     sqlWhere += filtersFields
-      .map(field => (field.includes('.') ? `${field} = ${filters[field]}` : `${table}.${field} = ?`))
+      .map(field => {
+        const filterValue = filters[field].length > 1 ? filters[field].split('|') : filters[field];
+
+        let sentenceField = field.includes('.') ? field : `${table}.${field}`;
+        let sentenceValue = field.includes('.') ? `= ${filterValue}` : '= ?';
+
+        let sentence = `${sentenceField} ${sentenceValue}`;
+
+        if (filterValue[1]) sentence += ` OR ${sentenceField} IS NULL`;
+
+        return `${sentence}`;
+      })
       .join(' AND ');
   }
 
