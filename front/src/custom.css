@@ -56,12 +56,13 @@ img.loading {
   display: block;
 }
 
-.container {
-  padding: 1%;
+img.logo,
+img.banner {
+  max-width: 30%;
 }
 
-.logo {
-  max-width: 30%;
+div.container {
+  padding: 1%;
 }
 
 .centered {
