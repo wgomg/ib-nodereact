@@ -2,7 +2,8 @@ import React, { useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Loading } from './elements';
+import { Loading, BoardTitle } from './elements';
+import NewThreadForm from './NewThreadForm';
 import { getBoard } from '../actions/boards';
 
 import Banner from './Banner';
@@ -12,12 +13,17 @@ const Board = ({ getBoard, boards: { board, loading }, match }) => {
     getBoard(match.params.board_uri);
   }, [getBoard, match.params.board_uri]);
 
-  const banner = loading || board.length == 0 ? <Loading /> : <Banner board={board} />;
+  const banner = loading || board.length === 0 ? <Loading /> : <Banner board={board} />;
+
+  const title = loading || board.length === 0 ? <Loading /> : <BoardTitle board={board[0]} />;
+
+  const newThread = loading || board.length === 0 ? <Loading /> : <NewThreadForm board={board[0]} />;
 
   return (
     <Fragment>
       {banner}
-      <div>BOARD</div>
+      {title}
+      {newThread}
     </Fragment>
   );
 };

@@ -8,6 +8,12 @@
   --link: #8be2e4;
   --link-visited: #436f70;
   --link-hover: #b6e3e4;
+  --title: #a2bcc4;
+  --subtitle: #79868a;
+  --button-bg: #414340;
+  --button-font: #a7a8a6;
+  --input-bg: #373c3a;
+  --input-font: #9fafa9;
 }
 
 :root {
@@ -15,16 +21,12 @@
   --color2: #8d8f8c;
   --color3: #515350;
   --color4: #777976;
-  --color5: #414340;
-  --color6: #a7a8a6;
   --color7: #313330;
   --color8: #232522;
   --color11: #030402;
   --color13: #677275;
   --color14: #212523;
   --color15: #566062;
-  --color16: #79868a;
-  --color17: #373c3a;
   --color18: #484e4f;
 }
 
@@ -62,7 +64,7 @@ img.banner {
 }
 
 div.container {
-  padding: 1%;
+  padding: 0.5%;
 }
 
 .centered {
@@ -88,6 +90,25 @@ p.centered {
   text-align: center;
 }
 
+h1.title,
+h2.title,
+h3.title,
+h4.title,
+h5.title,
+h6.title {
+  color: var(--title);
+}
+
+h1.subtitle,
+h2.subtitle,
+h3.subtitle,
+h4.subtitle,
+h5.subtitle,
+h6.subtitle,
+p.subtitle {
+  color: var(--subtitle);
+}
+
 div.card {
   border: 1px;
   border-style: solid;
@@ -111,6 +132,16 @@ div.columns {
 div.columns > .col {
   flex: 1;
   min-width: 33%;
+}
+
+div.columns > .col-1 {
+  flex: 1;
+  min-width: 20%;
+}
+
+div.columns > .col-4 {
+  flex: 1;
+  min-width: 80%;
 }
 
 div.col.board-list {
@@ -142,13 +173,74 @@ a:hover {
   color: var(--link-hover);
 }
 
+.form {
+  max-width: 50%;
+}
+
+.form .form-group {
+  margin: 0.2rem 0;
+  display: block;
+}
+
+.form input[type='text'],
+.form input[type='email'],
+.form input[type='password'],
+.form select,
+.form textarea {
+  display: block;
+  width: 100%;
+  padding: 0.2rem;
+  font-size: 1rem;
+  background-color: var(--input-bg);
+  color: var(--input-font);
+  border: none;
+}
+
+.form textarea {
+  resize: vertical;
+}
+
+.form input[type='submit'],
+button {
+  font: inherit;
+}
+
+.btn {
+  display: block;
+  background-color: var(--button-bg);
+  color: var(--button-font);
+  padding: 0.4rem 1.3rem;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  outline: none;
+  width: 100%;
+}
+
+.btn:hover {
+  opacity: 0.8;
+}
+
 @media (max-width: 700px) {
-  .logo {
+  div.centered {
+    width: 80%;
+  }
+
+  img.logo,
+  img.banner {
     max-width: 60%;
   }
 
   div.columns {
     display: block;
-    padding-left: 5%;
+  }
+
+  div.columns > .col {
+    margin-bottom: 2%;
+  }
+
+  .form {
+    max-width: 100%;
   }
 }
