@@ -19,6 +19,18 @@ function Thread() {
 
 Thread.prototype = Object.create(BaseModel.prototype);
 
+Thread.prototype.saveEntry = function(entry, callback) {
+  let newThread = ({ board_id, subject } = entry);
+  let threadOP = ({ text, user, name, files } = entry);
+
+  BaseModel.prototype.saveEntry.call(this, newThread, (err, res) => {
+    if (err) return callback(err, null);
+
+    threadOP = { ...threadOP, thread_id: res.insertId };
+    Post.saveEntry(threadOP, (error, response) => callback(error, res));
+  });
+};
+
 Thread.prototype.getAllEntries = function(callback, extra) {
   BaseModel.prototype.getAllEntries.call(
     this,
