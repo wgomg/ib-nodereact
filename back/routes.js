@@ -111,8 +111,7 @@ const routeArgs = (endpoint, modelName) => {
     };
 
     if (object && hasFileField(Model._schema)) object.files = req.files;
-    if (object && modelName === 'Thread')
-      object.user = req.header('x-forwarded-for') || req.connection.remoteAdddres;
+    if (object && modelName === 'Thread') object.user = req.ip;
 
     let modelArgs = [modelCallback];
     if (paramValue || object || staff)

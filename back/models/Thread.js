@@ -20,8 +20,8 @@ function Thread() {
 Thread.prototype = Object.create(BaseModel.prototype);
 
 Thread.prototype.saveEntry = function(entry, callback) {
-  let newThread = ({ board_id, subject } = entry);
-  let threadOP = ({ text, user, name, files } = entry);
+  let newThread = { board_id: entry.board_id, subject: entry.subject };
+  let threadOP = { text: entry.text, user: entry.user, name: entry.name, files: entry.files };
 
   BaseModel.prototype.saveEntry.call(this, newThread, (err, res) => {
     if (err) return callback(err, null);

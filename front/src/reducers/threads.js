@@ -14,7 +14,7 @@ export default function(state = initState, action) {
       return { ...state, thread: payload, loading: false };
 
     case THREAD_ERROR:
-      return { ...state, error: payload, loading: false };
+      return { ...state, error: payload.data, loading: false };
 
     default:
       return state;

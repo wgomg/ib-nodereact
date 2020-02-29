@@ -14,10 +14,10 @@ const formComponents = {
 const Form = ({ onSubmit, onChange, elements }) => {
   return (
     <form className='form centered' onSubmit={e => onSubmit(e)}>
-      {elements.map(element => {
+      {elements.map((element, index) => {
         const Component = formComponents[element.component];
         return (
-          <div className={element.class || 'form-group'} key={element.props.name}>
+          <div className={'form-group'} key={index}>
             <Component
               props={element.props}
               onChange={onChange}

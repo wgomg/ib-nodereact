@@ -15,7 +15,7 @@ export const createThread = newThread => async dispatch => {
   } catch (error) {
     dispatch({
       type: THREAD_ERROR,
-      error: error.response
+      payload: error.response
     });
   }
 };

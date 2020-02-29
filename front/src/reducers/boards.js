@@ -18,7 +18,7 @@ export default function(state = initState, action) {
       return { ...state, board: payload, loading: false };
 
     case BOARDS_ERROR:
-      return { ...state, error: payload, loading: false };
+      return { ...state, error: payload.data, loading: false };
 
     default:
       return state;
