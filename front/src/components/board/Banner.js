@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Loading } from './elements';
-import { getBanners } from '../actions/banners';
+import { Loading } from '../common';
+import { getBanners } from '../../actions/banners';
 
-import getImageBase64Data from '../utils/getImageBase64Data';
+import getImageBase64Data from '../../utils/getImageBase64Data';
 
 const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
   useEffect(() => {

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { Loading } from './elements';
+import { Loading } from './common';
 import { getBoardsList } from '../actions/boards';
 
 const Navbar = ({ getBoardsList, boards: { boards, loading } }) => {

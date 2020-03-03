@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { Card, Loading } from './elements';
-import { getBoardsList } from '../actions/boards';
+import { Card, Loading } from '../common';
+import { getBoardsList } from '../../actions/boards';
 
 const BoardsList = ({ getBoardsList, boards: { boards, loading } }) => {
   useEffect(() => {

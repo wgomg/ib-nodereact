@@ -1,7 +1,5 @@
 import React, { Fragment } from 'react';
-import BoardsList from './BoardsList';
-import Latests from './LatestPosts';
-import Statistics from './Statistics';
+import { BoardsList, LatestPosts, Statistics } from './home';
 
 const Home = () => {
   return (
@@ -9,7 +7,7 @@ const Home = () => {
       <div className='container centered'>
         <div className='columns'>
           <BoardsList />
-          <Latests />
+          <LatestPosts />
         </div>
       </div>
       <Statistics />

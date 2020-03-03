@@ -2,11 +2,9 @@ import React, { useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Loading, BoardTitle } from './elements';
-import NewThreadForm from './NewThreadForm';
+import { Loading } from './common';
+import { NewThreadForm, BoardTitle, Banner } from './board';
 import { getBoard } from '../actions/boards';
-
-import Banner from './Banner';
 
 const Board = ({ getBoard, boards: { board, loading }, match }) => {
   useEffect(() => {

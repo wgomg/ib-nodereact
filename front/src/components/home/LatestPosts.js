@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Card, Loading, PostLink } from './elements';
+import { Card, Loading, PostLink } from '../common';
 
-import { getLatestPosts } from '../actions/posts';
-import { getBoardsList } from '../actions/boards';
+import { getLatestPosts } from '../../actions/posts';
+import { getBoardsList } from '../../actions/boards';
 
 const LatestPosts = ({
   getLatestPosts,
