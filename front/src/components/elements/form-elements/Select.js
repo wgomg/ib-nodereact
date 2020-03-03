@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 
-export default ({ props: { name, value, options }, onChange, lead }) => (
+export default ({ name, value, options, onChange, lead }) => (
   <Fragment>
     <select name={name} value={value} onChange={onChange}>
       {options.map(option => (

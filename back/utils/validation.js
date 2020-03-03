@@ -22,10 +22,10 @@ const ip = require('./ip');
 const isValidDatatype = (value, type) => {
   switch (type) {
     case 'alpha':
-      return /^[a-z]+$/i.test(value);
+      return /^$|^[a-z ]+$/i.test(value);
 
     case 'alphanum':
-      return /^[a-z0-9 ]+$/i.test(value);
+      return /^$|^[a-z0-9 ]+$/i.test(value);
 
     case 'num':
       return /^[0-9]+$/i.test(value);
@@ -42,6 +42,7 @@ const isValidDatatype = (value, type) => {
       return typeof value === 'boolean' || value == 1 || value == 0;
 
     case 'ip_address':
+      value = value.includes('::ffff:') ? value.replace('::ffff:', '') : value;
       return ip.isV4(value) || ip.isV6(value);
 
     default:

@@ -12,7 +12,7 @@ const Navbar = ({ getBoardsList, boards: { boards, loading } }) => {
   }, [getBoardsList]);
 
   const boardsList =
-    boards.length > 0 ? (
+    !loading && boards ? (
       <Fragment>
         {boards.map((board, index) => (
           <Fragment key={board.board_id}>

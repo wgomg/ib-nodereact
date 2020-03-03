@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 
-export default ({ props: { name, value }, onChange, label, lead }) => (
+export default ({ name, value, onChange, label, lead }) => (
   <Fragment>
     <div className='columns'>
       <div className='col-1'>{label && <h4>{label}</h4>}</div>

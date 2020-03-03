@@ -106,12 +106,12 @@ const routeArgs = (endpoint, modelName) => {
       if (err) return logAndSendError(err, res);
 
       if (results[0] && !results[0].banned && (call.includes('save') || call.includes('update')))
-        getEntry([Model, results[0], paramField, res]);
+        getEntry([Model, results[0], entry + '_id', res]);
       else res.json(results);
     };
 
     if (object && hasFileField(Model._schema)) object.files = req.files;
-    if (object && modelName === 'Thread') object.user = req.ip;
+    if (object && (modelName === 'Thread' || modelName === 'Post')) object.user = req.ip;
 
     let modelArgs = [modelCallback];
     if (paramValue || object || staff)
@@ -131,7 +131,7 @@ const routeArgs = (endpoint, modelName) => {
 };
 
 const getEntry = ([Model, results, entry_id, response]) => {
-  Model.getEntry([{ [entry_id]: results.updatedId || results.insertId }], (err, results) => {
+  Model.getEntry([{ [entry_id]: results.updatedId || results.insertId }, true], (err, results) => {
     if (err) logAndSendError(err, response);
     else response.json(results);
   });

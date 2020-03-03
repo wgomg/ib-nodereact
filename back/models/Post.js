@@ -57,6 +57,8 @@ Post.prototype.getEntry = function([filters], callback) {
 
 // Custom getAllEntries method for hashing user
 Post.prototype.getAllEntries = function(callback, extra) {
+  const filters = extra ? [...extra] : [null, null];
+
   BaseModel.prototype.getAllEntries.call(
     this,
     (err, res) => {
@@ -73,7 +75,7 @@ Post.prototype.getAllEntries = function(callback, extra) {
 
       callback(null, res);
     },
-    [...extra, { field: 'created_on', direction: 'ASC' }]
+    [...filters, { field: 'created_on', direction: 'ASC' }]
   );
 };
 

@@ -11,7 +11,7 @@ function Thread() {
   const schema = {
     thread_id: { pk: true },
     board_id: { type: 'table', required: true },
-    subject: { type: 'alphanum', length: 45 }
+    subject: { type: 'alphanum', length: 45, required: true }
   };
 
   BaseModel.call(this, classname, schema);
@@ -26,7 +26,7 @@ Thread.prototype.saveEntry = function(entry, callback) {
   BaseModel.prototype.saveEntry.call(this, newThread, (err, res) => {
     if (err) return callback(err, null);
 
-    threadOP = { ...threadOP, thread_id: res.insertId };
+    threadOP = { ...threadOP, thread_id: res[0].insertId };
     Post.saveEntry(threadOP, (error, response) => callback(error, res));
   });
 };

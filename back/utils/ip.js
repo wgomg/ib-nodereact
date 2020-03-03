@@ -21,7 +21,7 @@ const hashV4 = ip => {
   return parts.join('.');
 };
 
-const hashV6 = (str, len) => {
+const hashV6 = ip => {
   let parts = ip.split(':');
   parts.splice(4, 4);
   let acc = '';

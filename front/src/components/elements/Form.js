@@ -19,7 +19,10 @@ const Form = ({ onSubmit, onChange, elements }) => {
         return (
           <div className={'form-group'} key={index}>
             <Component
-              props={element.props}
+              component={element.component}
+              name={element.name}
+              value={element.value}
+              text={element.text}
               onChange={onChange}
               lead={element.lead}
               label={element.label}

@@ -9,10 +9,10 @@ import getImageBase64Data from '../utils/getImageBase64Data';
 
 const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
   useEffect(() => {
-    getBanners(board[0].board_id);
+    getBanners(board.board_id);
   }, [getBanners, board]);
 
-  const bannerImg = banners.length === 0 ? null : banners[Math.floor(Math.random() * banners.length)];
+  const bannerImg = banners ? banners[Math.floor(Math.random() * banners.length)] : null;
 
   const imgSrc = bannerImg ? getImageBase64Data(bannerImg) : null;
 
@@ -23,7 +23,7 @@ const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
 };
 
 Banner.propTypes = {
-  board: PropTypes.array.isRequired,
+  board: PropTypes.object.isRequired,
   getBanners: PropTypes.func.isRequired,
   banners: PropTypes.object.isRequired
 };

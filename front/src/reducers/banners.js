@@ -1,7 +1,7 @@
 import { GET_BANNERS, BOARDS_ERROR } from '../actions/types';
 
 const initState = {
-  banners: [],
+  banners: null,
   loading: true,
   error: {}
 };

@@ -12,7 +12,7 @@ const BoardsList = ({ getBoardsList, boards: { boards, loading } }) => {
   }, [getBoardsList]);
 
   const boardsList =
-    boards.length > 0 ? (
+    !loading && boards ? (
       <ul className='no-style col'>
         {boards.map(board => (
           <li key={board.board_id}>

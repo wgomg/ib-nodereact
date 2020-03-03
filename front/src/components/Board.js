@@ -13,11 +13,11 @@ const Board = ({ getBoard, boards: { board, loading }, match }) => {
     getBoard(match.params.board_uri);
   }, [getBoard, match.params.board_uri]);
 
-  const banner = loading || board.length === 0 ? <Loading /> : <Banner board={board} />;
+  const banner = loading || !board ? <Loading /> : <Banner board={board} />;
 
-  const title = loading || board.length === 0 ? <Loading /> : <BoardTitle board={board[0]} />;
+  const title = loading || !board ? <Loading /> : <BoardTitle board={board} />;
 
-  const newThread = loading || board.length === 0 ? <Loading /> : <NewThreadForm board={board[0]} />;
+  const newThread = loading || !board ? <Loading /> : <NewThreadForm board={board} />;
 
   return (
     <Fragment>
