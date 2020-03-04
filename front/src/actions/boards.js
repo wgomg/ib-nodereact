@@ -36,7 +36,7 @@ export const getBoard = uri => async dispatch => {
 
 export const createThread = newThread => async dispatch => {
   try {
-    const config = { headers: { 'Content-Type': 'application/json' } };
+    const config = { headers: { 'Content-Type': 'multipart/form-data' } };
 
     const res = await axios.post('/threads', newThread, config);
 

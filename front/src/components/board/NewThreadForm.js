@@ -11,32 +11,44 @@ const NewThreadForm = ({ board, createThread }) => {
     board_id: board.board_id,
     subject: '',
     text: '',
-    name: '',
-    image: ''
+    name: ''
   });
 
-  const { subject, text, name, image } = formData;
+  const [file, setFile] = useState('');
+
+  const { subject, text, name } = formData;
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const onFileSelected = e => setFile(e.target.files[0]);
 
   const elements = [
     {
       component: 'text',
       name: 'name',
       value: name,
-      label: 'Nombre'
+      label: 'Nombre',
+      onChange: e => onChange(e)
     },
     {
       component: 'text',
       name: 'subject',
       value: subject,
-      label: 'Tema'
+      label: 'Tema',
+      onChange: e => onChange(e)
     },
     {
       component: 'textarea',
       name: 'text',
       value: text,
-      label: 'Texto'
+      label: 'Texto',
+      onChange: e => onChange(e)
+    },
+    {
+      component: 'file',
+      name: 'image',
+      label: 'Archivo',
+      onChange: e => onFileSelected(e)
     },
     {
       component: 'btn',
@@ -48,10 +60,20 @@ const NewThreadForm = ({ board, createThread }) => {
   const onSubmit = e => {
     e.preventDefault();
 
-    const { subject } = formData;
+    const { board_id, subject, text, name } = formData;
 
-    if (subject === '' || text === '') alert('Los campos "Tema" y "Texto" son obligatorios');
-    else createThread(formData);
+    if (subject === '' || text === '') alert('Los campos "Tema", "Texto" y "Archivo" son obligatorios');
+    else {
+      const newThread = new FormData();
+
+      newThread.set('board_id', board_id);
+      newThread.set('subject', subject);
+      newThread.set('text', text);
+      newThread.set('name', name);
+      newThread.append('image', file);
+
+      createThread(newThread);
+    }
   };
 
   return (

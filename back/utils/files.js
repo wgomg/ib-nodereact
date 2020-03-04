@@ -33,6 +33,7 @@ const processFiles = (
 
         entry[field] = fileRelativePath;
         delete entry.files;
+
         saveEntry.call(modelInstance, entry, (err, res) => callback(err, res));
       });
     }

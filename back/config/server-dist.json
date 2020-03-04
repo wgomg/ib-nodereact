@@ -1,5 +1,5 @@
 {
   "port": 5000,
   "root_dir": "/absolute/path/to/back/",
-  "data_dir": "data/"
+  "data_dir": "data"
 }

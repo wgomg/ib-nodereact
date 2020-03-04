@@ -5,6 +5,8 @@ const BaseModel = require('./BaseModel');
 const Board = require('./Board');
 const Post = require('./Post');
 
+const error = require('../utils/error');
+
 function Thread() {
   const classname = 'thread';
 
@@ -20,12 +22,12 @@ function Thread() {
 Thread.prototype = Object.create(BaseModel.prototype);
 
 Thread.prototype.saveEntry = function(entry, callback) {
+  if (entry.files === null) return callback(error({ code: 'ER_INVALID_FIELDS' }), null);
+
   let newThread = { board_id: entry.board_id, subject: entry.subject };
   let threadOP = { text: entry.text, user: entry.user, name: entry.name, files: entry.files };
-
   BaseModel.prototype.saveEntry.call(this, newThread, (err, res) => {
     if (err) return callback(err, null);
-
     threadOP = { ...threadOP, thread_id: res[0].insertId };
     Post.saveEntry(threadOP, (error, response) => callback(error, res));
   });

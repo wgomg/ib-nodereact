@@ -59,7 +59,8 @@ module.exports = err => {
     default:
       return {
         code: err.code,
-        msg: { sqlMsg: err.sqlMessage, query: err.sql },
+        msg: err.sqlMessage,
+        query: err.sql,
         status: 500,
         date: now(tzoffset)
       };
