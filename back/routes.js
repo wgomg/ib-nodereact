@@ -114,9 +114,9 @@ const routeArgs = (endpoint, modelName) => {
     if (object && (modelName === 'Thread' || modelName === 'Post')) object.user = req.ip;
 
     let modelArgs = [modelCallback];
-    if (paramValue || object || staff)
-      if (!call.includes('getAll')) modelArgs.unshift(paramValue || object || staff);
-      else modelArgs.push(paramValue || object || staff);
+    if (paramValue || staff || object)
+      if (!call.includes('getAll')) modelArgs.unshift(paramValue || staff || object);
+      else modelArgs.push(paramValue || staff || object);
 
     Model[call](...modelArgs);
   };

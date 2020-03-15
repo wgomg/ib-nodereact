@@ -1,7 +1,7 @@
-import { GET_BANNERS, BANNERS_ERROR } from '../actions/types';
+import { GET_STAFFS, STAFF_ERROR } from '../actions/types';
 
 const initState = {
-  banners: null,
+  staffs: null,
   loading: true,
   error: {}
 };
@@ -10,10 +10,10 @@ export default function(state = initState, action) {
   const { type, payload } = action;
 
   switch (type) {
-    case GET_BANNERS:
-      return { ...state, banners: payload, loading: false };
+    case GET_STAFFS:
+      return { ...state, staffs: payload, loading: false };
 
-    case BANNERS_ERROR:
+    case STAFF_ERROR:
       return { ...state, error: payload.data, loading: false };
 
     default:

@@ -78,7 +78,7 @@ const NewThreadForm = ({ board, createThread }) => {
 
   return (
     <div className='container centered'>
-      <Form onSubmit={onSubmit} onChange={e => onChange(e)} elements={elements} />
+      <Form onSubmit={onSubmit} elements={elements} />
     </div>
   );
 };

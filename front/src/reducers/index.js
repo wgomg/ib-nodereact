@@ -1,7 +1,8 @@
 import { combineReducers } from 'redux';
-import login from './login';
+import auth from './auth';
 import boards from './boards';
 import banners from './banners';
 import posts from './posts';
+import staffs from './staffs';
 
-export default combineReducers({ login, boards, banners, posts });
+export default combineReducers({ auth, boards, banners, posts, staffs });

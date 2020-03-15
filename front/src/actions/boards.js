@@ -34,6 +34,26 @@ export const getBoard = uri => async dispatch => {
   }
 };
 
+export const createBoard = (newBoard, history) => async dispatch => {
+  try {
+    const config = { headers: { 'Content-Type': 'application/json' } };
+
+    const res = await axios.post('/boards', newBoard, config);
+
+    dispatch({
+      type: GET_BOARD,
+      payload: res.data
+    });
+
+    history.push('/staff/dash');
+  } catch (error) {
+    dispatch({
+      type: BOARDS_ERROR,
+      payload: error.response
+    });
+  }
+};
+
 export const createThread = newThread => async dispatch => {
   try {
     const config = { headers: { 'Content-Type': 'multipart/form-data' } };

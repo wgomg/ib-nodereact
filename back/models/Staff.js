@@ -60,7 +60,18 @@ Staff.prototype.login = function(object, callback) {
 
 // Authenticate staff
 Staff.prototype.auth = function(staff, callback) {
-  BaseModel.prototype.getEntry.call(this, staff.staff_id, (err, res) => callback(err, res));
+  BaseModel.prototype.getEntry.call(this, [{ staff_id: staff.staff_id }], (err, res) => {
+    if (err) return callback(err, null);
+
+    const staff = {
+      staff_id: res[0].staff_id,
+      name: res[0].name,
+      admin: res[0].admin,
+      disabled: res[0].disabled
+    };
+
+    callback(null, staff);
+  });
 };
 
 const removePass = result =>

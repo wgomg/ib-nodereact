@@ -72,7 +72,12 @@ BaseModel.prototype.updateEntry = function(entry, callback) {
   });
 };
 
-BaseModel.prototype.getEntry = function([filters, noJoin], callback) {
+BaseModel.prototype.getEntry = function(extra, callback) {
+  extra = extra || [];
+
+  const filters = extra[0] || null;
+  const noJoin = extra[1] || null;
+
   db.select([this._table, this._schema, filters, noJoin], (err, res) => callback(err, res));
 };
 
