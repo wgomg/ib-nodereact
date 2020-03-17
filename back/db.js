@@ -36,7 +36,7 @@ const update = ([table, fields, values, id], callback) => {
 
   const sqlFieldsValues = fields
     .split(',')
-    .map(v => field + ' = ?')
+    .map(field => field + ' = ?')
     .join(', ');
 
   const sql = `Update ${table} SET ${sqlFieldsValues} WHERE ${idField} = ${id}`;

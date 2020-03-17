@@ -20,8 +20,6 @@ const ip = require('./ip');
  *
  */
 const isValidDatatype = (value, type) => {
-  console.log(type + ' : ' + value);
-
   switch (type) {
     case 'alpha':
       return /^$|^[a-zA-Z ]+$/i.test(value);
