@@ -141,6 +141,11 @@ div.columns > .col-1 {
   min-width: 20%;
 }
 
+div.columns > .col-2 {
+  flex: 1;
+  min-width: 40%;
+}
+
 div.columns > .col-4 {
   flex: 1;
   min-width: 80%;

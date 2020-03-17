@@ -6,6 +6,7 @@ export const STAFF_LOAD_ERROR = 'STAFF_LOAD_ERROR';
 
 export const GET_BOARDS_LIST = 'GET_BOARDS_LIST';
 export const GET_BOARD = 'GET_BOARD';
+export const DELETE_BOARD = 'DELETE_BOARD';
 export const BOARDS_ERROR = 'BOARDS_ERROR';
 
 export const GET_LATEST_POSTS = 'GET_LATEST_POSTS';

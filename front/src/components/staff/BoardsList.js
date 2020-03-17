@@ -4,9 +4,9 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { Card, Loading } from '../common';
-import { getBoardsList } from '../../actions/boards';
+import { getBoardsList, deleteBoard } from '../../actions/boards';
 
-const BoardsList = ({ getBoardsList, boards: { boards, loading } }) => {
+const BoardsList = ({ getBoardsList, deleteBoard, boards: { boards, loading } }) => {
   useEffect(() => {
     getBoardsList();
   }, [getBoardsList]);
@@ -15,9 +15,19 @@ const BoardsList = ({ getBoardsList, boards: { boards, loading } }) => {
     !loading && boards ? (
       <ul className='no-style col'>
         {boards.map(board => {
+          const delBoard = (
+            <Link to='/staff/dash' onClick={e => deleteBoard(board.board_id)}>
+              borrar
+            </Link>
+          );
+
+          const editBoard = <Link to={`edit-board/${board.uri}`}>editar</Link>;
+
           const actions = (
             <div className='col-1'>
-              <span className='small'>[ borrar | editar ]</span>
+              <span className='small'>
+                [ {delBoard} | {editBoard} ]
+              </span>
             </div>
           );
 
@@ -25,14 +35,12 @@ const BoardsList = ({ getBoardsList, boards: { boards, loading } }) => {
 
           const name = <div className='col-1'>{board.name}</div>;
 
-          const description = <div className='col-1'>{board.description}</div>;
-
-          const someOtherInfo = <div className='col-1'></div>;
+          const description = <div className='col-2'>{board.description}</div>;
 
           return (
             <li key={board.board_id}>
               <div className='columns'>
-                {actions} {uri} {name} {description} {someOtherInfo}
+                {actions} {uri} {name} {description}
               </div>
             </li>
           );
@@ -59,6 +67,7 @@ const BoardsList = ({ getBoardsList, boards: { boards, loading } }) => {
 
 BoardsList.propTypes = {
   getBoardsList: PropTypes.func.isRequired,
+  deleteBoard: PropTypes.func.isRequired,
   boards: PropTypes.object.isRequired
 };
 
@@ -66,4 +75,4 @@ const mapStateToProps = state => ({
   boards: state.boards
 });
 
-export default connect(mapStateToProps, { getBoardsList })(BoardsList);
+export default connect(mapStateToProps, { getBoardsList, deleteBoard })(BoardsList);

@@ -1,4 +1,11 @@
-import { GET_BOARDS_LIST, BOARDS_ERROR, GET_BOARD, CREATE_THREAD, THREAD_ERROR } from '../actions/types';
+import {
+  GET_BOARDS_LIST,
+  BOARDS_ERROR,
+  GET_BOARD,
+  DELETE_BOARD,
+  CREATE_THREAD,
+  THREAD_ERROR
+} from '../actions/types';
 
 const initState = {
   boards: null,
@@ -12,16 +19,25 @@ export default function(state = initState, action) {
 
   switch (type) {
     case GET_BOARDS_LIST:
-      return { ...state, boards: payload, loading: false };
+      return { ...state, boards: payload, board: null, loading: false, error: {} };
 
     case GET_BOARD:
-      return { ...state, board: payload, loading: false };
+      return { ...state, board: payload, loading: false, error: {} };
+
+    case DELETE_BOARD:
+      return {
+        ...state,
+        boards: state.boards.filter(board => board.board_id !== payload),
+        loading: false,
+        error: {}
+      };
 
     case CREATE_THREAD:
       return {
         ...state,
         board: { ...state.board, threads: [payload, ...state.board.threads] },
-        loading: false
+        loading: false,
+        error: {}
       };
 
     case BOARDS_ERROR:
