@@ -16,36 +16,28 @@ const StaffsList = ({ getStaffs, staffs: { staffs, loading } }) => {
       <ul className='no-style col'>
         {staffs.map(staff => {
           const actions = (
-            <div className='col-1'>
-              <span className='small'>[ borrar | editar | deshabilitar ]</span>
+            <div className='col'>
+              <span className='small'>[ borrar | editar ]</span>
             </div>
           );
 
           const role = staff.admin ? 'admin' : 'mod';
           const name = (
-            <div className='col-1'>
+            <div className='col'>
               <span className={role}>{staff.name}</span>
             </div>
           );
 
-          const email = (
-            <div className='col-1'>
-              <span>{staff.email}</span>
-            </div>
-          );
-
           const board = (
-            <div className='col-1'>
+            <div className='col'>
               {!staff.admin ? (staff.Boards.uri ? staff.Boards.uri : 'global') : ''}
             </div>
           );
 
-          const someOtherInfo = <div className='col-1'></div>;
-
           return (
             <li key={staff.staff_id}>
               <div className='columns'>
-                {actions} {name} {email} {board} {someOtherInfo}
+                {actions} {name} {board}
               </div>
             </li>
           );
@@ -62,11 +54,7 @@ const StaffsList = ({ getStaffs, staffs: { staffs, loading } }) => {
 
   const cardContent = loading ? <Loading /> : staffsList;
 
-  return (
-    <div className='container centered'>
-      <Card title='Staff' content={cardContent} />
-    </div>
-  );
+  return <Card title='Staff' content={cardContent} classes='col' />;
 };
 
 StaffsList.propTypes = {

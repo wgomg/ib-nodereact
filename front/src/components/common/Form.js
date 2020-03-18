@@ -5,12 +5,16 @@ import Button from './form-elements/Button';
 import Text from './form-elements/Text';
 import TextArea from './form-elements/TextArea';
 import FileSelector from './form-elements/FileSelector';
+import Checkbox from './form-elements/Checkbox';
+import Select from './form-elements/Select';
 
 const formComponents = {
   btn: Button,
   text: Text,
   textarea: TextArea,
-  file: FileSelector
+  file: FileSelector,
+  check: Checkbox,
+  select: Select
 };
 
 const Form = ({ onSubmit, elements }) => {
@@ -28,6 +32,7 @@ const Form = ({ onSubmit, elements }) => {
               onChange={element.onChange}
               lead={element.lead}
               label={element.label}
+              options={element.options}
             />
           </div>
         );

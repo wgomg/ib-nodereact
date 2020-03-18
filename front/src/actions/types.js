@@ -19,4 +19,5 @@ export const CREATE_THREAD = 'CREATE_THREAD';
 export const THREAD_ERROR = 'THREAD_ERROR';
 
 export const GET_STAFFS = 'GET_STAFFS';
+export const GET_STAFF = 'GET_STAFF';
 export const STAFF_ERROR = 'STAFF_ERROR';

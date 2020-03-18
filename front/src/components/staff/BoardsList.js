@@ -24,23 +24,21 @@ const BoardsList = ({ getBoardsList, deleteBoard, boards: { boards, loading } })
           const editBoard = <Link to={`edit-board/${board.uri}`}>editar</Link>;
 
           const actions = (
-            <div className='col-1'>
+            <div className='col'>
               <span className='small'>
                 [ {delBoard} | {editBoard} ]
               </span>
             </div>
           );
 
-          const uri = <div className='col-1'>{board.uri}</div>;
+          const uri = <div className='col'>{board.uri}</div>;
 
-          const name = <div className='col-1'>{board.name}</div>;
-
-          const description = <div className='col-2'>{board.description}</div>;
+          const name = <div className='col'>{board.name}</div>;
 
           return (
             <li key={board.board_id}>
               <div className='columns'>
-                {actions} {uri} {name} {description}
+                {actions} {uri} {name}
               </div>
             </li>
           );
@@ -58,11 +56,7 @@ const BoardsList = ({ getBoardsList, deleteBoard, boards: { boards, loading } })
 
   const cardContent = loading ? <Loading /> : boardsList;
 
-  return (
-    <div className='container centered'>
-      <Card title='Boards' content={cardContent} />
-    </div>
-  );
+  return <Card title='Boards' content={cardContent} classes='col' />;
 };
 
 BoardsList.propTypes = {
