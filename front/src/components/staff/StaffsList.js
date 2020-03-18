@@ -4,9 +4,9 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { Card, Loading } from '../common';
-import { getStaffs } from '../../actions/staffs';
+import { getStaffs, deleteStaff } from '../../actions/staffs';
 
-const StaffsList = ({ getStaffs, staffs: { staffs, loading } }) => {
+const StaffsList = ({ getStaffs, deleteStaff, staffs: { staffs, loading } }) => {
   useEffect(() => {
     getStaffs();
   }, [getStaffs]);
@@ -15,9 +15,15 @@ const StaffsList = ({ getStaffs, staffs: { staffs, loading } }) => {
     !loading && staffs ? (
       <ul className='no-style col'>
         {staffs.map(staff => {
+          const delStaff = (
+            <Link to='/staff/dash' onClick={e => deleteStaff(staff.staff_id)}>
+              borrar
+            </Link>
+          );
+
           const actions = (
             <div className='col'>
-              <span className='small'>[ borrar | editar ]</span>
+              <span className='small'>[ {delStaff} | editar ]</span>
             </div>
           );
 
@@ -59,6 +65,7 @@ const StaffsList = ({ getStaffs, staffs: { staffs, loading } }) => {
 
 StaffsList.propTypes = {
   getStaffs: PropTypes.func.isRequired,
+  deleteStaff: PropTypes.func.isRequired,
   staffs: PropTypes.object.isRequired
 };
 
@@ -66,4 +73,4 @@ const mapStateToProps = state => ({
   staffs: state.staffs
 });
 
-export default connect(mapStateToProps, { getStaffs })(StaffsList);
+export default connect(mapStateToProps, { getStaffs, deleteStaff })(StaffsList);

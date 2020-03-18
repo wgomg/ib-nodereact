@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { GET_STAFFS, GET_STAFF, STAFF_ERROR } from './types';
+import { GET_STAFFS, GET_STAFF, DELETE_STAFF, STAFF_ERROR } from './types';
 
 export const getStaffs = () => async dispatch => {
   try {
@@ -30,6 +30,22 @@ export const createStaff = (newStaff, history) => async dispatch => {
     });
 
     history.push('/staff/dash');
+  } catch (error) {
+    dispatch({
+      type: STAFF_ERROR,
+      payload: error.response
+    });
+  }
+};
+
+export const deleteStaff = staff_id => async dispatch => {
+  try {
+    await axios.delete(`/staffs/${staff_id}`);
+
+    dispatch({
+      type: DELETE_STAFF,
+      payload: staff_id
+    });
   } catch (error) {
     dispatch({
       type: STAFF_ERROR,
