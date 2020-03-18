@@ -1,4 +1,4 @@
-import { GET_STAFFS, GET_STAFF, DELTE_STAFF, STAFF_ERROR, DELETE_STAFF } from '../actions/types';
+import { GET_STAFFS, GET_STAFF, STAFF_ERROR, DELETE_STAFF } from '../actions/types';
 
 const initState = {
   staffs: null,

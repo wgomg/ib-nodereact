@@ -3,13 +3,22 @@ import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { createStaff } from '../../actions/staffs';
+import { editStaff, getStaff } from '../../actions/staffs';
 import { getBoardsList } from '../../actions/boards';
 
 import { Form } from '../common';
 
-const CreateStaff = ({ createStaff, getBoardsList, history, boards: { boards, loading } }) => {
+const EditStaff = ({
+  staffs: { staff, loading: staffLoading },
+  boards: { boards, loading: boardsLoading },
+  editStaff,
+  getStaff,
+  getBoardsList,
+  history,
+  match
+}) => {
   const [formData, setFormData] = useState({
+    staff_id: '',
     board_id: 0,
     name: '',
     admin: 0,
@@ -17,8 +26,26 @@ const CreateStaff = ({ createStaff, getBoardsList, history, boards: { boards, lo
   });
 
   useEffect(() => {
+    getStaff(match.params.staff_id);
+  }, [getStaff, match.params.staff_id]);
+
+  useEffect(() => {
     getBoardsList();
   }, [getBoardsList]);
+
+  useEffect(() => {
+    setFormData(formData => {
+      return !staff || staffLoading
+        ? formData
+        : {
+            staff_id: staff.staff_id,
+            board_id: staff.Boards.board_id ? staff.Boards.board_id : 0,
+            name: staff.name,
+            admin: staff.admin,
+            disabled: staff.disabled
+          };
+    });
+  }, [staff, staffLoading]);
 
   const { board_id, name, admin, disabled } = formData;
 
@@ -48,7 +75,7 @@ const CreateStaff = ({ createStaff, getBoardsList, history, boards: { boards, lo
       name: 'board_id',
       value: board_id,
       options:
-        !boards || loading
+        !boards || boardsLoading
           ? [{ value: 0, text: 'Boards' }]
           : [{ value: 0, text: 'Boards' }, ...boardsToSelectOptions(boards)],
       label: 'Board',
@@ -71,7 +98,7 @@ const CreateStaff = ({ createStaff, getBoardsList, history, boards: { boards, lo
     {
       component: 'btn',
       type: 'submit',
-      text: 'Nuevo Staff'
+      text: 'Editar Staff'
     }
   ];
 
@@ -80,20 +107,18 @@ const CreateStaff = ({ createStaff, getBoardsList, history, boards: { boards, lo
 
     if (name === '') alert('El campo "Nombre" es obligatorio');
     else {
-      let newStaff = { ...formData };
+      let editedStaff = { ...formData };
 
-      if (board_id === 0 || admin) delete newStaff.board_id;
+      if (admin || board_id === 0) editedStaff.board_id = null;
 
-      newStaff.password = newStaff.name;
-
-      createStaff(newStaff, history);
+      editStaff(editedStaff, history);
     }
   };
 
   return (
     <Fragment>
       <div className='container centered'>
-        <h2 className='centered title'>Nuevo Staff</h2>
+        <h2 className='centered title'>Editar Staff</h2>
       </div>
       <div className='container centered'>
         <Form onSubmit={onSubmit} elements={elements} />
@@ -102,14 +127,17 @@ const CreateStaff = ({ createStaff, getBoardsList, history, boards: { boards, lo
   );
 };
 
-CreateStaff.propTypes = {
-  createStaff: PropTypes.func.isRequired,
+EditStaff.propTypes = {
+  editStaff: PropTypes.func.isRequired,
+  getStaff: PropTypes.func.isRequired,
   getBoardsList: PropTypes.func.isRequired,
+  staffs: PropTypes.object.isRequired,
   boards: PropTypes.object.isRequired
 };
 
 const mapStateToProps = state => ({
-  boards: state.boards
+  boards: state.boards,
+  staffs: state.staffs
 });
 
-export default connect(mapStateToProps, { createStaff, getBoardsList })(withRouter(CreateStaff));
+export default connect(mapStateToProps, { editStaff, getStaff, getBoardsList })(withRouter(EditStaff));

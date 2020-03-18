@@ -21,9 +21,13 @@ const StaffsList = ({ getStaffs, deleteStaff, staffs: { staffs, loading } }) => 
             </Link>
           );
 
+          const editStaff = <Link to={`edit-staff/${staff.staff_id}`}>editar</Link>;
+
           const actions = (
             <div className='col'>
-              <span className='small'>[ {delStaff} | editar ]</span>
+              <span className='small'>
+                [ {delStaff} | {editStaff} ]
+              </span>
             </div>
           );
 

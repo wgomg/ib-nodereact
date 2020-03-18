@@ -16,7 +16,7 @@ function Staff() {
     staff_id: { pk: true },
     board_id: { type: 'table' },
     name: { type: 'alpha', length: 15, required: true, unique: true },
-    password: { type: 'alphanum', length: 20, required: true, hashed: true },
+    password: { type: 'alphanum', length: 20, hashed: true },
     admin: { type: 'bool' },
     disabled: { type: 'bool' }
   };
