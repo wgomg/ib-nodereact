@@ -8,15 +8,15 @@ import { Form } from './common';
 import { login } from '../actions/auth';
 
 const Login = ({ login, auth: { logged } }) => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', password: '' });
 
-  const { email, password } = formData;
+  const { name, password } = formData;
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onSubmit = async e => {
     e.preventDefault();
-    login({ email, password });
+    login({ name, password });
   };
 
   if (logged) return <Redirect to='/staff/dash' />;
@@ -24,9 +24,9 @@ const Login = ({ login, auth: { logged } }) => {
   const formElements = [
     {
       component: 'text',
-      name: 'email',
-      value: email,
-      label: 'Email',
+      name: 'name',
+      value: name,
+      label: 'Nombre',
       onChange: e => onChange(e)
     },
     {

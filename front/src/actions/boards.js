@@ -41,11 +41,11 @@ export const getBoard = uri => async dispatch => {
   }
 };
 
-export const createBoard = (editedBoard, history) => async dispatch => {
+export const createBoard = (newBoard, history) => async dispatch => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
-    const res = await axios.post('/boards', editedBoard, config);
+    const res = await axios.post('/boards', newBoard, config);
 
     dispatch({
       type: GET_BOARD,
@@ -61,11 +61,11 @@ export const createBoard = (editedBoard, history) => async dispatch => {
   }
 };
 
-export const editBoard = (newBoard, history) => async dispatch => {
+export const editBoard = (editedBoard, history) => async dispatch => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
-    const res = await axios.put('/boards', newBoard, config);
+    const res = await axios.put('/boards', editedBoard, config);
 
     dispatch({
       type: GET_BOARD,

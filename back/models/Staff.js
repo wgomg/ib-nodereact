@@ -16,8 +16,7 @@ function Staff() {
     staff_id: { pk: true },
     board_id: { type: 'table' },
     name: { type: 'alpha', length: 15, required: true, unique: true },
-    email: { type: 'email', length: 60, required: true, unique: true },
-    password: { type: 'alphanum', length: 20, required: true, hashed: true },
+    password: { type: 'alphanum', length: 20, hashed: true },
     admin: { type: 'bool' },
     disabled: { type: 'bool' }
   };
@@ -46,7 +45,7 @@ Staff.prototype.getEntry = function(filters, callback) {
 
 // Login staff
 Staff.prototype.login = function(object, callback) {
-  BaseModel.prototype.getEntry.call(this, [{ email: object.email }, true], (err, res) => {
+  BaseModel.prototype.getEntry.call(this, [{ name: object.name }, true], (err, res) => {
     if (err) return callback(err, null);
 
     if (res.length === 0) return callback(error({ code: 'ER_USER_NOTFOUND' }), null);

@@ -158,18 +158,21 @@ CREATE TABLE IF NOT EXISTS `Staffs` (
   `staff_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `board_id` bigint(20) unsigned DEFAULT NULL,
   `name` varchar(15) NOT NULL,
-  `email` varchar(60) NOT NULL,
   `password` char(100) NOT NULL,
   `admin` tinyint(2) NOT NULL DEFAULT 0,
   `disabled` tinyint(2) NOT NULL DEFAULT 0,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`staff_id`),
   UNIQUE KEY `name` (`name`),
-  UNIQUE KEY `email` (`email`),
   KEY `board_id` (`board_id`),
   CONSTRAINT `Staffs_ibfk_1` FOREIGN KEY (`board_id`) REFERENCES `Boards` (`board_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Default admin user, defaul password: admin
+--
+INSERT INTO `Staffs` (`board_id`, `name`, `password`, `admin`, `disabled`) VALUES (NULL,	'admin', '$2b$10$q.GKtwlGnVmtt/fW4ptHIuVcMIPbK7aGLh66dpJbVpS.39qSuHiLa',	1,	0);
 
 --
 -- Table structure for table `Threads`

@@ -12,8 +12,6 @@ const ip = require('./ip');
  * string: string letters, numbers and special chars
  * num: numbers only
  *
- * email: email
- *
  * bool: boolean or [0, 1]
  *
  * ip_address: ipv4 or ipv6
@@ -30,10 +28,10 @@ const isValidDatatype = (value, type) => {
     case 'num':
       return /^[0-9]+$/i.test(value);
 
-    case 'email':
-      return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
-        value
-      );
+    // case 'email':
+    //   return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+    //     value
+    //   );
 
     case 'string':
       return typeof value === 'string';
