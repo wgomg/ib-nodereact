@@ -21,7 +21,7 @@ const ChangePassword = ({ staffs: { staff, loading }, getStaff, changePassword, 
 
   useEffect(() => {
     setFormData(formData => {
-      return !staff || loading ? formData : { staff_id: staff.staff_id, name: staff.name };
+      return !staff || loading ? formData : { ...formData, staff_id: staff.staff_id, name: staff.name };
     });
   }, [staff, loading]);
 
@@ -58,7 +58,7 @@ const ChangePassword = ({ staffs: { staff, loading }, getStaff, changePassword, 
 
     if (password !== password2) return alert('Las contraseñas no coinciden');
 
-    const editedStaff = { ...formData };
+    let editedStaff = { ...formData };
     delete editedStaff.password2;
 
     changePassword(editedStaff, history);

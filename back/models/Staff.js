@@ -15,7 +15,8 @@ function Staff() {
     name: { type: 'alpha', length: 15, required: true, unique: true },
     password: { type: 'alphanum', length: 20, hashed: true },
     admin: { type: 'bool' },
-    disabled: { type: 'bool' }
+    disabled: { type: 'bool' },
+    last_login: { type: 'timestamp' }
   };
 
   BaseModel.call(this, classname, schema);
@@ -53,9 +54,23 @@ Staff.prototype.login = function(object, callback) {
     if (res.length === 0) return callback(error({ code: 'ER_USER_NOTFOUND' }), null);
 
     const passwordMatch = bcrypt.compareSync(object.password, res[0].password);
+    if (!passwordMatch) return callback(error({ code: 'ER_INVALID_PASS' }));
 
-    if (!passwordMatch) callback(error({ code: 'ER_INVALID_PASS' }));
-    else setJwtToken(res[0], (err, res) => callback(err, res));
+    const tzoffset = new Date().getTimezoneOffset() * 60000;
+    const now = tzoffset => new Date(Date.now() - tzoffset).toISOString();
+
+    const staff = {
+      staff_id: res[0].staff_id,
+      name: res[0].name,
+      last_login: now(tzoffset)
+        .slice(0, 19)
+        .replace('T', ' ')
+    };
+
+    BaseModel.prototype.updateEntry.call(this, staff, (error, response) => {
+      if (error) callback(error, null);
+      else setJwtToken(res[0], (e, r) => callback(e, r));
+    });
   });
 };
 

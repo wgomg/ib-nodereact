@@ -43,6 +43,9 @@ const isValidDatatype = (value, type) => {
       value = value.includes('::ffff:') ? value.replace('::ffff:', '') : value;
       return ip.isV4(value) || ip.isV6(value);
 
+    case 'timestamp':
+      return true;
+
     default:
       return false;
   }
