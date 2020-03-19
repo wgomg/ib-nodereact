@@ -6,9 +6,6 @@ const bcrypt = require('bcrypt');
 const error = require('../utils/error');
 const setJwtToken = require('../utils/setJwtToken');
 
-/**
- * Constructor for Staff model
- */
 function Staff() {
   const classname = 'staff';
 
@@ -24,8 +21,13 @@ function Staff() {
   BaseModel.call(this, classname, schema);
 }
 
-// Inherit methods from BaseModel parent class
 Staff.prototype = Object.create(BaseModel.prototype);
+
+Staff.prototype.saveEntry = function(entry, callback) {
+  if (!entry.staff_id) entry.password = entry.name;
+
+  BaseModel.prototype.saveEntry.call(this, entry, (err, res) => callback(err, res));
+};
 
 // Custom getAllEntries for removing password field from retrieved entries
 Staff.prototype.getAllEntries = function(callback) {

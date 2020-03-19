@@ -84,8 +84,6 @@ const CreateStaff = ({ createStaff, getBoardsList, history, boards: { boards, lo
 
       if (board_id === 0 || admin) delete newStaff.board_id;
 
-      newStaff.password = newStaff.name;
-
       createStaff(newStaff, history);
     }
   };
