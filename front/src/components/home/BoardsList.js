@@ -13,13 +13,15 @@ const BoardsList = ({ getBoardsList, boards: { boards, loading } }) => {
 
   const boardsList =
     !loading && boards ? (
-      <ul className='no-style col'>
-        {boards.map(board => (
-          <li key={board.board_id}>
-            <Link to={`/${board.uri}/`}>{`/${board.uri}/`}</Link> - {board.name} - {board.description}
-          </li>
-        ))}
-      </ul>
+      boards.map(board => (
+        <div className='columns' key={board.board_id}>
+          <div className='col-1'>
+            <Link to={`/${board.uri}/`}>{`/${board.uri}/`}</Link>
+          </div>
+          <div className='col-2'>{board.name}</div>
+          <div className='col'>{board.description}</div>
+        </div>
+      ))
     ) : (
       <h4 className='centered'>No hay Boards para mostrar</h4>
     );

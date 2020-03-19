@@ -20,17 +20,18 @@ const LatestPosts = ({
 
   const latestPosts =
     latests.length > 0 ? (
-      <ul className='no-style col'>
-        {latests.map(post => {
-          const board = boards.filter(board => board.board_id === post.Threads.board_id);
+      latests.map(post => {
+        const board = boards.filter(board => board.board_id === post.Threads.board_id);
 
-          return (
-            <li key={post.post_id}>
-              <PostLink board={board[0]} post={post} fullLink /> - {post.text}
-            </li>
-          );
-        })}
-      </ul>
+        return (
+          <div className='columns' key={post.post_id}>
+            <div className='col-2'>
+              <PostLink board={board[0]} post={post} fullLink />
+            </div>
+            <div className='col'>{post.text}</div>
+          </div>
+        );
+      })
     ) : (
       <h4 className='centered'>No hay Posts para mostrar</h4>
     );

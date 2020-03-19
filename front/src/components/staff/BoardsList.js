@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -13,48 +13,51 @@ const BoardsList = ({ getBoardsList, deleteBoard, boards: { boards, loading } })
 
   const boardsList =
     !loading && boards ? (
-      <ul className='no-style col'>
-        {boards.map(board => {
-          const delBoard = (
-            <Link to='/staff/dash' onClick={e => deleteBoard(board.board_id)}>
-              borrar
-            </Link>
-          );
-
-          const editBoard = <Link to={`edit-board/${board.uri}`}>editar</Link>;
-
-          const actions = (
-            <div className='col'>
-              <span className='small'>
-                [ {delBoard} | {editBoard} ]
-              </span>
-            </div>
-          );
-
-          const uri = <div className='col'>{board.uri}</div>;
-
-          const name = <div className='col'>{board.name}</div>;
-
-          return (
-            <li key={board.board_id}>
-              <div className='columns'>
-                {actions} {uri} {name}
-              </div>
-            </li>
-          );
-        })}
-
-        <li>
-          <Link to='create-board'>
-            <span className='new-item'>[ nuevo board ]</span>
+      boards.map(board => {
+        const delBoard = (
+          <Link to='/staff/dash' onClick={e => deleteBoard(board.board_id)}>
+            borrar
           </Link>
-        </li>
-      </ul>
+        );
+
+        const editBoard = <Link to={`edit-board/${board.uri}`}>editar</Link>;
+
+        const actions = (
+          <div className='col-2'>
+            <span className='small'>
+              [ {delBoard} | {editBoard} ]
+            </span>
+          </div>
+        );
+
+        const uri = <div className='col-1'>{board.uri}</div>;
+
+        const name = <div className='col'>{board.name}</div>;
+
+        return (
+          <div className='columns' key={board.board_id}>
+            {actions} {uri} {name}
+          </div>
+        );
+      })
     ) : (
       <h4 className='centered'>No hay board para mostrar</h4>
     );
 
-  const cardContent = loading ? <Loading /> : boardsList;
+  const newBoard = (
+    <Link to='create-board'>
+      <span className='new-item'>[ nuevo board ]</span>
+    </Link>
+  );
+
+  const cardContent = loading ? (
+    <Loading />
+  ) : (
+    <Fragment>
+      {boardsList}
+      {newBoard}
+    </Fragment>
+  );
 
   return <Card title='Boards' content={cardContent} classes='col' />;
 };

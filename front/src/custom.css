@@ -133,22 +133,56 @@ div.columns {
 
 div.columns > .col {
   flex: 1;
-  min-width: 33%;
 }
 
 div.columns > .col-1 {
   flex: 1;
-  min-width: 20%;
+  max-width: 10%;
 }
 
 div.columns > .col-2 {
   flex: 1;
-  min-width: 40%;
+  max-width: 20%;
+}
+
+div.columns > .col-3 {
+  flex: 1;
+  max-width: 30%;
 }
 
 div.columns > .col-4 {
   flex: 1;
-  min-width: 80%;
+  max-width: 40%;
+}
+
+div.columns > .col-5 {
+  flex: 1;
+  max-width: 50%;
+}
+
+div.columns > .col-6 {
+  flex: 1;
+  max-width: 60%;
+}
+
+div.columns > .col-7 {
+  flex: 1;
+  max-width: 70%;
+}
+
+div.columns > .col-8 {
+  flex: 1;
+  max-width: 80%;
+}
+
+div.columns > .col-9 {
+  flex: 1;
+  max-width: 90%;
+}
+
+div.columns > .col-10 {
+  flex: 1;
+  max-width: 100%;
 }
 
 div.col.board-list {
