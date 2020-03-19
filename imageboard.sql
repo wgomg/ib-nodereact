@@ -161,6 +161,7 @@ CREATE TABLE IF NOT EXISTS `Staffs` (
   `password` char(100) NOT NULL,
   `admin` tinyint(2) NOT NULL DEFAULT 0,
   `disabled` tinyint(2) NOT NULL DEFAULT 0,
+  `last_login` timestamp NULL DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`staff_id`),
   UNIQUE KEY `name` (`name`),
