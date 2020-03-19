@@ -1,5 +1,5 @@
 import React, { useState, Fragment, useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -11,6 +11,7 @@ import { Form } from '../common';
 const EditStaff = ({
   staffs: { staff, loading: staffLoading },
   boards: { boards, loading: boardsLoading },
+  auth: { staff: loggedStaff },
   editStaff,
   getStaff,
   getBoardsList,
@@ -47,7 +48,7 @@ const EditStaff = ({
     });
   }, [staff, staffLoading]);
 
-  const { board_id, name, admin, disabled } = formData;
+  const { staff_id, board_id, name, admin, disabled } = formData;
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -119,6 +120,13 @@ const EditStaff = ({
     <Fragment>
       <div className='container centered'>
         <h2 className='centered title'>Editar Staff</h2>
+        {staff_id === loggedStaff.staff_id && (
+          <p className='centered'>
+            <span className='small'>
+              [ <Link to={`/staff/change-password/${staff_id}`}>cambiar contraseña</Link> ]
+            </span>
+          </p>
+        )}
       </div>
       <div className='container centered'>
         <Form onSubmit={onSubmit} elements={elements} />
@@ -132,12 +140,14 @@ EditStaff.propTypes = {
   getStaff: PropTypes.func.isRequired,
   getBoardsList: PropTypes.func.isRequired,
   staffs: PropTypes.object.isRequired,
-  boards: PropTypes.object.isRequired
+  boards: PropTypes.object.isRequired,
+  auth: PropTypes.object.isRequired
 };
 
 const mapStateToProps = state => ({
   boards: state.boards,
-  staffs: state.staffs
+  staffs: state.staffs,
+  auth: state.auth
 });
 
 export default connect(mapStateToProps, { editStaff, getStaff, getBoardsList })(withRouter(EditStaff));

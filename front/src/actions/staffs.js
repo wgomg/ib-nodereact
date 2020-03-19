@@ -74,6 +74,26 @@ export const editStaff = (editedStaff, history) => async dispatch => {
   }
 };
 
+export const changePassword = (staff, history) => async dispatch => {
+  try {
+    const config = { headers: { 'Content-Type': 'application/json' } };
+
+    const res = await axios.put('/staffs', staff, config);
+
+    dispatch({
+      type: GET_STAFF,
+      payload: res.data
+    });
+
+    history.push(`/staff/edit-staff/${staff.staff_id}`);
+  } catch (error) {
+    dispatch({
+      type: STAFF_ERROR,
+      payload: error.response
+    });
+  }
+};
+
 export const deleteStaff = staff_id => async dispatch => {
   try {
     await axios.delete(`/staffs/${staff_id}`);

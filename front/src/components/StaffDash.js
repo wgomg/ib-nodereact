@@ -4,11 +4,20 @@ import { connect } from 'react-redux';
 
 import { AdminDash } from './staff';
 import { Loading } from './common';
+import { Redirect } from 'react-router-dom';
 
-const StaffDash = ({ auth: { loading, staff } }) => {
-  const dash = loading ? <Loading /> : staff && staff.admin ? <AdminDash /> : 'ModDash';
-
-  return dash;
+const StaffDash = ({ auth: { loading, logged, staff } }) => {
+  return loading ? (
+    <Loading />
+  ) : logged ? (
+    staff && staff.admin ? (
+      <AdminDash />
+    ) : (
+      'ModDash'
+    )
+  ) : (
+    <Redirect to='/' />
+  );
 };
 
 StaffDash.propTypes = {
