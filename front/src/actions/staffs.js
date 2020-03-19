@@ -85,7 +85,7 @@ export const changePassword = (staff, history) => async dispatch => {
       payload: res.data
     });
 
-    history.push(`/staff/edit-staff/${staff.staff_id}`);
+    history.push('/staff/dash');
   } catch (error) {
     dispatch({
       type: STAFF_ERROR,

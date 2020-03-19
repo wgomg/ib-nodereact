@@ -21,13 +21,13 @@ const StaffsList = ({ getStaffs, deleteStaff, staffs: { staffs, loading } }) => 
             borrar
           </Link>
         );
-
         const editStaff = <Link to={`edit-staff/${staff.staff_id}`}>editar</Link>;
+        const resetPassword = <Link to={`change-password/${staff.staff_id}`}>contraseña</Link>;
 
         const actions = (
-          <div className='col-2'>
+          <div className='col-4'>
             <span className='small'>
-              [ {delStaff} | {editStaff} ]
+              [ {delStaff} | {editStaff} | {resetPassword} ]
             </span>
           </div>
         );
@@ -40,7 +40,7 @@ const StaffsList = ({ getStaffs, deleteStaff, staffs: { staffs, loading } }) => 
         );
 
         const board = (
-          <div className='col-2'>
+          <div className='col-1'>
             {!staff.admin ? (staff.Boards.uri ? staff.Boards.uri : 'global') : ''}
           </div>
         );
