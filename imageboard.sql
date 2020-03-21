@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `Banners` (
   `board_id` bigint(20) unsigned DEFAULT NULL,
   `image_uri` varchar(120) NOT NULL,
   `image_name` varchar(50) NOT NULL,
-  `image_size` int(10) unsigned DEFAULT NULL,
+  `image_size` int(10) unsigned NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`banner_id`),
   KEY `board_id` (`board_id`),
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS `Posts` (
   `user` varbinary(16) NOT NULL,
   `name` varchar(10) DEFAULT NULL,
   `file_uri` varchar(120) DEFAULT NULL,
-  `file_name` varchar(50) NOT NULL,
+  `file_name` varchar(50) DEFAULT NULL,
   `file_size` int(10) unsigned DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`post_id`),
@@ -203,4 +203,4 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-03-21 18:03:30
+-- Dump completed on 2020-03-21 18:10:55
