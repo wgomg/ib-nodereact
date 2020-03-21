@@ -18,7 +18,9 @@ function Post() {
     text: { type: 'string', length: 1000, required: true },
     user: { type: 'ip_address', required: true },
     name: { type: 'alphanum', length: 10 },
-    file_uri: { type: 'file|png,jpeg,gif', length: 120 }
+    file_uri: { type: 'file|png,jpeg,gif', length: 120 },
+    file_name: { type: 'alphanum', length: 50 },
+    file_size: { type: 'num' }
   };
 
   BaseModel.call(this, classname, schema);
@@ -28,16 +30,10 @@ Post.prototype = Object.create(BaseModel.prototype);
 
 // Custom saveEntry method for handling files uploading
 Post.prototype.saveEntry = function(entry, callback) {
-  const acceptedExtensions = this._schema.file_uri.type.split('|')[1].split(',');
-  const required = this._schema.file_uri.required;
-
   checkBannedUsers(entry.user, (err, res) => {
     if (err || res[0].banned) return callback(err, res);
 
-    processFiles(
-      [required, entry, acceptedExtensions, 'posts', 'file_uri', BaseModel.prototype.saveEntry, this],
-      (err, res) => callback(err, res)
-    );
+    processFiles([this, entry, 'file', BaseModel.prototype.saveEntry], (err, res) => callback(err, res));
   });
 };
 

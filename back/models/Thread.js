@@ -7,13 +7,17 @@ const Post = require('./Post');
 
 const error = require('../utils/error');
 
+const fs = require('fs');
+const path = require('path');
+
 function Thread() {
   const classname = 'thread';
 
   const schema = {
     thread_id: { pk: true },
     board_id: { type: 'table', required: true },
-    subject: { type: 'alphanum', length: 45, required: true }
+    subject: { type: 'alphanum', length: 45, required: true },
+    file_uri: { type: 'file|png,jpeg,gif', length: 120 }
   };
 
   BaseModel.call(this, classname, schema);
@@ -26,8 +30,10 @@ Thread.prototype.saveEntry = function(entry, callback) {
 
   let newThread = { board_id: entry.board_id, subject: entry.subject };
   let threadOP = { text: entry.text, user: entry.user, name: entry.name, files: entry.files };
+
   BaseModel.prototype.saveEntry.call(this, newThread, (err, res) => {
     if (err) return callback(err, null);
+
     threadOP = { ...threadOP, thread_id: res[0].insertId };
     Post.saveEntry(threadOP, (error, response) => callback(error, res));
   });
@@ -46,14 +52,42 @@ Thread.prototype.getAllEntries = function(callback, extra) {
           (err, response) => {
             if (err) return callback(err, null);
 
-            threads.push({ ...res[i], posts: response });
+            let posts = [];
+
+            if (response.length > 0)
+              posts = response.map(post => {
+                if (post.file_uri) {
+                  const filePathArray = post.file_uri.split('/');
+                  const fileExtension = path.extname(post.file_uri).replace('.', '');
+
+                  const resFile = {
+                    post_id: post.post_id,
+                    text: post.text,
+                    user: post.user,
+                    name: post.name,
+                    created_on: post.created_on,
+                    file: {
+                      contentType: filePathArray[1] + '/' + fileExtension,
+                      data: fs.readFileSync(post.file_uri),
+                      name: post.file_name,
+                      size: post.file_size
+                    }
+                  };
+
+                  return resFile;
+                }
+
+                return post;
+              });
+
+            threads.push({ ...res[i], posts });
 
             if (i + 1 === length) {
               threads.sort((a, b) => {
                 if (a.posts.length > 0 && b.posts.length > 0)
                   return (
-                    new Date(b.posts[response.length - 1].created_on) -
-                    new Date(a.posts[response.length - 1].created_on)
+                    new Date(b.posts[b.posts.length - 1].created_on) -
+                    new Date(a.posts[a.posts.length - 1].created_on)
                   );
               });
               return callback(null, threads);

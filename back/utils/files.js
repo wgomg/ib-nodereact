@@ -4,11 +4,12 @@ const config = require('../config/');
 
 const error = require('../utils/error');
 
-const processFiles = (
-  [required, entry, acceptedExtensions, classname, field, saveEntry, modelInstance],
-  callback
-) => {
+const processFiles = ([modelInstance, entry, field_prefix, saveEntry], callback) => {
   const { root_dir, data_dir } = config.server;
+
+  const acceptedExtensions = modelInstance._schema[field_prefix + '_uri'].type.split('|')[1].split(',');
+  const required = modelInstance._schema[field_prefix + '_uri'].required;
+  const classname = modelInstance._table.toLowerCase();
 
   const files = entry.files || {};
   const filesNum = Object.keys(files).filter(file => files[file].size > 0);
@@ -23,15 +24,19 @@ const processFiles = (
         return callback(error({ code: 'ER_INVALID_FILE' }), null);
 
       const fileName = file.md5;
-      const fileExtension = file.mimetype.split('/')[1];
 
+      const fileExtension = file.mimetype.split('/')[1];
       const fileRelativePath = `${data_dir}/${fileType}/${classname}/${fileName}.${fileExtension}`;
       const fileAbsolutePath = root_dir + fileRelativePath;
+
+      const fileSize = file.size;
 
       file.mv(fileAbsolutePath, err => {
         if (err) return callback(err, null);
 
-        entry[field] = fileRelativePath;
+        entry[field_prefix + '_uri'] = fileRelativePath;
+        entry[field_prefix + '_name'] = fileName;
+        entry[field_prefix + '_size'] = fileSize;
         delete entry.files;
 
         saveEntry.call(modelInstance, entry, (err, res) => callback(err, res));
