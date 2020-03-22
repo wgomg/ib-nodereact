@@ -1,7 +1,17 @@
 import React, { Fragment, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
-import { Logo, Home, Footer, Board, BoardsNavbar, Login, StaffNavbar, StaffDash } from './components';
+import {
+  Logo,
+  Home,
+  Footer,
+  Board,
+  BoardsNavbar,
+  Login,
+  StaffNavbar,
+  StaffDash,
+  ViewImage
+} from './components';
 
 import { Provider } from 'react-redux';
 import store from './store';
@@ -23,6 +33,7 @@ function App() {
       <Router>
         <Fragment>
           <Switch>
+            <Route exact path='/src/:type/:img' component={ViewImage} />
             <Route exact path='/' component={Logo} />
             {/* <Route exact path='/error' component={Error} /> */}
             <Route exact path='/staff/login' component={BoardsNavbar} />
@@ -36,7 +47,10 @@ function App() {
             <Route exact path='/:board_uri' component={Board} />
             {/* <Route exact path='/:board_uri/:thread_id/:post_id' component={Thread} /> */}
           </Switch>
-          <Footer />
+          <Switch>
+            <Route exact path='/src/*' />
+            <Route exact path='/*' component={Footer} />
+          </Switch>
         </Fragment>
       </Router>
     </Provider>

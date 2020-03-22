@@ -3,6 +3,8 @@
 const express = require('express');
 const fileupload = require('express-fileupload');
 
+const path = require('path');
+
 const { server } = require('./config/');
 
 const app = express();
@@ -16,6 +18,8 @@ app.use(
     preserveExtension: 4
   })
 );
+app.use('/src/posts', express.static(path.join(__dirname, 'data/image/posts')));
+app.use('/src/banners', express.static(path.join(__dirname, 'data/image/banners')));
 
 require('./routes')(app);
 

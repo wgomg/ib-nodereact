@@ -15,7 +15,7 @@ function Post() {
   const schema = {
     post_id: { pk: true },
     thread_id: { type: 'table', required: true },
-    text: { type: 'string', length: 1000, required: true },
+    text: { type: 'string', length: 3000, required: true },
     user: { type: 'ip_address', required: true },
     name: { type: 'alphanum', length: 10 },
     file_uri: { type: 'file|png,jpeg,gif', length: 120 },

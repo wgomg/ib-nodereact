@@ -11,10 +11,10 @@ const timeSince = date => {
   if (interval > 1) return 'hace ' + interval + ' meses';
 
   interval = Math.floor(seconds / 86400);
-  if (interval > 1) return 'hace ' + interval + ' días';
+  if (interval >= 1) return 'hace ' + interval + ' días';
 
   interval = Math.floor(seconds / 3600);
-  if (interval > 1) return 'hace ' + interval + ' hrs';
+  if (interval >= 1) return 'hace ' + interval + ' hrs';
 
   interval = Math.floor(seconds / 60);
   if (interval > 1) return 'hace ' + interval + ' min';

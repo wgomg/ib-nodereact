@@ -35,6 +35,7 @@ Thread.prototype.saveEntry = function(entry, callback) {
     if (err) return callback(err, null);
 
     threadOP = { ...threadOP, thread_id: res[0].insertId };
+
     Post.saveEntry(threadOP, (error, response) => callback(error, res));
   });
 };
@@ -68,7 +69,8 @@ Thread.prototype.getAllEntries = function(callback, extra) {
                     created_on: post.created_on,
                     file: {
                       contentType: filePathArray[1] + '/' + fileExtension,
-                      data: fs.readFileSync(post.file_uri),
+                      // data: fs.readFileSync(post.file_uri),
+                      uri: post.file_uri,
                       name: post.file_name,
                       size: post.file_size
                     }
@@ -80,7 +82,7 @@ Thread.prototype.getAllEntries = function(callback, extra) {
                 return post;
               });
 
-            threads.push({ ...res[i], posts });
+            threads.push({ ...res[i], posts: posts });
 
             if (i + 1 === length) {
               threads.sort((a, b) => {
@@ -90,6 +92,7 @@ Thread.prototype.getAllEntries = function(callback, extra) {
                     new Date(a.posts[a.posts.length - 1].created_on)
                   );
               });
+
               return callback(null, threads);
             }
           },
@@ -98,6 +101,53 @@ Thread.prototype.getAllEntries = function(callback, extra) {
     },
     extra
   );
+};
+
+Thread.prototype.getEntry = function([filters], callback) {
+  BaseModel.prototype.getEntry.call(this, [filters], (err, res) => {
+    if (err) return callback(err, null);
+
+    let thread = { ...res[0] };
+
+    Post.getAllEntries(
+      (err, response) => {
+        if (err) return callback(err, null);
+
+        let posts = [];
+
+        if (response.length > 0)
+          posts = response.map(post => {
+            if (post.file_uri) {
+              const filePathArray = post.file_uri.split('/');
+              const fileExtension = path.extname(post.file_uri).replace('.', '');
+
+              const resFile = {
+                post_id: post.post_id,
+                text: post.text,
+                user: post.user,
+                name: post.name,
+                created_on: post.created_on,
+                file: {
+                  contentType: filePathArray[1] + '/' + fileExtension,
+                  data: fs.readFileSync(post.file_uri),
+                  name: post.file_name,
+                  size: post.file_size
+                }
+              };
+
+              return resFile;
+            }
+
+            return post;
+          });
+
+        thread.posts = posts;
+
+        callback(null, thread);
+      },
+      [{ thread_id: thread.thread_id }]
+    );
+  });
 };
 
 Thread.prototype.getBoard = async function(filters) {

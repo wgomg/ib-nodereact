@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { Loading } from './common';
-import { NewThreadForm, BoardTitle, Banner } from './board';
+import { NewThreadForm, BoardTitle, Banner, ThreadsList } from './board';
 import { getBoard } from '../actions/boards';
 
 const Board = ({ getBoard, boards: { board, loading }, match }) => {
@@ -17,11 +17,14 @@ const Board = ({ getBoard, boards: { board, loading }, match }) => {
 
   const newThread = loading || !board ? <Loading /> : <NewThreadForm board={board} />;
 
+  const threadsList = loading || !board ? <Loading /> : <ThreadsList board={board} />;
+
   return (
     <Fragment>
       {banner}
       {title}
       {newThread}
+      {threadsList}
     </Fragment>
   );
 };

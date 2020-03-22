@@ -14,7 +14,8 @@ const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
 
   const bannerImg = banners ? banners[Math.floor(Math.random() * banners.length)] : null;
 
-  const imgSrc = bannerImg ? getImageBase64Data(bannerImg) : null;
+  // const imgSrc = bannerImg ? getImageBase64Data(bannerImg) : null;
+  const imgSrc = bannerImg ? bannerImg.uri.replace('data/image', '/src') : null;
 
   const bannerElement =
     loading || !imgSrc ? <Loading /> : <img className='banner centered' src={imgSrc} alt='banner' />;

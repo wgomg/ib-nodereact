@@ -41,8 +41,6 @@ export default function(state = initState, action) {
       };
 
     case BOARDS_ERROR:
-      return { ...state, error: payload.data, loading: false };
-
     case THREAD_ERROR:
       return { ...state, error: payload.data, loading: false };
 

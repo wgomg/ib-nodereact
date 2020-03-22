@@ -44,7 +44,8 @@ Banner.prototype.getAllForBoard = function(callback, filters) {
 
           const resBanner = {
             contentType: bannerPathArray[1] + '/' + bannerExtension,
-            data: fs.readFileSync(banner.image_uri),
+            // data: fs.readFileSync(banner.image_uri),
+            uri: banner.image_uri,
             name: banner.image_name,
             size: banner.image_size
           };

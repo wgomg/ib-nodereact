@@ -15,7 +15,7 @@ const insert = ([table, fields, values], callback) => {
   const sqlValues = values
     .map((v, pos) => {
       let val = '?';
-      if (typeof v === 'string' && v.includes('ip')) {
+      if (typeof v === 'string' && v.includes('|ip')) {
         val = 'INET6_ATON(?)';
         values[pos] = v.split('|')[0];
       }
