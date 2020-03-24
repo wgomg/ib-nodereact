@@ -1,8 +1,8 @@
 import { GET_STAFFS, GET_STAFF, STAFF_ERROR, DELETE_STAFF } from '../actions/types';
 
 const initState = {
-  staffs: null,
-  staff: null,
+  staffs: [],
+  staff: {},
   loading: true,
   error: {}
 };
@@ -12,10 +12,10 @@ export default function(state = initState, action) {
 
   switch (type) {
     case GET_STAFFS:
-      return { ...state, staffs: payload, staff: null, loading: false, error: {} };
+      return { ...state, staffs: payload, staff: {}, loading: false, error: {} };
 
     case GET_STAFF:
-      return { ...state, staffs: null, staff: payload, loading: false, error: {} };
+      return { ...state, staffs: [], staff: payload, loading: false, error: {} };
 
     case DELETE_STAFF:
       return {

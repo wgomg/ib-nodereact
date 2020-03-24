@@ -1,9 +1,12 @@
 import React, { Fragment } from 'react';
-import { BoardsList, LatestPosts, Statistics } from './home';
+
+import { Logo, BoardsList, LatestPosts, Statistics } from './home';
+import Footer from './Footer';
 
 const Home = () => {
   return (
     <Fragment>
+      <Logo />
       <div className='container centered'>
         <div className='columns'>
           <BoardsList />
@@ -11,6 +14,7 @@ const Home = () => {
         </div>
       </div>
       <Statistics />
+      <Footer />
     </Fragment>
   );
 };

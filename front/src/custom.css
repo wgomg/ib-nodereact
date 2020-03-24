@@ -17,6 +17,7 @@
   --admin: #ec0033;
   --thread-title: #066606;
   --mod: #00ec00;
+  --warning: #ec0000;
   --separator: #484e4f;
 }
 
@@ -103,6 +104,15 @@ h4.title,
 h5.title,
 h6.title {
   color: var(--title);
+}
+
+h1.warning,
+h2.warning,
+h3.warning,
+h4.warning,
+h5.warning,
+h6.warning {
+  color: var(--warning);
 }
 
 h1.subtitle,

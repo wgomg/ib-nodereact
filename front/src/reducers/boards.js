@@ -8,8 +8,8 @@ import {
 } from '../actions/types';
 
 const initState = {
-  boards: null,
-  board: null,
+  boards: [],
+  board: {},
   loading: true,
   error: {}
 };
@@ -19,7 +19,7 @@ export default function(state = initState, action) {
 
   switch (type) {
     case GET_BOARDS_LIST:
-      return { ...state, boards: payload, board: null, loading: false, error: {} };
+      return { ...state, boards: payload, board: {}, loading: false, error: {} };
 
     case GET_BOARD:
       return { ...state, board: payload, loading: false, error: {} };

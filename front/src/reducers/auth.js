@@ -4,7 +4,7 @@ const initState = {
   token: localStorage.getItem('token'),
   logged: false,
   loading: true,
-  staff: null,
+  staff: {},
   error: {}
 };
 
@@ -22,11 +22,11 @@ export default function(state = initState, action) {
     case LOGIN_FAIL:
     case LOGOUT:
       localStorage.removeItem('token');
-      return { ...state, token: null, logged: false, loading: false, staff: null };
+      return { ...state, token: null, logged: false, loading: false, staff: {} };
 
     case STAFF_LOAD_ERROR:
       localStorage.removeItem('token');
-      return { ...state, token: null, logged: false, loading: false, staff: null, error: payload.data };
+      return { ...state, token: null, logged: false, loading: false, staff: {}, error: payload.data };
 
     default:
       return state;

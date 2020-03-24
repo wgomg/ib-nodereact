@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { AdminDash } from './staff';
-import { Loading } from './common';
+import { AdminDash } from '.';
+import { Loading } from '../common';
 import { Redirect } from 'react-router-dom';
 
 const StaffDash = ({ auth: { loading, logged, staff } }) => {

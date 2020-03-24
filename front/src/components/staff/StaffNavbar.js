@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { Loading } from './common';
+import { Loading } from '../common';
 
-import { logout } from '../actions/auth';
+import { logout } from '../../actions/auth';
 
 const StaffNavbar = ({ logout, auth: { loading, staff } }) => {
   const homeLink = (

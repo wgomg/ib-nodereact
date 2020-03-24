@@ -103,11 +103,6 @@ export const createThread = newThread => async dispatch => {
 
     const res = await axios.post('/threads', newThread, config);
 
-    console.log(res.data);
-
-    // const payload = res.data.length > 0 ? res.data[0] : [];
-    // console.log(payload);
-
     dispatch({
       type: CREATE_THREAD,
       payload: res.data

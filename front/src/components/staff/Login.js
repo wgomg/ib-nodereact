@@ -3,9 +3,9 @@ import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { Form } from './common';
+import { Form } from '../common';
 
-import { login } from '../actions/auth';
+import { login } from '../../actions/auth';
 
 const Login = ({ login, auth: { logged } }) => {
   const [formData, setFormData] = useState({ name: '', password: '' });

@@ -2,10 +2,8 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Loading } from '../common';
-import { getBanners } from '../../actions/banners';
-
-import getImageBase64Data from '../../utils/getImageBase64Data';
+import { Loading } from '../../common';
+import { getBanners } from '../../../actions/banners';
 
 const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
   useEffect(() => {
@@ -14,7 +12,6 @@ const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
 
   const bannerImg = banners ? banners[Math.floor(Math.random() * banners.length)] : null;
 
-  // const imgSrc = bannerImg ? getImageBase64Data(bannerImg) : null;
   const imgSrc = bannerImg ? bannerImg.uri.replace('data/image', '/src') : null;
 
   const bannerElement =
