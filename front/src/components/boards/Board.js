@@ -24,7 +24,7 @@ const Board = ({ getBoard, boards: { board, loading }, uri }) => {
         <Banner board={board} />
         <BoardTitle board={board} />
         <NewThreadForm board={board} />
-        <ThreadsList board={board} />
+        <ThreadsList threads={board.threads} />
       </Fragment>
     );
 

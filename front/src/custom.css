@@ -216,21 +216,31 @@ a {
   text-decoration: none;
 }
 
-a.hide-thread {
+a:link,
+button.link {
+  color: var(--link);
+}
+
+a:visited,
+button.link.visited {
+  color: var(--link-visited);
+}
+
+a:hover,
+button.link:hover {
+  color: var(--link-hover);
+}
+
+button.hide-thread {
   float: left;
   margin-right: 5px;
 }
 
-a:link {
-  color: var(--link);
-}
-
-a:visited {
-  color: var(--link-visited);
-}
-
-a:hover {
-  color: var(--link-hover);
+button.link {
+  background: none !important;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .form {
@@ -355,6 +365,12 @@ img.viewimage {
   bottom: 0;
   left: 0;
   padding: auto;
+}
+
+div.footer,
+div.pages {
+  display: block;
+  clear: both;
 }
 
 @media (max-width: 700px) {
