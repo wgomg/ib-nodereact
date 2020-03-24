@@ -5,14 +5,21 @@ import { connect } from 'react-redux';
 import { createThread } from '../../../actions/boards';
 
 import { Form } from '../../common';
+import { useEffect } from 'react';
 
 const NewThreadForm = ({ board, createThread }) => {
   const [formData, setFormData] = useState({
-    board_id: board.board_id,
+    board_id: 0,
     subject: '',
     text: '',
     name: ''
   });
+
+  useEffect(() => {
+    setFormData(formData => {
+      return { ...formData, board_id: board.board_id };
+    });
+  }, [board]);
 
   const [file, setFile] = useState('');
 

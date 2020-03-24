@@ -129,7 +129,8 @@ Thread.prototype.getEntry = function([filters], callback) {
                 created_on: post.created_on,
                 file: {
                   contentType: filePathArray[1] + '/' + fileExtension,
-                  data: fs.readFileSync(post.file_uri),
+                  // data: fs.readFileSync(post.file_uri),
+                  uri: post.file_uri,
                   name: post.file_name,
                   size: post.file_size
                 }
@@ -145,7 +146,7 @@ Thread.prototype.getEntry = function([filters], callback) {
 
         callback(null, thread);
       },
-      [{ thread_id: thread.thread_id }]
+      [{ thread_id: thread.thread_id }, true]
     );
   });
 };
