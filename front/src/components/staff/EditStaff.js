@@ -40,7 +40,7 @@ const EditStaff = ({
         ? formData
         : {
             staff_id: staff.staff_id,
-            board_id: staff.Boards.board_id ? staff.Boards.board_id : 0,
+            board_id: staff.Boards && staff.Boards.board_id ? staff.Boards.board_id : 0,
             name: staff.name,
             admin: staff.admin,
             disabled: staff.disabled

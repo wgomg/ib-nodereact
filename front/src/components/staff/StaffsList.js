@@ -21,8 +21,8 @@ const StaffsList = ({ getStaffs, deleteStaff, staffs: { staffs, loading } }) => 
             borrar
           </Link>
         );
-        const editStaff = <Link to={`edit-staff/${staff.staff_id}`}>editar</Link>;
-        const resetPassword = <Link to={`change-password/${staff.staff_id}`}>contraseña</Link>;
+        const editStaff = <Link to={`dash/edit-staff/${staff.staff_id}`}>editar</Link>;
+        const resetPassword = <Link to={`dash/change-password/${staff.staff_id}`}>contraseña</Link>;
 
         const actions = (
           <div className='col-4'>
@@ -58,7 +58,7 @@ const StaffsList = ({ getStaffs, deleteStaff, staffs: { staffs, loading } }) => 
     );
 
   const newStaff = (
-    <Link to='create-staff'>
+    <Link to='dash/create-staff'>
       <span className='new-item'>[ nuevo staff ]</span>
     </Link>
   );

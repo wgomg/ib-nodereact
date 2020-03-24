@@ -20,7 +20,7 @@ const BoardsList = ({ getBoardsList, deleteBoard, boards: { boards, loading } })
           </Link>
         );
 
-        const editBoard = <Link to={`edit-board/${board.uri}`}>editar</Link>;
+        const editBoard = <Link to={`dash/edit-board/${board.uri}`}>editar</Link>;
 
         const actions = (
           <div className='col-2'>
@@ -45,7 +45,7 @@ const BoardsList = ({ getBoardsList, deleteBoard, boards: { boards, loading } })
     );
 
   const newBoard = (
-    <Link to='create-board'>
+    <Link to='dash/create-board'>
       <span className='new-item'>[ nuevo board ]</span>
     </Link>
   );
