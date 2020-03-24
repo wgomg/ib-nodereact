@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Loading } from '../../common';
+import { Loading, Image } from '../../common';
 import { getBanners } from '../../../actions/banners';
 
 const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
@@ -12,10 +12,10 @@ const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
 
   const bannerImg = banners ? banners[Math.floor(Math.random() * banners.length)] : null;
 
-  const imgSrc = bannerImg ? bannerImg.uri.replace('data/image', '/src') : null;
+  const imgSrc = bannerImg ? bannerImg.uri.replace('data/image', '/src') : '';
 
   const bannerElement =
-    loading || !imgSrc ? <Loading /> : <img className='banner centered' src={imgSrc} alt='banner' />;
+    loading || !imgSrc ? <Loading /> : <Image className='banner centered' src={imgSrc} />;
 
   return <div className='container centered'>{bannerElement}</div>;
 };
