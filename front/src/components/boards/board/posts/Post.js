@@ -19,10 +19,8 @@ export default ({ thread, post }) => {
             <span className='small'>({timeSince(post.created_on)}) </span>{' '}
             <a href={`t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
             <a href={`t${thread.thread_id}#qp${post.post_id}`}>{post.post_id}</a>{' '}
-          </div>
-          <div className='columns'>
             {post.file && (
-              <div className='post-file in-body'>
+              <div className='col-10 file-info'>
                 <p className='file-info'>
                   <span className='small'>
                     {' '}
@@ -30,6 +28,12 @@ export default ({ thread, post }) => {
                     {prettyBytes(post.file.size)})
                   </span>
                 </p>
+              </div>
+            )}
+          </div>
+          <div className='columns'>
+            {post.file && (
+              <div className='post-file in-body'>
                 <Image className='post-image' src={post.file.uri.replace('data/image', '/src')} />
               </div>
             )}
