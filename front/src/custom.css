@@ -19,6 +19,7 @@
   --mod: #00ec00;
   --warning: #ec0000;
   --separator: #484e4f;
+  --card-post-bg: #3c3d3b;
 }
 
 :root {
@@ -75,12 +76,15 @@ img.viewimage.not-visited {
 }
 
 img.post-image {
-  float: left;
-  display: block;
   border: none;
   max-width: 100vw;
   max-height: 100vh;
   margin: 0.5% 1.5% 0.5% 0.5%;
+}
+
+img.post-image.op {
+  float: left;
+  display: block;
 }
 
 img.post-image.not-visited {
@@ -174,6 +178,12 @@ div.card > .card-header {
   padding-left: 1%;
 }
 
+div.card-post {
+  display: inline-block;
+  margin-left: 0;
+  border-color: var(--card-post-bg);
+}
+
 div.columns {
   display: flex;
   flex-direction: row;
@@ -230,8 +240,7 @@ div.columns > .col-9 {
 }
 
 div.columns > .col-10 {
-  flex: 1;
-  max-width: 100%;
+  min-width: 100%;
 }
 
 div.col.board-list {
@@ -361,8 +370,17 @@ span.thread-title {
   font-size: 1.1rem;
 }
 
+div.post-container {
+  padding-bottom: 0;
+}
+
 div.post-file {
   float: none;
+}
+
+div.post-file.in-body {
+  margin-left: -5%;
+  margin-right: 3%;
 }
 
 p.file-info {
@@ -373,13 +391,8 @@ div.post p {
   display: block;
 }
 
-div.post div.op-text {
-  margin-top: 0.8em;
-  padding-right: 3em;
-  padding-bottom: 0.3em;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  clear: none;
+div.post-text {
+  padding-top: 6%;
 }
 
 div.footer,
@@ -391,11 +404,6 @@ div.pages {
 @media (max-width: 700px) {
   div.centered {
     width: 80%;
-  }
-
-  img.logo,
-  img.banner {
-    max-width: 60%;
   }
 
   div.columns > .col,
@@ -414,16 +422,21 @@ div.pages {
     margin-bottom: 2%;
   }
 
-  img.post-image {
-    float: left;
-    display: block;
-    border: none;
-    height: auto;
-    max-width: 40%;
-    margin: 1% 3% 1% 1%;
+  img.post-image.not-visited {
+    max-width: 50vw;
+    max-height: 54vh;
+  }
+
+  img.logo.not-visited,
+  img.banner.not-visited {
+    max-width: 60%;
   }
 
   .form {
     max-width: 100%;
+  }
+
+  div.post-text {
+    padding-top: 0;
   }
 }

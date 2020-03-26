@@ -1,8 +1,9 @@
 import React, { Fragment, useState, useRef, useEffect } from 'react';
 
 import Post from './posts/Post';
+import OpPost from './posts/OpPost';
 
-export default ({ threads }) => {
+export default ({ threads, boardUri }) => {
   const [page, setPage] = useState(0);
   const [btnVisited, setBtnVisited] = useState([]);
 
@@ -26,7 +27,7 @@ export default ({ threads }) => {
     while (hilos.length > 0)
       threadsPages.push(
         hilos.splice(0, 10).map((thread, index) => {
-          const opPost = <Post thread={thread} post={thread.posts[0]} className={''} />;
+          const opPost = <OpPost thread={thread} post={thread.posts[0]} boardUri={boardUri} />;
 
           let divProps = {
             className: 'container thread-preview',

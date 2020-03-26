@@ -18,6 +18,9 @@ export const BANNERS_ERROR = 'BANNERS_ERROR';
 export const CREATE_THREAD = 'CREATE_THREAD';
 export const THREAD_ERROR = 'THREAD_ERROR';
 
+export const CREATE_POST = 'CREATE_POST';
+export const POST_ERROR = 'POST_ERROR';
+
 export const GET_STAFFS = 'GET_STAFFS';
 export const GET_STAFF = 'GET_STAFF';
 export const DELETE_STAFF = 'DELETE_STAFF';

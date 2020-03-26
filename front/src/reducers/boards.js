@@ -4,7 +4,9 @@ import {
   GET_BOARD,
   DELETE_BOARD,
   CREATE_THREAD,
-  THREAD_ERROR
+  THREAD_ERROR,
+  CREATE_POST,
+  POST_ERROR
 } from '../actions/types';
 
 const initState = {
@@ -40,8 +42,27 @@ export default function(state = initState, action) {
         error: {}
       };
 
+    case CREATE_POST:
+      return {
+        ...state,
+        board: {
+          ...state.board,
+          threads: [
+            ...state.board.threads.map(thread => {
+              if (thread.thread_id === payload.thread_id)
+                return { ...thread, posts: [...thread.posts, payload] };
+
+              return thread;
+            })
+          ]
+        },
+        loading: false,
+        error: {}
+      };
+
     case BOARDS_ERROR:
     case THREAD_ERROR:
+    case POST_ERROR:
       return { ...state, error: payload.data, loading: false };
 
     default:

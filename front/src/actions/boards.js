@@ -6,7 +6,9 @@ import {
   DELETE_BOARD,
   BOARDS_ERROR,
   CREATE_THREAD,
-  THREAD_ERROR
+  THREAD_ERROR,
+  CREATE_POST,
+  POST_ERROR
 } from './types';
 
 export const getBoardsList = () => async dispatch => {
@@ -110,6 +112,24 @@ export const createThread = newThread => async dispatch => {
   } catch (error) {
     dispatch({
       type: THREAD_ERROR,
+      payload: error.response
+    });
+  }
+};
+
+export const createPost = newPost => async dispatch => {
+  try {
+    const config = { headers: { 'Content-Type': 'multipart/form-data' } };
+
+    const res = await axios.post('/posts', newPost, config);
+
+    dispatch({
+      type: CREATE_POST,
+      payload: res.data[0]
+    });
+  } catch (error) {
+    dispatch({
+      type: POST_ERROR,
       payload: error.response
     });
   }

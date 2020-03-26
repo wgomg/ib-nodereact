@@ -24,7 +24,6 @@ const Boards = ({ getBoardsList, boards: { boards, loading } }) => {
         {boards.map(board => {
           return (
             <Route
-              exact
               path={'/' + board.uri}
               render={props => <Board {...props} uri={board.uri} />}
               key={board.board_id}

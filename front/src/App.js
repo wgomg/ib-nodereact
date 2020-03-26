@@ -26,8 +26,7 @@ function App() {
             <Route exact path='/src/:type/:img' component={ViewImage} />
             <Route exact path='/' component={Home} />
             <Route path='/staff' component={Staff} />
-            <Route path='/*' component={Boards} />
-            {/* <Route exact path='/:board_uri/:thread_id/:post_id' component={Thread} /> */}
+            <Route path='/' component={Boards} />
           </Switch>
         </Fragment>
       </Router>

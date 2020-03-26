@@ -1,13 +1,16 @@
 import React, { useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { Switch, Route } from 'react-router-dom';
 
 import { Loading } from '../common';
 
 import Banner from './board/Banner';
 import BoardTitle from './board/BoardTitle';
 import NewThreadForm from './board/NewThreadForm';
+import NewPostForm from './board/NewPostForm';
 import ThreadsList from './board/ThreadsList';
+import Thread from './board/Thread';
 
 import { getBoard } from '../../actions/boards';
 
@@ -18,15 +21,60 @@ const Board = ({ getBoard, boards: { board, loading }, uri }) => {
 
   let boardView = <Loading />;
 
-  if (!loading && board)
+  if (!loading && board) {
+    const threadsRoutes = (
+      <Fragment>
+        {board.threads && (
+          <Fragment>
+            {board.threads.map(thread => (
+              <Route
+                exact
+                path={`/${uri}/t${thread.thread_id}`}
+                render={props => <Thread {...props} thread={thread} boardUri={uri} />}
+                key={thread.thread_id}
+              />
+            ))}
+          </Fragment>
+        )}
+      </Fragment>
+    );
+
+    const newPostForms = (
+      <Fragment>
+        {board.threads && (
+          <Fragment>
+            {board.threads.map(thread => (
+              <Route
+                exact
+                path={`/${uri}/t${thread.thread_id}`}
+                render={props => <NewPostForm {...props} thread={thread} boardUri={uri} />}
+                key={thread.thread_id}
+              />
+            ))}
+          </Fragment>
+        )}
+      </Fragment>
+    );
+
     boardView = (
       <Fragment>
         <Banner board={board} />
         <BoardTitle board={board} />
-        <NewThreadForm board={board} />
-        <ThreadsList threads={board.threads} />
+        <Switch>
+          <Route exact path={'/' + uri} render={props => <NewThreadForm {...props} board={board} />} />
+          {newPostForms}
+        </Switch>
+        <Switch>
+          <Route
+            exact
+            path={'/' + uri}
+            render={props => <ThreadsList {...props} threads={board.threads} boardUri={board.uri} />}
+          />
+          {threadsRoutes}
+        </Switch>
       </Fragment>
     );
+  }
 
   return boardView;
 };

@@ -39,7 +39,7 @@ Post.prototype.saveEntry = function(entry, callback) {
 
 // Custom getEntry method for hashing user
 Post.prototype.getEntry = function([filters], callback) {
-  BaseModel.prototype.getEntry.call(this, [filters], (err, res) => {
+  BaseModel.prototype.getEntry.call(this, [filters, true], (err, res) => {
     if (err) return callback(err, null);
 
     if (res.length > 0) {

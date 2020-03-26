@@ -63,6 +63,7 @@ Thread.prototype.getAllEntries = function(callback, extra) {
 
                   const resFile = {
                     post_id: post.post_id,
+                    thread_id: post.thread_id,
                     text: post.text,
                     user: post.user,
                     name: post.name,
