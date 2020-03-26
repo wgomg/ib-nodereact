@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { createThread } from '../../../actions/boards';
 
 import { Form } from '../../common';
-import { useEffect } from 'react';
 
 const NewThreadForm = ({ board, createThread }) => {
   const [formData, setFormData] = useState({

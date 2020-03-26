@@ -28,9 +28,7 @@ Banner.prototype.saveEntry = function(entry, callback) {
   processFiles([this, entry, 'image', BaseModel.prototype.saveEntry], (err, res) => callback(err, res));
 };
 
-Banner.prototype.getAllForBoard = function(callback, filters) {
-  filters[0].board_id += '|null';
-
+Banner.prototype.getAllEntries = function(callback, filters) {
   BaseModel.prototype.getAllEntries.call(
     this,
     (err, res) => {
@@ -43,11 +41,13 @@ Banner.prototype.getAllForBoard = function(callback, filters) {
           const bannerExtension = path.extname(banner.image_uri).replace('.', '');
 
           const resBanner = {
+            banner_id: banner.banner_id,
             contentType: bannerPathArray[1] + '/' + bannerExtension,
             // data: fs.readFileSync(banner.image_uri),
             uri: banner.image_uri,
             name: banner.image_name,
-            size: banner.image_size
+            size: banner.image_size,
+            board: banner.Boards.uri
           };
 
           return resBanner;
@@ -56,8 +56,18 @@ Banner.prototype.getAllForBoard = function(callback, filters) {
 
       callback(err, resBanners);
     },
-    [...filters, true]
+    filters
   );
+};
+
+Banner.prototype.updateEntry = function(entry, callback) {
+  delete entry.files;
+  BaseModel.prototype.updateEntry.call(this, entry, (err, res) => callback(err, res));
+};
+
+Banner.prototype.getAllForBoard = function(callback, filters) {
+  filters[0].board_id += '|null';
+  this.getAllEntries((err, res) => callback(err, res), [...filters]);
 };
 
 module.exports = new Banner();

@@ -25,8 +25,8 @@ const routesMap = new Map([
       {
         call: 'updateEntry',
         route: '/__table__',
-        applyOn: ['Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread'],
-        private: ['Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
+        applyOn: ['Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread'],
+        private: ['Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
       }
     ]
   ],

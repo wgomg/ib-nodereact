@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { Loading, Image } from '../../common';
-import { getBanners } from '../../../actions/banners';
+import { getBoardBanners } from '../../../actions/banners';
 
-const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
+const Banner = ({ board, getBoardBanners, banners: { banners, loading } }) => {
   useEffect(() => {
-    getBanners(board.board_id);
-  }, [getBanners, board]);
+    getBoardBanners(board.board_id);
+  }, [getBoardBanners, board]);
 
   const bannerImg = banners ? banners[Math.floor(Math.random() * banners.length)] : null;
 
@@ -22,7 +22,7 @@ const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
 
 Banner.propTypes = {
   board: PropTypes.object.isRequired,
-  getBanners: PropTypes.func.isRequired,
+  getBoardBanners: PropTypes.func.isRequired,
   banners: PropTypes.object.isRequired
 };
 
@@ -30,4 +30,4 @@ const mapStateToProps = state => ({
   banners: state.banners
 });
 
-export default connect(mapStateToProps, { getBanners })(Banner);
+export default connect(mapStateToProps, { getBoardBanners })(Banner);

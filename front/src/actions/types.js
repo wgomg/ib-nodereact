@@ -13,6 +13,8 @@ export const GET_LATEST_POSTS = 'GET_LATEST_POSTS';
 export const LATEST_POSTS_ERROR = 'LATEST_POSTS_ERROR';
 
 export const GET_BANNERS = 'GET_BANNERS';
+export const GET_BANNER = 'GET_BANNER';
+export const DELETE_BANNER = 'DELETE_BANNER';
 export const BANNERS_ERROR = 'BANNERS_ERROR';
 
 export const CREATE_THREAD = 'CREATE_THREAD';
