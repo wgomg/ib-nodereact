@@ -278,6 +278,7 @@ button.link:hover {
 button.hide-thread {
   float: left;
   margin-right: 5px;
+  margin-left: 5px;
 }
 
 button.link {
@@ -393,6 +394,7 @@ div.post p {
 
 div.post-text {
   padding-top: 6%;
+  padding-bottom: 20%;
 }
 
 div.footer,

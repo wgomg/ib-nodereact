@@ -3,7 +3,7 @@ import React, { Fragment, useState, useRef, useEffect } from 'react';
 import Post from './posts/Post';
 import OpPost from './posts/OpPost';
 
-export default ({ threads, boardUri }) => {
+export default ({ threads }) => {
   const [page, setPage] = useState(0);
   const [btnVisited, setBtnVisited] = useState([]);
 
@@ -27,7 +27,7 @@ export default ({ threads, boardUri }) => {
     while (hilos.length > 0)
       threadsPages.push(
         hilos.splice(0, 10).map((thread, index) => {
-          const opPost = <OpPost thread={thread} post={thread.posts[0]} boardUri={boardUri} />;
+          const opPost = <OpPost thread={thread} post={thread.posts[0]} isThread={false} />;
 
           let divProps = {
             className: 'container thread-preview',
@@ -36,11 +36,9 @@ export default ({ threads, boardUri }) => {
 
           let postsList =
             thread.posts.length > 1
-              ? thread.posts.slice(Math.max(thread.posts.length - 5, 1)).map(post => (
-                  <div className='container post-container' key={post.post_id}>
-                    <Post thread={thread} post={post} boardUri={boardUri} />
-                  </div>
-                ))
+              ? thread.posts
+                  .slice(Math.max(thread.posts.length - 5, 1))
+                  .map(post => <Post thread={thread} post={post} />)
               : '';
 
           if (index === 0) divProps.ref = topThread;

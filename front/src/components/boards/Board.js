@@ -30,7 +30,7 @@ const Board = ({ getBoard, boards: { board, loading }, uri }) => {
               <Route
                 exact
                 path={`/${uri}/t${thread.thread_id}`}
-                render={props => <Thread {...props} thread={thread} boardUri={uri} />}
+                render={props => <Thread {...props} thread={thread} />}
                 key={thread.thread_id}
               />
             ))}
@@ -68,7 +68,7 @@ const Board = ({ getBoard, boards: { board, loading }, uri }) => {
           <Route
             exact
             path={'/' + uri}
-            render={props => <ThreadsList {...props} threads={board.threads} boardUri={board.uri} />}
+            render={props => <ThreadsList {...props} threads={board.threads} />}
           />
           {threadsRoutes}
         </Switch>

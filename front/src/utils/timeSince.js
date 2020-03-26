@@ -19,7 +19,7 @@ const timeSince = date => {
   interval = Math.floor(seconds / 60);
   if (interval > 1) return 'hace ' + interval + ' min';
 
-  return 'hace ' + Math.floor(seconds) + ' seg';
+  return Math.floor(seconds) + ' seg';
 };
 
 export default timeSince;

@@ -2,12 +2,13 @@ import React from 'react';
 
 import prettyBytes from '../../../../utils/prettyBytes';
 import timeSince from '../../../../utils/timeSince';
+import prettyDate from '../../../../utils/prettyDate';
 
 import { ButtonLink, Image } from '../../../common';
 
-export default ({ thread, post }) => {
+export default ({ thread, post, isThread }) => {
   return (
-    <div className='op'>
+    <div className='op' id={'p' + post.post_id}>
       <hr className='separator' />
 
       <ButtonLink text='[-]' altText='[+]' extraClass='hide-thread' />
@@ -26,9 +27,11 @@ export default ({ thread, post }) => {
       <div className='post-body op'>
         <div className='post-info'>
           <span className='thread-title'>{thread.subject}</span> <strong>{post.name || 'Anon'}</strong>{' '}
-          {timeSince(post.created_on)} <a href={`t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
+          {prettyDate(post.created_on).toLocaleString()}{' '}
+          <span className='small'>({timeSince(post.created_on)}) </span>
+          <a href={`t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
           <a href={`t${thread.thread_id}#qp${post.post_id}`}>{thread.thread_id}</a>{' '}
-          <a href={`t${thread.thread_id}`}>[reply]</a>
+          {!isThread && <a href={`t${thread.thread_id}`}>[reply]</a>}
         </div>
         <div className='op-post-text'>{post.text}</div>
       </div>
