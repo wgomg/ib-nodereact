@@ -14,7 +14,7 @@ export default ({ thread, boardUri }) => {
 
   const postsList = posts.splice(1).map(post => (
     <div className='container post-container' key={post.post_id}>
-      <Post thread={thread} post={post} className='' boardUri={boardUri} />
+      <Post thread={thread} post={post} boardUri={boardUri} />
     </div>
   ));
 

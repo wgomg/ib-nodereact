@@ -34,9 +34,23 @@ export default ({ threads, boardUri }) => {
             key: thread.thread_id
           };
 
+          let postsList =
+            thread.posts.length > 1
+              ? thread.posts.slice(Math.max(thread.posts.length - 5, 1)).map(post => (
+                  <div className='container post-container' key={post.post_id}>
+                    <Post thread={thread} post={post} boardUri={boardUri} />
+                  </div>
+                ))
+              : '';
+
           if (index === 0) divProps.ref = topThread;
 
-          return <div {...divProps}>{opPost}</div>;
+          return (
+            <div {...divProps}>
+              {opPost}
+              {postsList}
+            </div>
+          );
         })
       );
 
