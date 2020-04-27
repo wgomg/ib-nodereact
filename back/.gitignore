@@ -1,7 +1,12 @@
 node_modules
 
 config/db.json
-config/server.json
+config/files.json
 config/jwt.json
+config/logger.json
+config/cache.json
+config/server.json
 
 data
+
+logs

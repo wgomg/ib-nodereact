@@ -1,165 +1,129 @@
 'use strict';
 
-const BaseModel = require('./BaseModel');
-
-const Board = require('./Board');
-const Post = require('./Post');
-
-const error = require('../utils/error');
-
-const fs = require('fs');
-const path = require('path');
+const db = require('../db');
+const logger = require('../libraries/logger');
+const validate = require('../libraries/validate');
 
 function Thread() {
-  const classname = 'thread';
+  this.name = this.constructor.name;
+  this.table = this.name + 's';
+  this.idField = this.table.toLowerCase().replace('s', '_id');
 
-  const schema = {
-    thread_id: { pk: true },
+  this.procId = null;
+
+  this.schema = {
     board_id: { type: 'table', required: true },
     subject: { type: 'alphanum', length: 45, required: true },
-    file_uri: { type: 'file|png,jpeg,gif', length: 120 }
+    file_id: {},
   };
 
-  BaseModel.call(this, classname, schema);
-}
+  this.save = async (body) => {
+    logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
-Thread.prototype = Object.create(BaseModel.prototype);
+    const newThread = { board_id: body.board_id, subject: body.subject };
 
-Thread.prototype.saveEntry = function(entry, callback) {
-  if (entry.files === null) return callback(error({ code: 'ER_INVALID_FIELDS' }), null);
+    const errors = validate(newThread, this.schema);
+    if (errors) return { validationError: errors };
 
-  let newThread = { board_id: entry.board_id, subject: entry.subject };
-  let threadOP = { text: entry.text, user: entry.user, name: entry.name, files: entry.files };
+    const res = await db.insert({ body: newThread, table: this.table }, this.procId);
 
-  BaseModel.prototype.saveEntry.call(this, newThread, (err, res) => {
-    if (err) return callback(err, null);
+    const threadOP = {
+      text: body.text,
+      name: body.name,
+      files: body.files,
+      user: body.user,
+      [this.idField]: res.insertId,
+    };
 
-    threadOP = { ...threadOP, thread_id: res[0].insertId };
+    const Post = require('./Post');
+    Post.procId = this.procId;
 
-    Post.saveEntry(threadOP, (error, response) => callback(error, res));
-  });
-};
+    const post = await Post.save(threadOP);
 
-Thread.prototype.getAllEntries = function(callback, extra) {
-  BaseModel.prototype.getAllEntries.call(
-    this,
-    (err, res) => {
-      if (err || res.length === 0) return callback(err, res);
+    if (post.validationError) {
+      db.remove({ table: this.table, id: { field: this.idField, value: res.insertId } }, this.procId);
 
-      let threads = [];
+      delete post.validationError[this.idField];
+      return post;
+    }
 
-      for (let i = 0, length = res.length; i < length; i++)
-        Post.getAllEntries(
-          (err, response) => {
-            if (err) return callback(err, null);
-
-            let posts = [];
-
-            if (response.length > 0)
-              posts = response.map(post => {
-                if (post.file_uri) {
-                  const filePathArray = post.file_uri.split('/');
-                  const fileExtension = path.extname(post.file_uri).replace('.', '');
-
-                  const resFile = {
-                    post_id: post.post_id,
-                    thread_id: post.thread_id,
-                    text: post.text,
-                    user: post.user,
-                    name: post.name,
-                    created_on: post.created_on,
-                    file: {
-                      contentType: filePathArray[1] + '/' + fileExtension,
-                      // data: fs.readFileSync(post.file_uri),
-                      uri: post.file_uri,
-                      name: post.file_name,
-                      size: post.file_size
-                    }
-                  };
-
-                  return resFile;
-                }
-
-                return post;
-              });
-
-            threads.push({ ...res[i], posts: posts });
-
-            if (i + 1 === length) {
-              threads.sort((a, b) => {
-                if (a.posts.length > 0 && b.posts.length > 0)
-                  return (
-                    new Date(b.posts[b.posts.length - 1].created_on) -
-                    new Date(a.posts[a.posts.length - 1].created_on)
-                  );
-              });
-
-              return callback(null, threads);
-            }
-          },
-          [{ thread_id: res[i].thread_id }, true]
-        );
-    },
-    extra
-  );
-};
-
-Thread.prototype.getEntry = function([filters], callback) {
-  BaseModel.prototype.getEntry.call(this, [filters], (err, res) => {
-    if (err) return callback(err, null);
-
-    let thread = { ...res[0] };
-
-    Post.getAllEntries(
-      (err, response) => {
-        if (err) return callback(err, null);
-
-        let posts = [];
-
-        if (response.length > 0)
-          posts = response.map(post => {
-            if (post.file_uri) {
-              const filePathArray = post.file_uri.split('/');
-              const fileExtension = path.extname(post.file_uri).replace('.', '');
-
-              const resFile = {
-                post_id: post.post_id,
-                text: post.text,
-                user: post.user,
-                name: post.name,
-                created_on: post.created_on,
-                file: {
-                  contentType: filePathArray[1] + '/' + fileExtension,
-                  // data: fs.readFileSync(post.file_uri),
-                  uri: post.file_uri,
-                  name: post.file_name,
-                  size: post.file_size
-                }
-              };
-
-              return resFile;
-            }
-
-            return post;
-          });
-
-        thread.posts = posts;
-
-        callback(null, thread);
+    const thread = await db.select(
+      {
+        table: this.table,
+        filters: [{ field: this.idField, value: res.insertId }],
       },
-      [{ thread_id: thread.thread_id }, true]
+      this.procId
     );
-  });
-};
 
-Thread.prototype.getBoard = async function(filters) {
-  if (filters.board_id) return Board.getBoard({ board_id: filters.board_id });
-  else {
-    const thread = await BaseModel.getEntrySync({ thread_id: filters.thread_id }, 'Threads');
-    if (thread[0]) return Board.getBoard({ board_id: thread[0].board_id });
-  }
+    if (thread.length === 0) return thread;
+    else
+      return [
+        {
+          ...thread[0],
+          posts: await Post.getByThread(thread[0].thread_id),
+        },
+      ];
+  };
 
-  return [];
-};
+  this.getByBoard = async (board_id) => {
+    logger.debug({ name: `${this.name}.getByBoard()`, data: board_id }, this.procId, 'method');
+
+    let threads = await db.select(
+      {
+        table: this.table,
+        filters: [{ field: 'board_id', value: board_id }],
+      },
+      this.procId
+    );
+
+    const Post = require('./Post');
+    Post.procId = this.procId;
+
+    if (threads.length > 0)
+      return Promise.all(
+        threads.map(async (thread) => {
+          thread.posts = await Post.getByThread(thread.thread_id);
+          return thread;
+        })
+      );
+
+    return threads;
+  };
+
+  this.delete = (thread_id) => {
+    logger.debug({ name: `${this.name}.delete()`, data: thread_id });
+
+    return db.remove({ table: this.table, id: { field: this.idField, value: thread_id } }, this.procId);
+  };
+
+  this.getBoardId = async (thread_id) => {
+    logger.debug({ name: `${this.name}.getBoard()`, data: thread_id }, this.procId, 'method');
+
+    const thread = await db.select(
+      { table: this.table, filters: [{ [this.idField]: thread_id }] },
+      this.procId
+    );
+
+    if (thread.length === 0) return null;
+
+    return thread[0].board_id;
+  };
+
+  this.getFunctions = () => {
+    const FN_ARGS = /([^\s,]+)/g;
+    const excluded = ['getFunctions', 'getByBoard', 'getBoardId'];
+
+    const functions = Object.entries(this)
+      .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))
+      .map(([fnName, fnDef]) => {
+        const fnStr = fnDef.toString();
+        const fnArgs = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(FN_ARGS);
+
+        return { name: fnName, args: fnArgs };
+      });
+
+    return functions;
+  };
+}
 
 module.exports = new Thread();

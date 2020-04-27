@@ -1,106 +1,145 @@
 'use strict';
+const cache = require('../libraries/cache');
 
-const BaseModel = require('./BaseModel');
+const db = require('../db');
+const logger = require('../libraries/logger');
+const validate = require('../libraries/validate');
+const ip = require('../libraries/ip');
 
-const Ban = require('./Ban');
+const File = require('./File');
 const Thread = require('./Thread');
 
-const ip = require('../utils/ip');
-
-const { processFiles } = require('../utils/files');
-
 function Post() {
-  const classname = 'post';
+  this.name = this.constructor.name;
+  this.table = this.name + 's';
+  this.idField = this.table.toLowerCase().replace('s', '_id');
 
-  const schema = {
-    post_id: { pk: true },
+  this.procId = null;
+
+  this.schema = {
     thread_id: { type: 'table', required: true },
     text: { type: 'string', length: 3000, required: true },
-    user: { type: 'ip_address', required: true },
     name: { type: 'alphanum', length: 10 },
-    file_uri: { type: 'file|png,jpeg,gif', length: 120 },
-    file_name: { type: 'alphanum', length: 50 },
-    file_size: { type: 'num' }
+    file_id: { type: 'table' },
   };
 
-  BaseModel.call(this, classname, schema);
-}
+  this.save = async (body) => {
+    logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
-Post.prototype = Object.create(BaseModel.prototype);
+    const user = body.user;
+    delete body.user;
 
-// Custom saveEntry method for handling files uploading
-Post.prototype.saveEntry = function(entry, callback) {
-  checkBannedUsers(entry.user, (err, res) => {
-    if (err || res[0].banned) return callback(err, res);
+    const Ban = require('./Ban');
+    Ban.procId = this.procId;
+    const userBanned = await Ban.isUserBanned(user);
+    if (userBanned) return { validationError: { user: 'User is banned' } };
 
-    processFiles([this, entry, 'file', BaseModel.prototype.saveEntry], (err, res) => callback(err, res));
-  });
-};
+    let file = null;
+    if (body.files) {
+      this.schema.file_id.required = true;
 
-// Custom getEntry method for hashing user
-Post.prototype.getEntry = function([filters], callback) {
-  BaseModel.prototype.getEntry.call(this, [filters, true], (err, res) => {
-    if (err) return callback(err, null);
+      const files = Object.values(body.files).filter((file) => file.size > 0);
+      File.procId = this.procId;
+      file = await File.save(files[0]);
 
-    if (res.length > 0) {
-      if (ip.isV4(res[0].user)) res[0].user = ip.hashV4(res[0].user);
-      if (ip.isV6(res[0].user)) res[0].user = ip.hashV6(res[0].user);
+      delete body.files;
     }
 
-    callback(null, res);
-  });
-};
+    const newPost = { ...body };
+    if (file) newPostfile_id = file[0].insertId;
 
-// Custom getAllEntries method for hashing user
-Post.prototype.getAllEntries = function(callback, extra) {
-  const filters = extra ? [...extra] : [null, null];
+    const errors = validate(newPost, this.schema);
+    if (errors) return { validationError: errors };
 
-  BaseModel.prototype.getAllEntries.call(
-    this,
-    (err, res) => {
-      if (err) return callback(err, null);
+    const post = await db.insert({ body: newPost, table: this.table }, this.procId);
 
-      if (res.length > 0) {
-        res = res.map(post => {
-          if (ip.isV4(post.user)) post.user = ip.hashV4(post.user);
-          if (ip.isV6(post.user)) post.user = ip.hashV6(post.user);
+    if (post.insertId) cache.set(post.insertId, user);
 
-          return post;
-        });
-      }
+    return post;
+  };
 
-      callback(null, res);
-    },
-    [...filters, { field: 'created_on', direction: 'ASC' }]
-  );
-};
+  this.getByThread = async (thread_id) => {
+    logger.debug({ name: `${this.name}.getByThread()`, data: thread_id }, this.procId, 'method');
 
-Post.prototype.getAllLatests = function(callback) {
-  BaseModel.prototype.getAllEntries.call(
-    this,
-    (err, res) => {
-      if (err) callback(err, null);
-      else callback(null, res.slice(0, 10));
-    },
-    [null, null, { field: 'created_on', direction: 'DESC' }]
-  );
-};
+    let posts = await db.select(
+      {
+        table: this.table,
+        filters: [{ field: 'thread_id', value: thread_id }],
+      },
+      this.procId
+    );
 
-Post.prototype.getBoard = async function(filters) {
-  if (filters.thread_id) return Thread.getBoard({ thread_id: filters.thread_id });
-  else {
-    const post = await BaseModel.getEntrySync({ post_id: filters.post_id }, 'Posts');
-    if (post[0]) return Thread.getBoard({ thread_id: post[0].thread_id });
-  }
+    if (posts.length === 0) return posts;
 
-  return [];
-};
+    File.procId = this.procId;
 
-const checkBannedUsers = (user, callback) => {
-  Ban.getByUser(user, (err, res) => {
-    if (err) callback(err, null);
-    else callback(null, [{ banned: res.length > 0 }]);
-  });
-};
+    return Promise.all(
+      posts.map(async (post) => {
+        if (post.file_id) {
+          const file = await File.getByID(post.file_id);
+          post.file = file.length === 0 ? null : file[0];
+          delete post.file_id;
+        }
+
+        const cachedUser = cache.get(post.post_id);
+
+        if (ip.isV4(cachedUser)) post.user = ip.hashV4(cachedUser);
+        else if (ip.isV6(cachedUser)) post.user = ip.hashV6(cachedUser);
+
+        return post;
+      })
+    );
+  };
+
+  this.update = (body) => {
+    logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
+
+    const idValue = body[this.idField];
+    delete body[this.idField];
+
+    const errors = validate(body, this.schema);
+    if (errors) return { validationError: errors };
+
+    return db.update(
+      { body, table: this.table, id: { field: this.idField, value: idValue } },
+      this.procId
+    );
+  };
+
+  this.delete = (post_id) => {
+    logger.debug({ name: `${this.name}.delete()`, data: post_id }, this.procId, 'method');
+
+    return db.remove({ id: { field: this.idField, value: post_id }, table: this.table }, this.procId);
+  };
+
+  this.getBoardId = async (post_id) => {
+    logger.debug({ name: `${this.name}.getBoard()`, data: post_id }, this.procId, 'method');
+
+    const post = await db.select(
+      { table: this.table, filters: [{ [this.idField]: post_id }] },
+      this.procId
+    );
+
+    if (post.length === 0) return null;
+
+    return Thread.getBoardId(post.thread_id);
+  };
+
+  this.getFunctions = () => {
+    const FN_ARGS = /([^\s,]+)/g;
+    const excluded = ['getFunctions', 'getByThread', 'getBoardId'];
+
+    const functions = Object.entries(this)
+      .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))
+      .map(([fnName, fnDef]) => {
+        const fnStr = fnDef.toString();
+        const fnArgs = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(FN_ARGS);
+
+        return { name: fnName, args: fnArgs };
+      });
+
+    return functions;
+  };
+}
 
 module.exports = new Post();

@@ -2,144 +2,135 @@
 
 const models = require('./models');
 
-const { hasFileField } = require('./utils/helpers');
-
 const auth = require('./middlware/auth');
 
-const routesMap = new Map([
-  [
-    'post',
-    [
-      { call: 'login', route: '/staffs/login', applyOn: ['Staff'], private: [] },
-      {
-        call: 'saveEntry',
-        route: '/__table__',
-        applyOn: ['Ban', 'Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread'],
-        private: ['Ban', 'Banner', 'Board', 'Rule', 'Staff']
-      }
-    ]
-  ],
-  [
-    'put',
-    [
-      {
-        call: 'updateEntry',
-        route: '/__table__',
-        applyOn: ['Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread'],
-        private: ['Banner', 'Board', 'Post', 'Report', 'Rule', 'Staff', 'Thread']
-      }
-    ]
-  ],
-  [
-    'get',
-    [
-      { call: 'getAllLatests', route: '/posts/latests', applyOn: ['Post'], private: [] },
-      { call: 'auth', route: '/staffs/auth', applyOn: ['Staff'], private: ['Staff'] },
-      {
-        call: 'getAllForBoard',
-        route: '/banners/:board_id',
-        argModel: 'Board',
-        applyOn: ['Banner'],
-        private: []
-      },
-      {
-        call: 'getAllEntries',
-        route: '/__table__',
-        applyOn: ['Banner', 'Board', 'Report', 'Rule', 'Staff'],
-        private: ['Report', 'Staff']
-      },
-      {
-        call: 'getEntry',
-        route: '/boards/:uri',
-        applyOn: ['Board'],
-        private: []
-      },
-      {
-        call: 'getEntry',
-        route: '/__table__/:__entry___id',
-        applyOn: ['Staff'],
-        private: ['Staff']
-      }
-    ]
-  ],
-  [
-    'delete',
-    [
-      {
-        call: 'deleteEntry',
-        route: '/__table__/:__entry___id',
-        applyOn: ['Ban', 'Board', 'Banner', 'Post', 'Rule', 'Staff', 'Thread'],
-        private: ['Banner', 'Board', 'Post', 'Rule', 'Staff', 'Thread']
-      }
-    ]
-  ]
+const logger = require('./libraries/logger');
+
+const httpMethods = { s: 'post', u: 'put', g: 'get', d: 'delete' };
+const privateMethods = new Map([
+  ['Ban', ['save']],
+  ['Banner', ['save', 'delete']],
+  ['Board', ['save', 'update', 'delete']],
+  ['Post', ['update', 'delete']],
+  ['Report', ['getAll', 'updateSolved']],
+  ['Rule', ['save', 'update', 'delete']],
+  ['Staff', ['save', 'get', 'getAll', 'update', 'updatePassword']],
+  ['Thread', ['delete']],
 ]);
 
-const routes = app => {
-  for (let [method, endpoints] of routesMap)
-    endpoints.forEach(ep => ep.applyOn.forEach(modelName => app[method](...routeArgs(ep, modelName))));
-};
+let privateRoutes = new Map([]);
 
-const routeArgs = (endpoint, modelName) => {
-  const entry = endpoint.argModel ? endpoint.argModel.toLowerCase() : modelName.toLowerCase();
-  const table = entry + 's';
+/**
+ * Ejemplo: 
+Map(n) {
+  'Board' => [
+    { httpMethod: 'post', fn: 'save', route: '/boards', access: 'priv' },
+    { httpMethod: 'get', fn: 'getByURI', route: '/boards/:uri', access: 'pub' },
+    ...
+  ],
+  'n' => [{...}]
+}
+***/
+const routesMap = new Map(
+  Object.values(models).map((Model) => [
+    Model.name,
+    Model.getFunctions().map((fn) => {
+      const fnName = fn.name;
+      const fnArgs = fn.args;
+      const fnHttpMethod = httpMethods[fnName.charAt(0)];
 
-  let route = endpoint.route.replace('__table__', table);
+      let route = `/${Model.table.toLowerCase()}`;
+      const fnNameArray = fnName
+        .split(/(?=[A-Z])/)
+        .slice(1)
+        .filter((s) => s !== 'All');
 
-  if (route.includes('__entry___id')) route = route.replace('__entry__', entry);
+      if (fnNameArray.length > 0) route += '/' + fnNameArray.map((p) => p.toLowerCase()).join('/');
 
-  const routeCallback = (req, res) => {
-    const Model = models[modelName];
-    const call = endpoint.call;
+      if (
+        fnName !== 'getAuth' &&
+        fnArgs !== null &&
+        (fnHttpMethod === 'get' || fnHttpMethod === 'delete')
+      )
+        route += `/:${fnArgs[0]}`;
 
-    let paramValue = null;
-    let paramField = null;
-    if (route.includes(':')) {
-      paramField = route.includes('_id') ? entry + '_id' : 'uri';
-      paramValue = [{ [paramField]: req.params[paramField] }];
-    }
+      const isPrivate = privateMethods.get(Model.name).includes(fnName);
+      const access = isPrivate ? 'priv' : 'pub';
 
-    const object = !call.includes('getAll') ? req.body : null;
-    const staff = call.includes('auth') ? req.staff : null;
+      if (isPrivate) privateRoutes.set(route, Model.name + '.' + fn.name);
 
-    const modelCallback = (err, results) => {
-      if (err) return logAndSendError(err, res);
+      return { httpMethod: fnHttpMethod, fn: fnName, fnArgs, route, access };
+    }),
+  ])
+);
 
-      if (results[0] && !results[0].banned && (call.includes('save') || call.includes('update')))
-        getEntry([Model, results[0], entry + '_id', res]);
-      else res.json(results);
-    };
+const routes = (app) => {
+  for (let [modelName, endpoints] of routesMap)
+    endpoints.forEach((ep) => app[ep.httpMethod](...appMethodArgs(modelName, ep)));
 
-    if (object && hasFileField(Model._schema)) object.files = req.files;
-    if (object && (modelName === 'Thread' || modelName === 'Post')) object.user = req.ip;
+  app.all('*', (req, res) => {
+    req.procId = genProcId();
 
-    let modelArgs = [modelCallback];
-    if (paramValue || staff || object)
-      if (!call.includes('getAll')) modelArgs.unshift(paramValue || staff || object);
-      else modelArgs.push(paramValue || staff || object);
-
-    Model[call](...modelArgs);
-  };
-
-  let routeArgs = [route];
-
-  if (endpoint.private.includes(modelName)) routeArgs.push(auth);
-
-  routeArgs.push(routeCallback);
-
-  return routeArgs;
-};
-
-const getEntry = ([Model, results, entry_id, response]) => {
-  Model.getEntry([{ [entry_id]: results.updatedId || results.insertId }, true], (err, results) => {
-    if (err) logAndSendError(err, response);
-    else response.json(results);
+    logger.info(`Request ${req.method} ${req.route.path}`, req.procId);
+    res.status(404).send('Page Not Found');
   });
 };
 
-const logAndSendError = (err, res) => {
-  console.error(err);
-  res.status(err.status).send(err.msg);
+const appMethodArgs = (modelName, ep) => {
+  let args = [ep.route];
+
+  if (ep.access === 'priv') args.push(auth(privateRoutes));
+
+  const appMethodCallback = async (req, res) => {
+    req.procId = genProcId();
+
+    const Model = models[modelName];
+    Model.procId = req.procId;
+
+    logger.info(`Request ${req.method} ${req.route.path}`, req.procId);
+
+    try {
+      let fnArgs = [];
+
+      if (ep.fnArgs) {
+        const arg = ep.fnArgs[0];
+
+        if (arg === 'body' || arg === 'staff') {
+          if (arg === 'body' && 'file_id' in Model.schema) req[arg].files = req.files || [];
+
+          if ((modelName === 'Post' || modelName === 'Thread') && ep.httpMethod === 'post')
+            req[arg].user = req.ip;
+
+          fnArgs.push(req[arg]);
+        } else fnArgs.push(req.params[arg]);
+      }
+
+      const result = await Model[ep.fn](...fnArgs);
+
+      if (result.validationError) {
+        logger.debug(
+          `[${Model.procId}] Validaton error on ${modelName}.${ep.fn}(), data: ${JSON.stringify(
+            result.validationError
+          )}`
+        );
+
+        res.status(401).json(result);
+      } else {
+        logger.debug(`[${Model.procId}] DB: Entries returned ${result.length}`);
+        res.json(result);
+      }
+    } catch (error) {
+      logger.error(error);
+      res.status(error.httpStatus || 500).send(error.message || error.sqlMessage || 'Server Error');
+    }
+  };
+
+  args.push(appMethodCallback);
+
+  return args;
 };
+
+const genProcId = () => Math.random().toString(20).substr(2, 6);
+// Math.floor(Math.random() * 16777215).toString(16);
 
 module.exports = routes;

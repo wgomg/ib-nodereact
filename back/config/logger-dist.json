@@ -1,0 +1,8 @@
+{
+  "dir": "/logs",
+  "level": "info",
+  "infoFile": false,
+  "errorFile": false,
+  "debugFile": false,
+  "logRoutes": false
+}

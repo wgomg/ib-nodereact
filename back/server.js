@@ -1,27 +1,45 @@
 'use strict';
 
-const express = require('express');
-const fileupload = require('express-fileupload');
+const app = require('./app');
 
-const path = require('path');
+const logger = require('./libraries/logger');
 
-const { server } = require('./config/');
+const config = require('./config').server;
 
-const app = express();
+const PORT = config.port;
+const server = app.listen(PORT, () => logger.info(`Server started on port ${PORT}`, 'server'));
 
-app.use(express.json({ extended: false }));
-app.use(
-  fileupload({
-    createParentPath: true,
-    limits: { fileSize: 5 * 1024 * 1024 },
-    safeFileNames: true,
-    preserveExtension: 4
-  })
+setInterval(
+  () =>
+    server.getConnections((err, connections) =>
+      logger.connection(`${connections} connections currently open`)
+    ),
+  1000
 );
-app.use('/src/posts', express.static(path.join(__dirname, 'data/image/posts')));
-app.use('/src/banners', express.static(path.join(__dirname, 'data/image/banners')));
 
-require('./routes')(app);
+process.on('SIGTERM', shutDown);
+process.on('SIGINT', shutDown);
 
-const PORT = process.env.PORT || server.port;
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+let connections = [];
+
+server.on('connection', (connection) => {
+  connections.push(connection);
+  connection.on('close', () => (connections = connections.filter((curr) => curr !== connection)));
+});
+
+function shutDown() {
+  logger.connection('Received kill signal, shutting down gracefully');
+
+  server.close(() => {
+    logger.connection('Closed out remaining connections');
+    process.exit(0);
+  });
+
+  setTimeout(() => {
+    logger.connection('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+
+  connections.forEach((curr) => curr.end());
+  setTimeout(() => connections.forEach((curr) => curr.destroy()), 5000);
+}
