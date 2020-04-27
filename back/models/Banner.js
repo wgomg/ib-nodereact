@@ -1,73 +1,89 @@
 'use strict';
 
-const BaseModel = require('./BaseModel');
+const db = require('../db');
+const logger = require('../libraries/logger');
+const validate = require('../libraries/validate');
 
-const { processFiles } = require('../utils/files');
-
-const fs = require('fs');
-const path = require('path');
+const File = require('./File');
 
 function Banner() {
-  const classname = 'banner';
+  this.name = this.constructor.name;
+  this.table = this.name + 's';
+  this.idField = this.table.toLowerCase().replace('s', '_id');
 
-  const schema = {
-    banner_id: { pk: true },
+  this.procId = null;
+
+  this.schema = {
     board_id: { type: 'table' },
-    image_uri: { type: 'file|png,jpeg,gif', length: 120, required: true },
-    image_name: { type: 'alphanum', length: 50, required: true },
-    image_size: { type: 'num', required: true }
+    file_id: { type: 'table', required: true },
   };
 
-  BaseModel.call(this, classname, schema);
+  this.save = async (body) => {
+    logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
+
+    const images = Object.values(body.files).filter((file) => file.size > 0);
+    const image = await File.save(images[0]);
+    delete body.files;
+
+    const newBanner = { ...body, file_id: !image ? null : image[0].insertId };
+
+    const errors = validate(newBanner, this.schema);
+    if (errors) return { validationError: errors };
+
+    return db.insert({ newBanner, table: this.table }, this.procId);
+  };
+
+  this.getAll = async () => {
+    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
+
+    let res = await db.select({ table: this.table }, this.procId);
+
+    if (res.length > 0)
+      res = res.map((r) => ({
+        [this.idField]: r[this.idField],
+        contentType: 'image/' + path.extname(r.uri).replace('.', ''),
+        uri: r.uri,
+        name: r.name,
+        size: r.size,
+      }));
+
+    return res;
+  };
+
+  this.delete = (banner_id) => {
+    logger.debug({ name: `${this.name}.delete()`, data: banner_id }, this.procId, 'method');
+
+    return db.remove({ id: { field: this.idField, value: banner_id }, table: this.table }, this.procId);
+  };
+
+  this.getBoardId = async (banner_id) => {
+    logger.debug({ name: `${this.name}.getBoard()`, data: banner_id }, this.procId, 'method');
+
+    const banner = await db.select(
+      { table: this.table, filters: [{ [this.idField]: banner_id }] },
+      this.procId
+    );
+
+    if (banner.length === 0) return null;
+
+    return banner[0].board_id;
+  };
+
+  this.getFunctions = () => {
+    const FN_ARGS = /([^\s,]+)/g;
+    const excluded = ['getFunctions', 'getBoardId'];
+
+    const functions = Object.entries(this)
+      .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))
+      .map(([fnName, fnDef]) => {
+        const fnStr = fnDef.toString();
+        const fnArgs = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(FN_ARGS);
+
+        return { name: fnName, args: fnArgs };
+      });
+
+    return functions;
+  };
 }
-
-Banner.prototype = Object.create(BaseModel.prototype);
-
-// Custom saveEntry method for handling images uploading
-Banner.prototype.saveEntry = function(entry, callback) {
-  processFiles([this, entry, 'image', BaseModel.prototype.saveEntry], (err, res) => callback(err, res));
-};
-
-Banner.prototype.getAllEntries = function(callback, filters) {
-  BaseModel.prototype.getAllEntries.call(
-    this,
-    (err, res) => {
-      if (err) return callback(err, null);
-
-      let resBanners = res;
-      if (res.length > 0) {
-        resBanners = res.map(banner => {
-          const bannerPathArray = banner.image_uri.split('/');
-          const bannerExtension = path.extname(banner.image_uri).replace('.', '');
-
-          const resBanner = {
-            banner_id: banner.banner_id,
-            contentType: bannerPathArray[1] + '/' + bannerExtension,
-            // data: fs.readFileSync(banner.image_uri),
-            uri: banner.image_uri,
-            name: banner.image_name,
-            size: banner.image_size,
-            board: banner.Boards.uri
-          };
-
-          return resBanner;
-        });
-      }
-
-      callback(err, resBanners);
-    },
-    filters
-  );
-};
-
-Banner.prototype.updateEntry = function(entry, callback) {
-  delete entry.files;
-  BaseModel.prototype.updateEntry.call(this, entry, (err, res) => callback(err, res));
-};
-
-Banner.prototype.getAllForBoard = function(callback, filters) {
-  filters[0].board_id += '|null';
-  this.getAllEntries((err, res) => callback(err, res), [...filters]);
-};
 
 module.exports = new Banner();

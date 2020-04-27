@@ -1,40 +1,90 @@
 'use strict';
 
-const BaseModel = require('./BaseModel');
+const db = require('../db');
+const logger = require('../libraries/logger');
+const validate = require('../libraries/validate');
 
 const Thread = require('./Thread');
 
 function Board() {
-  const classname = 'board';
+  this.name = this.constructor.name;
+  this.table = this.name + 's';
+  this.idField = this.table.toLowerCase().replace('s', '_id');
 
-  const schema = {
-    board_id: { pk: true },
-    name: { type: 'alpha', length: 45, required: true, unique: true },
-    uri: { type: 'alpha', length: 10, required: true, unique: true },
-    description: { type: 'alphanum', length: 250, required: true }
+  this.procId = null;
+
+  this.schema = {
+    name: { type: 'alpha', length: 45, required: true },
+    uri: { type: 'boarduri', length: 10, required: true },
+    description: { type: 'alphanum', length: 250 },
   };
 
-  BaseModel.call(this, classname, schema);
-}
+  this.save = (body) => {
+    logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
-Board.prototype = Object.create(BaseModel.prototype);
+    const errors = validate(body, this.schema);
+    if (errors) return { validationError: errors };
 
-Board.prototype.getEntry = function([filters, noJoin], callback) {
-  BaseModel.prototype.getEntry.call(this, [filters, noJoin], (err, res) => {
-    if (err || res.length === 0) return callback(err, res);
+    return db.insert({ body, table: this.table }, this.procId);
+  };
 
-    Thread.getAllEntries(
-      (err, response) => {
-        if (err) callback(err, null);
-        else callback(null, [{ ...res[0], threads: response }]);
-      },
-      [{ board_id: res[0].board_id }, true]
+  this.get = async (uri) => {
+    logger.debug({ name: `${this.name}.get()`, data: uri }, this.procId, 'method');
+
+    let board = await db.select(
+      { table: this.table, filters: [{ field: 'uri', value: uri }] },
+      this.procId
     );
-  });
-};
 
-Board.prototype.getBoard = function(filters) {
-  return BaseModel.getEntrySync(filters, 'Boards');
-};
+    if (board.length > 0) {
+      Thread.procId = this.procId;
+      board[0].threads = await Thread.getByBoard(board[0].board_id);
+    }
+
+    return board;
+  };
+
+  this.getAll = () => {
+    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
+
+    return db.select({ table: this.table }, this.procId);
+  };
+
+  this.update = (body) => {
+    logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
+
+    const idValue = body[this.idField];
+    delete body[this.idField];
+
+    const errors = validate(body, this.schema);
+    if (errors) return { validationError: errors };
+
+    return db.update(
+      { body, table: this.table, id: { field: this.idField, value: idValue } },
+      this.procId
+    );
+  };
+
+  this.delete = (board_id) => {
+    logger.debug({ name: `${this.name}.delete()`, data: board_id }, this.procId, 'method');
+
+    return db.remove({ id: { field: this.idField, value: board_id }, table: this.table }, this.procId);
+  };
+
+  this.getFunctions = () => {
+    const FN_ARGS = /([^\s,]+)/g;
+
+    const functions = Object.entries(this)
+      .filter(([key, val]) => typeof val === 'function' && key !== 'getFunctions')
+      .map(([fnName, fnDef]) => {
+        const fnStr = fnDef.toString();
+        const fnArgs = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(FN_ARGS);
+
+        return { name: fnName, args: fnArgs };
+      });
+
+    return functions;
+  };
+}
 
 module.exports = new Board();

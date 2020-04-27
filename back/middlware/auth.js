@@ -1,74 +1,84 @@
-const jwt = require('jsonwebtoken');
-const config = require('../config');
+'use strict';
+
 const models = require('../models');
 
-const auth = async (req, res, next) => {
-  const token = req.header('x-auth-token');
+const jwt = require('../libraries/jwt');
 
-  if (!token) return res.status(401).json('Authorization denied');
+let privateRoutesMap = null;
 
-  try {
-    const decoded = jwt.verify(token, config.jwt.secret);
-    req.staff = decoded.staff;
+const modPermissionsMap = new Map([
+  ['Ban', ['save']],
+  ['Banner', ['save', 'delete']],
+  ['Board', ['update']],
+  ['Post', ['update', 'delete']],
+  ['Report', ['updateSolved']],
+  ['Rule', ['save', 'update', 'delete']],
+  ['Thread', ['delete']],
+]);
 
-    const isStaffAuthorized = await checkStaffAuthorization(req);
+const auth = (routes) => {
+  privateRoutesMap = routes;
 
-    if (!isStaffAuthorized) return res.status(401).json('Unauthorized');
+  return async (req, res, next) => {
+    const token = req.header('x-auth-token');
 
-    return next();
-  } catch (error) {
-    console.error(error);
-    res.status(401).json('Invalid token');
-  }
+    if (!token) return res.status(401).json('Authorization denied');
+
+    try {
+      req.staff = jwt.decode(token);
+
+      const isStaffAuthorized = await checkStaffAuthorization(req);
+      if (!isStaffAuthorized) return res.status(401).json('Unauthorized');
+
+      return next();
+    } catch (error) {
+      console.error(error);
+      res.status(401).json('Invalid token');
+    }
+  };
 };
 
-const checkStaffAuthorization = async req => {
+const checkStaffAuthorization = async (req) => {
   const staff = req.staff;
 
   if (staff.disabled) return false;
 
-  if (!staff.admin && !req.route.path.includes('auth')) {
-    const modPermissionsMap = new Map([
-      ['POST', ['bans', 'banners', 'boards', 'rules']],
-      ['PUT', ['boards', 'posts', 'reports', 'rules', 'threads']],
-      [
-        'GET',
-        [
-          [], // [0] con id: /example/:example_id
-          ['reports'] // [1] sin id: /example
-        ]
-      ],
-      ['DELETE', [['banners', 'posts', 'rules', 'threads'], []]]
-    ]);
+  const route = req.route.path;
+  if (!staff.admin && privateRoutesMap.has(route)) {
+    const modelMethod = privateRoutesMap.get(route).split('.');
 
-    const baseRoute = req.route.path.replace(/(:([^\/]+?))\/?$/g, '').replace(/\//g, '');
-    const method = req.method;
-    const permission = modPermissionsMap.get(req.method);
-    const staffIsBoardModerator = await checkStaffBoard(req.body || req.params, staff, baseRoute);
+    /**
+     * modelMethod[0] = model name
+     * modelMethod[1] = model method
+     * ej.: [ 'Board', 'delete' ]
+     * */
+    if (!modPermissionsMap.has(modelMethod[0])) return false;
 
-    if (
-      (method === 'POST' || method === 'PUT') &&
-      (!permission.includes(baseRoute) || !staffIsBoardModerator)
-    )
-      return false;
+    if (!modPermissionsMap.get(modelMethod[0]).includes(modelMethod[1])) return false;
 
-    if (method === 'GET' || method === 'DELETE') {
-      const permIndex = +!req.route.path.includes('id');
-      if (!permission[permIndex].includes(baseRoute) || !staffIsBoardModerator) return false;
-    }
+    const staffIsBoardModerator = await checkStaffBoard(
+      req.body || req.params || null,
+      staff,
+      modelMethod
+    );
+    if (!staffIsBoardModerator) return false;
   }
 
   return true;
 };
 
-const checkStaffBoard = async (reqData, staff, baseRoute) => {
-  const modelName = baseRoute.slice(0, 1).toUpperCase() + baseRoute.slice(1, -1);
-  const Model = models[modelName];
-  const idField = modelName.toLowerCase() + '_id';
+const checkStaffBoard = async (reqData, staff, modelMethod) => {
+  const Model = models[modelMethod[0]];
+  const idField = modelName.idField;
 
-  const board = await Model.getBoard({ [idField]: reqData[idField] });
+  let args = [];
+  if (reqData) args.push(reqData[idField]);
 
-  if (board.length === 0 || (staff.board_id && board[0].board_id !== staff.board_id)) return false;
+  let board_id = null;
+  if (idField === 'board_id') board_id = reqData[idField];
+  else board_id = await Model.getBoardId(...args);
+
+  if (!board_id || (board_id && board_id !== staff.board_id)) return false;
 
   return true;
 };

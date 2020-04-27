@@ -1,99 +1,164 @@
 'use strict';
 
-const BaseModel = require('./BaseModel');
-
 const bcrypt = require('bcrypt');
-const error = require('../utils/error');
-const setJwtToken = require('../utils/setJwtToken');
+
+const db = require('../db');
+const logger = require('../libraries/logger');
+const validate = require('../libraries/validate');
+const jwt = require('../libraries/jwt');
 
 function Staff() {
-  const classname = 'staff';
+  this.name = this.constructor.name;
+  this.table = this.name + 's';
+  this.idField = this.table.toLowerCase().replace('s', '_id');
 
-  const schema = {
-    staff_id: { pk: true },
+  this.procId = null;
+
+  this.schema = {
     board_id: { type: 'table' },
-    name: { type: 'alpha', length: 15, required: true, unique: true },
-    password: { type: 'alphanum', length: 20, hashed: true },
+    name: { type: 'alpha', length: 15, required: true },
+    password: { type: 'alphanum', length: 20 },
     admin: { type: 'bool' },
     disabled: { type: 'bool' },
-    last_login: { type: 'timestamp' }
+    last_login: { type: 'timestamp' },
   };
 
-  BaseModel.call(this, classname, schema);
-}
+  this.save = (body) => {
+    logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
-Staff.prototype = Object.create(BaseModel.prototype);
+    const errors = validate(body, this.schema);
+    if (errors) return { validationError: errors };
 
-Staff.prototype.saveEntry = function(entry, callback) {
-  if (!entry.staff_id) entry.password = entry.name;
+    body.password = bcrypt.hashSync(body.name, 10);
 
-  BaseModel.prototype.saveEntry.call(this, entry, (err, res) => callback(err, res));
-};
+    return db.insert({ body, table: this.table }, this.procId);
+  };
 
-// Custom getAllEntries for removing password field from retrieved entries
-Staff.prototype.getAllEntries = function(callback) {
-  BaseModel.prototype.getAllEntries.call(this, (err, res) => {
-    if (err) callback(err, null);
-    else callback(null, removePass(res));
-  });
-};
+  // TODO: chequear solo un staff pueda actualizar su propios datos, y admins
+  this.update = (body) => {
+    logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
 
-// Custom getEntry for removing password field from retrieved entry
-Staff.prototype.getEntry = function(filters, callback) {
-  BaseModel.prototype.getEntry.call(this, filters, (err, res) => {
-    if (err) callback(err, null);
-    else callback(null, removePass(res));
-  });
-};
+    if (body.password) delete body.password;
 
-// Login staff
-Staff.prototype.login = function(object, callback) {
-  BaseModel.prototype.getEntry.call(this, [{ name: object.name }, true], (err, res) => {
-    if (err) return callback(err, null);
+    const idValue = body[this.idField];
+    delete body[this.idField];
 
-    if (res.length === 0) return callback(error({ code: 'ER_USER_NOTFOUND' }), null);
+    const errors = validate(body, this.schema);
+    if (errors) return { validationError: errors };
 
-    const passwordMatch = bcrypt.compareSync(object.password, res[0].password);
-    if (!passwordMatch) return callback(error({ code: 'ER_INVALID_PASS' }));
+    return db.update(
+      { body, table: this.table, id: { field: this.idField, value: idValue } },
+      this.procId
+    );
+  };
+
+  // TODO: chequear solo un staff pueda actualizar su propios datos, y admins
+  this.updatePassword = (body) => {
+    logger.debug({ name: `${this.name}.updatePassword()`, data: body }, this.procId, 'method');
+
+    const idValue = body[this.idField];
+    delete body[this.idField];
+
+    const errors = validate(body, this.schema);
+    if (errors) return { validationError: errors };
+
+    body.password = bcrypt.hashSync(body.name, 10);
+
+    return db.update(
+      { body, table: this.table, id: { field: this.idField, value: idValue } },
+      this.procId
+    );
+  };
+
+  this.get = async (staff_id) => {
+    logger.debug({ name: `${this.name}.get()`, data: staff_id }, this.procId);
+
+    const staff = await db.select(
+      {
+        table: this.table,
+        filters: [{ field: this.idField, value: staff_id }],
+      },
+      this.procId
+    );
+
+    if (staff.length > 0) delete staff[0].password;
+
+    return staff;
+  };
+
+  this.getAll = async () => {
+    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
+
+    let staffs = await db.select({ table: this.table }, this.procId);
+
+    if (staffs.length > 0)
+      staffs = staffs.map((staff) => {
+        delete staff.password;
+        return staff;
+      });
+
+    return staffs;
+  };
+
+  this.sLogin = async (body) => {
+    logger.debug({ name: `${this.name}.sLogin()`, data: body }, this.procId);
+
+    const res = await db.select(
+      { table: this.table, filters: [{ field: name, value: body.name }] },
+      this.procId
+    );
+
+    if (res.length === 0) return { validationError: { user: 'Not Found' } };
+
+    const passwordMatch = bcrypt.compareSync(body.password, res[0].password);
+    if (!passwordMatch) return { validationError: { password: 'Invalid password' } };
 
     const tzoffset = new Date().getTimezoneOffset() * 60000;
-    const now = tzoffset => new Date(Date.now() - tzoffset).toISOString();
+    const now = (tzoffset) => new Date(Date.now() - tzoffset).toISOString();
 
     const staff = {
       staff_id: res[0].staff_id,
       name: res[0].name,
-      last_login: now(tzoffset)
-        .slice(0, 19)
-        .replace('T', ' ')
+      last_login: now(tzoffset).slice(0, 19).replace('T', ' '),
     };
 
-    BaseModel.prototype.updateEntry.call(this, staff, (error, response) => {
-      if (error) callback(error, null);
-      else setJwtToken(res[0], (e, r) => callback(e, r));
-    });
-  });
-};
+    const updatedLogin = await this.update(staff);
 
-// Authenticate staff
-Staff.prototype.auth = function(staff, callback) {
-  BaseModel.prototype.getEntry.call(this, [{ staff_id: staff.staff_id }], (err, res) => {
-    if (err) return callback(err, null);
+    if (updatedLogin[0].affectedRows > 0) return { token: jwt.set(updatedLogin[0]) };
 
-    const staff = {
-      staff_id: res[0].staff_id,
-      name: res[0].name,
-      admin: res[0].admin,
-      disabled: res[0].disabled
-    };
+    return [];
+  };
 
-    callback(null, staff);
-  });
-};
+  this.getAuth = async (staff) => {
+    logger.debug({ name: `${this.name}.getAuth()`, data: staff.staff_id }, this.procId);
 
-const removePass = result =>
-  result.map(entry => {
-    delete entry.password;
-    return entry;
-  });
+    let res = await this.get(staff.staff_id);
+
+    if (res.length > 0)
+      res = {
+        staff_id: res[0].staff_id,
+        name: res[0].name,
+        admin: res[0].admin,
+        disabled: res[0].disabled,
+      };
+
+    return res;
+  };
+
+  this.getFunctions = () => {
+    const FN_ARGS = /([^\s,]+)/g;
+
+    const functions = Object.entries(this)
+      .filter(([key, val]) => typeof val === 'function' && key !== 'getFunctions')
+      .map(([fnName, fnDef]) => {
+        const fnStr = fnDef.toString();
+        const fnArgs = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(FN_ARGS);
+
+        return { name: fnName, args: fnArgs };
+      });
+
+    return functions;
+  };
+}
 
 module.exports = new Staff();

@@ -1,0 +1,7 @@
+{
+  "root_dir": "/absolute/path/to/back/",
+  "data_dir": "data",
+  "allowed": {
+    "image": "png,jpeg,gif"
+  }
+}

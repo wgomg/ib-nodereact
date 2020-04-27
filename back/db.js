@@ -1,145 +1,104 @@
 'use strict';
 
 const mysql = require('mysql');
-const { db } = require('./config/');
-
-const error = require('./utils/error');
-const { processNestedResults } = require('./utils/helpers');
-
+const config = require('./config');
 const util = require('util');
+const pool = mysql.createPool(config.db);
+const query = util.promisify(pool.query).bind(pool);
 
-const pool = mysql.createPool(db);
+const logger = require('./libraries/logger');
 
-/** Funciones de uso general, asíncronas **/
-const insert = ([table, fields, values], callback) => {
-  const sqlValues = values
-    .map((v, pos) => {
-      let val = '?';
-      if (typeof v === 'string' && v.includes('|ip')) {
-        val = 'INET6_ATON(?)';
-        values[pos] = v.split('|')[0];
-      }
-      return val;
-    })
-    .join(', ');
+const insert = (queryData, procId) => {
+  const { body, table, ipField } = queryData;
 
-  const sql = `INSERT INTO ${table} (${fields}) VALUES (${sqlValues})`;
+  const bodyKeysArray = Object.keys(body);
 
-  pool.query(sql, values, (err, res) => {
-    if (err) callback(error(err), null);
-    else callback(null, res);
-  });
+  const fields = bodyKeysArray.map((field) => `\`${field}\``).join(', ');
+  const values = Object.values(body);
+  let placeholders = Array(fields.split(',').length).fill('?').join(', ');
+
+  if (ipField) {
+    const fieldPos = bodyKeysArray.indexOf(ipField);
+    placeholders.split(',')[fieldPos] = 'INET6_ATON(?)';
+  }
+
+  const sql = `INSERT INTO ${table} (${fields}) VALUES (${placeholders})`;
+
+  logger.debug({ name: 'insert', data: { sql, values } }, procId, 'dbop');
+
+  return query(sql, values);
 };
 
-const update = ([table, fields, values, id], callback) => {
-  const idField = table.toLowerCase().slice(0, -1) + '_id';
+const update = (queryData, procId) => {
+  const { body, table, id } = queryData;
 
-  const sqlFieldsValues = fields
-    .split(',')
-    .map(field => field + ' = ?')
+  const values = Object.values(body);
+  const placeholders = Object.keys(body)
+    .map((field) => `\`${field}\` = ?`)
     .join(', ');
 
-  const sql = `Update ${table} SET ${sqlFieldsValues} WHERE ${idField} = ${id}`;
+  const sql = `Update ${table} SET ${placeholders} WHERE ${id.field} = ${pool.escape(id.value)}`;
 
-  pool.query(sql, values, (err, res) => {
-    if (err) callback(error(err), null);
-    else callback(null, { ...res, updatedId: id });
-  });
+  logger.debug({ name: 'update', data: { sql, values, id } }, procId, 'dbop');
+
+  return query(sql, values);
 };
 
-const select = ([table, modelSchema, filters, noJoin, orderBy], callback) => {
-  const schemaFields = Object.keys(modelSchema);
-  const filtersFields = filters ? Object.keys(filters) : null;
+const select = (queryData, procId) => {
+  const { fields, filters, table, orderBy, ipField } = queryData;
 
-  let foreignTables = schemaFields
-    .filter(field => modelSchema[field].type === 'table')
-    .map(table_field => {
-      return {
-        tableIdField: table_field,
-        tableName: table_field.charAt(0).toUpperCase() + table_field.slice(1, -3) + 's'
-      };
-    });
+  let sql = 'SELECT';
 
-  const ipField = schemaFields.filter(field => modelSchema[field].type === 'ip_address');
-  let ip_conversion = '';
-  if (ipField.length > 0) ip_conversion = `, INET6_NTOA(${ipField[0]}) AS ${ipField[0]}`;
+  if (fields) {
+    const selectFields = fields.map((field) => `\`${field}\``).join(', ');
+    sql += ` ${selectFields}`;
+  } else {
+    sql += ' *';
+  }
 
-  let sqlSelect = `SELECT *${ip_conversion}`;
-  let sqlFrom = ` FROM ${table}`;
-  let sqlJoin = '';
+  sql += ` FROM ${table}`;
 
-  if (!noJoin && foreignTables.length > 0)
-    for (const { tableIdField, tableName } of foreignTables) {
-      if (modelSchema[tableIdField].ip_field)
-        sqlSelect += `, INET6_NTOA(${tableName}.${modelSchema[tableIdField].ip_field}) AS ${modelSchema[tableIdField].ip_field}`;
+  let filtersValues = null;
+  if (filters) {
+    let ipFieldPos = -1;
 
-      sqlJoin += ` LEFT JOIN ${tableName} ON ${tableName}.${tableIdField} = ${table}.${tableIdField}`;
-    }
+    const filtersFields = filters
+      .map((filter, pos) => {
+        if (ipField && filter.field === ipField) ipFieldPos = pos;
 
-  let sqlWhere = '';
-
-  if (filtersFields && filtersFields.length > 0) {
-    sqlWhere += ' WHERE ';
-    sqlWhere += filtersFields
-      .map(field => {
-        const filterValue = filters[field].length > 1 ? filters[field].split('|') : filters[field];
-
-        let sentenceField = field.includes('.') ? field : `${table}.${field}`;
-        let sentenceValue = field.includes('.') ? `= ${filterValue}` : '= ?';
-
-        let sentence = `${sentenceField} ${sentenceValue}`;
-
-        if (filterValue[1]) sentence += ` OR ${sentenceField} IS NULL`;
-
-        return `${sentence}`;
+        return `\`${filter.field}\` = ?`;
       })
       .join(' AND ');
+
+    filtersValues = filters.map((filter, pos) => {
+      if (ipFieldPos > -1 && pos === ipFieldPos) return `INET6_ATON(${filter.value})`;
+
+      return filter.value;
+    });
+
+    sql += ` WHERE ${filtersFields}`;
   }
 
-  let sqlOrderBy = '';
-  if (orderBy) sqlOrderBy += ` ORDER BY ${table}.${orderBy.field} ${orderBy.direction}`;
-
-  let sql = sqlSelect + sqlFrom + sqlJoin + sqlWhere + sqlOrderBy;
-
-  let args = [{ sql, nestTables: true }];
-
-  if (filtersFields && filtersFields.length > 0) {
-    const values = filtersFields.map(field => (!field.includes('.') ? filters[field] : null));
-    args.push(values);
+  if (orderBy) {
+    sql += ` ORDER BY ${orderBy.field} ${orderBy.direction}`;
   }
 
-  const cb = (err, res) => {
-    if (err) callback(error(err), null);
-    else callback(null, processNestedResults([table, res, foreignTables, noJoin]));
-  };
+  let queryArgs = [{ sql }];
+  if (filtersValues) queryArgs.push(filtersValues);
 
-  args.push(cb);
+  logger.debug({ name: 'select', data: { sql, filtersValues } }, procId, 'dbop');
 
-  pool.query(...args);
+  return query(...queryArgs);
 };
 
-const remove = ([table, filter], callback) => {
-  const idField = table.toLowerCase().slice(0, -1) + '_id';
-  const sql = `DELETE FROM ${table} WHERE ${idField} = ?`;
+const remove = (queryData, procId) => {
+  const { id, table } = queryData;
 
-  pool.query(sql, filter[idField], (err, res) => {
-    if (err) callback(error(err), null);
-    else callback(null, res);
-  });
-};
+  const sql = `DELETE FROM ${table} WHERE \`${id.field}\` = ${pool.escape(id.value)}`;
 
-/** Función síncrona añadida por necesidad para autentificación **/
-const selectSync = (filters, table) => {
-  const filtersFields = Object.keys(filters).map(f => `\`${f}\` = ?`);
-  const filtersValues = Object.keys(filters).map(f => filters[f]);
+  logger.debug({ name: 'remove', data: { sql, id } }, procId, 'dbop');
 
-  let sql = `SELECT * FROM ${table}`;
-
-  if (filtersFields.length > 0) sql += ` WHERE ${filtersFields.join(' AND ')}`;
-
-  const querySync = util.promisify(pool.query).bind(pool);
-
-  return querySync(sql, filtersValues);
+  return query(sql);
 };
 
 module.exports = {
@@ -147,5 +106,4 @@ module.exports = {
   select,
   update,
   remove,
-  selectSync
 };

@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "front": "npm start --prefix front",
-    "back": "npm start --prefix back",
+    "back": "npm run dev --prefix back",
     "dev": "concurrently \"npm run back\" \"npm run front\""
   },
   "repository": {
@@ -18,5 +18,6 @@
   "bugs": {
     "url": "https://github.com/wgomg/ib-nodereact/issues"
   },
-  "homepage": "https://github.com/wgomg/ib-nodereact#readme"
+  "homepage": "https://github.com/wgomg/ib-nodereact#readme",
+  "dependencies": {}
 }

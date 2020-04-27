@@ -38,13 +38,13 @@ USE `imageboard`;
 CREATE TABLE IF NOT EXISTS `Banners` (
   `banner_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `board_id` bigint(20) unsigned DEFAULT NULL,
-  `image_uri` varchar(120) NOT NULL,
-  `image_name` varchar(50) NOT NULL,
-  `image_size` int(10) unsigned NOT NULL,
+  `file_id` bigint(20) unsigned NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`banner_id`),
   KEY `board_id` (`board_id`),
-  CONSTRAINT `Banners_ibfk_1` FOREIGN KEY (`board_id`) REFERENCES `Boards` (`board_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `file_id` (`file_id`),
+  CONSTRAINT `Banners_ibfk_1` FOREIGN KEY (`board_id`) REFERENCES `Boards` (`board_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `Banners_ibfk_2` FOREIGN KEY (`file_id`) REFERENCES `Files` (`file_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -90,6 +90,23 @@ CREATE TABLE IF NOT EXISTS `Boards` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `Files`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `Files` (
+  `file_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `mimetype` varchar(12) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `extension` varchar(4) NOT NULL,
+  `size` int(10) unsigned NOT NULL,
+  `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`file_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `Posts`
 --
 
@@ -98,16 +115,15 @@ CREATE TABLE IF NOT EXISTS `Boards` (
 CREATE TABLE IF NOT EXISTS `Posts` (
   `post_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `thread_id` bigint(20) unsigned NOT NULL,
-  `text` varchar(1000) NOT NULL,
-  `user` varbinary(16) NOT NULL,
+  `text` varchar(3000) NOT NULL,
   `name` varchar(10) DEFAULT NULL,
-  `file_uri` varchar(120) DEFAULT NULL,
-  `file_name` varchar(50) DEFAULT NULL,
-  `file_size` int(10) unsigned DEFAULT NULL,
+  `file_id` bigint(20) unsigned DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`post_id`),
   KEY `thread_id` (`thread_id`),
-  CONSTRAINT `Posts_ibfk_1` FOREIGN KEY (`thread_id`) REFERENCES `Threads` (`thread_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `file_id` (`file_id`),
+  CONSTRAINT `Posts_ibfk_1` FOREIGN KEY (`thread_id`) REFERENCES `Threads` (`thread_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `Posts_ibfk_2` FOREIGN KEY (`file_id`) REFERENCES `Files` (`file_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -203,4 +219,4 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-03-21 18:10:55
+-- Dump completed on 2020-04-24 21:30:39
