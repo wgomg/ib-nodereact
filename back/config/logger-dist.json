@@ -1,5 +1,5 @@
 {
-  "dir": "/logs",
+  "dir": "logs",
   "level": "info",
   "infoFile": false,
   "errorFile": false,
