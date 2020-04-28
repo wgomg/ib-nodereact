@@ -11,7 +11,7 @@ const AllowedFile = require('../libraries/AllowedFile');
 function File() {
   this.name = this.constructor.name;
   this.table = this.name + 's';
-  this.idField = this.table.toLowerCase().replace('s', '_id');
+  this.idField = this.table.toLowerCase().slice(0, -1) + '_id';
 
   this.procId = null;
 
