@@ -18,13 +18,24 @@ function Rule() {
     details: { type: 'string', length: 250 },
   };
 
-  this.save = (body) => {
+  this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
+
+    console.log('SAVE RULE');
 
     const errors = validate(body, this.schema);
     if (errors) return { validationError: errors };
 
-    return db.insert({ body, table: this.table }, this.procId);
+    let rule = await db.insert({ body, table: this.table }, this.procId);
+
+    if (rule.insertId) {
+      rule = await db.select({
+        table: this.table,
+        filters: [{ field: this.idField, value: rule.insertId }],
+      });
+    }
+
+    return rule;
   };
 
   this.update = (body) => {
@@ -42,6 +53,24 @@ function Rule() {
     );
   };
 
+  this.gBoard = async (board_id) => {
+    logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
+
+    return db.select(
+      { table: this.table, filters: [{ field: 'board_id', value: board_id }] },
+      this.procId
+    );
+  };
+
+  this.getGlobal = async () => {
+    logger.debug({ name: `${this.name}.getGlobal()` }, this.procId, 'method');
+
+    return await db.select(
+      { table: this.table, filters: [{ field: 'board_id', value: null }] },
+      this.procId
+    );
+  };
+
   this.delete = (rule_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: rule_id }, this.procId, 'method');
 
@@ -49,10 +78,10 @@ function Rule() {
   };
 
   this.getBoardId = async (rule_id) => {
-    logger.debug({ name: `${this.name}.getBoard()`, data: rule_id }, this.procId, 'method');
+    logger.debug({ name: `${this.name}.getBoardId()`, data: rule_id }, this.procId, 'method');
 
     const rule = await db.select(
-      { table: this.table, filters: [{ [this.idField]: rule_id }] },
+      { table: this.table, filters: [{ field: this.idField, value: rule_id }] },
       this.procId
     );
 

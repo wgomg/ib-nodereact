@@ -7,6 +7,8 @@ const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 const jwt = require('../libraries/jwt');
 
+const Board = require('./Board');
+
 function Staff() {
   this.name = this.constructor.name;
   this.table = this.name + 's';
@@ -23,7 +25,7 @@ function Staff() {
     last_login: { type: 'timestamp' },
   };
 
-  this.save = (body) => {
+  this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const errors = validate(body, this.schema);
@@ -31,7 +33,27 @@ function Staff() {
 
     body.password = bcrypt.hashSync(body.name, 10);
 
-    return db.insert({ body, table: this.table }, this.procId);
+    let staff = await db.insert({ body, table: this.table }, this.procId);
+
+    if (staff.insertId) {
+      staff = await db.select(
+        { table: this.table, filters: [{ field: this.idField, value: staff.insertId }] },
+        this.procId
+      );
+
+      let board = [];
+      if (staff.board_id) {
+        Board.procId = this.procId;
+        board = await Board.getByID(staff.board_id);
+
+        delete staff.board_id;
+      }
+
+      staff.board = board.length > 0 ? board[0] : null;
+      delete staff.password;
+    }
+
+    return staff;
   };
 
   // TODO: chequear solo un staff pueda actualizar su propios datos, y admins
@@ -62,7 +84,7 @@ function Staff() {
     const errors = validate(body, this.schema);
     if (errors) return { validationError: errors };
 
-    body.password = bcrypt.hashSync(body.name, 10);
+    body.password = bcrypt.hashSync(body.password, 10);
 
     return db.update(
       { body, table: this.table, id: { field: this.idField, value: idValue } },
@@ -70,8 +92,29 @@ function Staff() {
     );
   };
 
+  this.getAuth = async (staff) => {
+    if (staff) {
+      logger.debug({ name: `${this.name}.getAuth()`, data: staff }, this.procId, 'method');
+
+      let res = await this.get(staff.staff_id);
+
+      if (res.length > 0)
+        res = {
+          staff_id: res[0].staff_id,
+          name: res[0].name,
+          admin: res[0].admin,
+          board_id: res[0].board_id,
+          disabled: res[0].disabled,
+        };
+
+      return res;
+    }
+
+    return { validationError: 'Authorization denied' };
+  };
+
   this.get = async (staff_id) => {
-    logger.debug({ name: `${this.name}.get()`, data: staff_id }, this.procId);
+    logger.debug({ name: `${this.name}.get()`, data: staff_id }, this.procId, 'method');
 
     const staff = await db.select(
       {
@@ -92,19 +135,31 @@ function Staff() {
     let staffs = await db.select({ table: this.table }, this.procId);
 
     if (staffs.length > 0)
-      staffs = staffs.map((staff) => {
-        delete staff.password;
-        return staff;
-      });
+      return Promise.all(
+        staffs.map(async (staff) => {
+          let board = [];
+          if (staff.board_id) {
+            Board.procId = this.procId;
+            board = await Board.getByID(staff.board_id);
+
+            delete staff.board_id;
+          }
+
+          staff.board = board.length > 0 ? board[0] : null;
+          delete staff.password;
+
+          return staff;
+        })
+      );
 
     return staffs;
   };
 
   this.sLogin = async (body) => {
-    logger.debug({ name: `${this.name}.sLogin()`, data: body }, this.procId);
+    logger.debug({ name: `${this.name}.sLogin()`, data: body }, this.procId, 'method');
 
     const res = await db.select(
-      { table: this.table, filters: [{ field: name, value: body.name }] },
+      { table: this.table, filters: [{ field: 'name', value: body.name }] },
       this.procId
     );
 
@@ -116,7 +171,7 @@ function Staff() {
     const tzoffset = new Date().getTimezoneOffset() * 60000;
     const now = (tzoffset) => new Date(Date.now() - tzoffset).toISOString();
 
-    const staff = {
+    let staff = {
       staff_id: res[0].staff_id,
       name: res[0].name,
       last_login: now(tzoffset).slice(0, 19).replace('T', ' '),
@@ -124,25 +179,22 @@ function Staff() {
 
     const updatedLogin = await this.update(staff);
 
-    if (updatedLogin[0].affectedRows > 0) return { token: jwt.set(updatedLogin[0]) };
+    if (updatedLogin.affectedRows > 0) {
+      staff = await db.select(
+        { table: this.table, filters: [{ field: 'name', value: staff.name }] },
+        this.procId
+      );
+
+      return [{ token: jwt.set(staff[0]) }];
+    }
 
     return [];
   };
 
-  this.getAuth = async (staff) => {
-    logger.debug({ name: `${this.name}.getAuth()`, data: staff.staff_id }, this.procId);
+  this.delete = (staff_id) => {
+    logger.debug({ name: `${this.name}.delete()`, data: staff_id }, this.procId, 'method');
 
-    let res = await this.get(staff.staff_id);
-
-    if (res.length > 0)
-      res = {
-        staff_id: res[0].staff_id,
-        name: res[0].name,
-        admin: res[0].admin,
-        disabled: res[0].disabled,
-      };
-
-    return res;
+    return db.remove({ table: this.table, id: { field: this.idField, value: staff_id } });
   };
 
   this.getFunctions = () => {

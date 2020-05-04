@@ -14,7 +14,7 @@ const privateMethods = new Map([
   ['Post', ['update', 'delete']],
   ['Report', ['getAll', 'updateSolved']],
   ['Rule', ['save', 'update', 'delete']],
-  ['Staff', ['save', 'get', 'getAll', 'update', 'updatePassword']],
+  ['Staff', ['save', 'get', 'getAuth', 'getAll', 'update', 'delete', 'updatePassword']],
   ['Thread', ['delete']],
 ]);
 
@@ -54,10 +54,11 @@ const routesMap = new Map(
       )
         route += `/:${fnArgs[0]}`;
 
-      const isPrivate = privateMethods.get(Model.name).includes(fnName);
-      const access = isPrivate ? 'priv' : 'pub';
-
-      if (isPrivate) privateRoutes.set(route, Model.name + '.' + fn.name);
+      let access = 'pub';
+      if (privateMethods.get(Model.name).includes(fnName)) {
+        access = 'priv';
+        privateRoutes.set(fnHttpMethod.toUpperCase() + route, Model.name + '.' + fn.name);
+      }
 
       return { httpMethod: fnHttpMethod, fn: fnName, fnArgs, route, access };
     }),
@@ -82,7 +83,7 @@ const appMethodArgs = (modelName, ep) => {
   if (ep.access === 'priv') args.push(auth(privateRoutes));
 
   const appMethodCallback = async (req, res) => {
-    req.procId = genProcId();
+    if (!req.procId) req.procId = genProcId();
 
     const Model = models[modelName];
     Model.procId = req.procId;
@@ -116,7 +117,7 @@ const appMethodArgs = (modelName, ep) => {
 
         res.status(401).json(result);
       } else {
-        logger.debug(`[${Model.procId}] DB: Entries returned ${result.length}`);
+        logger.debug(`[${Model.procId}] DB: Entries returned ${result.length || result.affectedRows}`);
         res.json(result);
       }
     } catch (error) {

@@ -107,7 +107,10 @@ module.exports = {
           dataStr =
             'data: ' +
             JSON.stringify(data.data, (key, value) =>
-              key === 'user' || key === 'files' || key === 'password' || key === 'data'
+              key === 'user' ||
+              (key === 'files' && Object.keys(value).length > 0) ||
+              key === 'password' ||
+              key === 'data'
                 ? typeof value
                 : value
             );

@@ -6,22 +6,22 @@ import {
   CREATE_THREAD,
   THREAD_ERROR,
   CREATE_POST,
-  POST_ERROR
+  POST_ERROR,
 } from '../actions/types';
 
 const initState = {
   boards: [],
   board: {},
   loading: true,
-  error: {}
+  error: {},
 };
 
-export default function(state = initState, action) {
+export default function (state = initState, action) {
   const { type, payload } = action;
 
   switch (type) {
     case GET_BOARDS_LIST:
-      return { ...state, boards: payload, board: {}, loading: false, error: {} };
+      return { ...state, boards: payload, loading: false, error: {} };
 
     case GET_BOARD:
       return { ...state, board: payload, loading: false, error: {} };
@@ -29,9 +29,9 @@ export default function(state = initState, action) {
     case DELETE_BOARD:
       return {
         ...state,
-        boards: state.boards.filter(board => board.board_id !== payload),
+        boards: state.boards.filter((board) => board.board_id !== payload),
         loading: false,
-        error: {}
+        error: {},
       };
 
     case CREATE_THREAD:
@@ -39,7 +39,7 @@ export default function(state = initState, action) {
         ...state,
         board: { ...state.board, threads: [payload, ...state.board.threads] },
         loading: false,
-        error: {}
+        error: {},
       };
 
     case CREATE_POST:
@@ -48,16 +48,24 @@ export default function(state = initState, action) {
         board: {
           ...state.board,
           threads: [
-            ...state.board.threads.map(thread => {
-              if (thread.thread_id === payload.thread_id)
-                return { ...thread, posts: [...thread.posts, payload] };
+            ...state.board.threads
+              .map((thread) => {
+                if (thread.thread_id === payload.thread_id)
+                  return { ...thread, posts: [...thread.posts, payload] };
 
-              return thread;
-            })
-          ]
+                return thread;
+              })
+              .sort((t1, t2) => {
+                if (t1.posts.length > 0 && t2.posts.length > 0)
+                  return (
+                    new Date(t2.posts[t2.posts.length - 1].created_on) -
+                    new Date(t1.posts[t1.posts.length - 1].created_on)
+                  );
+              }),
+          ],
         },
         loading: false,
-        error: {}
+        error: {},
       };
 
     case BOARDS_ERROR:

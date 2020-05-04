@@ -1,32 +1,33 @@
 'use strict';
 
 const validate = (entry, schema) => {
-  if (Object.keys(entry).length === 0) return;
+  if (Object.keys(entry).length === 0) return { msg: 'Invalid' };
 
   const schemaFields = Object.keys(schema);
 
   let errors = {};
 
-  for (let [field, value] of Object.entries(entry))
+  for (let [field, value] of Object.entries(entry)) {
     if (!schemaFields.includes(field)) {
       delete errors[field];
       errors[field] = { msg: 'Not expected' };
-    } else {
-      if (schema[field].required && isEmpty(value)) errors[field] = { msg: 'Is required' };
-
-      if (!isEmpty(value)) {
-        if (!isValidType(value, schema[field].type))
-          errors[field] = { msg: 'Invalid value', value: entry[field] };
-        else {
-          if (schema[field].length && entry[field].length > schema[field].length)
-            errors[field] = {
-              msg: `Value exceeds max. length (${schema[field].length})`,
-              value: entry[field],
-            };
-          else errors[field] = entry[field];
-        }
-      }
     }
+
+    if (schema[field].required && isEmpty(value)) errors[field] = { msg: 'Is required' };
+
+    if (!isEmpty(value)) {
+      if (!isValidType(value, schema[field].type))
+        errors[field] = { msg: 'Invalid value', value: entry[field] };
+
+      if (schema[field].length && entry[field].length > schema[field].length)
+        errors[field] = {
+          msg: `Value exceeds max. length (${schema[field].length})`,
+          value: entry[field],
+        };
+    }
+
+    if (!errors[field]) errors[field] = entry[field];
+  }
 
   if (objectsAreNotEqual(entry, errors)) return errors;
 
@@ -50,6 +51,9 @@ const isValidType = (value, type) => {
 
     case 'alphanum':
       return /^$|^[a-zA-Z0-9 ]+$/i.test(value);
+
+    case 'dir':
+      return /^$|^[a-zA-Z0-9-_\\\/]+$/i.test(value);
 
     case 'ext':
       return /^[a-z]{3,4}$/.test(value);

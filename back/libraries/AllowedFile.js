@@ -11,19 +11,21 @@ const signaturesMap = new Map([
 ]);
 
 function AllowedFile(file) {
-  if (!file) return {};
+  if (!file) this.noFile = true;
 
   const fileHeader = file.data.subarray(0, 4).toString('hex');
-  if (file.truncated || signaturesMap.get(fileHeader) === undefined) return null;
 
-  let fileExtension = file.name.split('.').pop().toLowerCase();
-  const extensions = signaturesMap.get(fileHeader).extensions;
-  if (!extensions.includes(fileExtension)) fileExtension = extensions[0];
+  if (file.truncated || signaturesMap.get(fileHeader) === undefined) this.invalidFile = true;
+  else {
+    let fileExtension = file.name.split('.').pop().toLowerCase();
+    const extensions = signaturesMap.get(fileHeader).extensions;
+    if (!extensions.includes(fileExtension)) fileExtension = extensions[0];
 
-  this.mimetype = signaturesMap.get(fileHeader).mimetype;
-  this.name = file.md5;
-  this.extension = fileExtension;
-  this.size = file.size;
+    this.mimetype = signaturesMap.get(fileHeader).mimetype;
+    this.name = file.md5;
+    this.extension = fileExtension;
+    this.size = file.size;
+  }
 }
 
 module.exports = AllowedFile;

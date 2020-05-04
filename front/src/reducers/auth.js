@@ -5,24 +5,24 @@ const initState = {
   logged: false,
   loading: true,
   staff: {},
-  error: {}
+  error: {},
 };
 
-export default function(state = initState, action) {
+export default function (state = initState, action) {
   const { type, payload } = action;
 
   switch (type) {
     case LOGIN_SUCCESS:
       localStorage.setItem('token', payload.token);
-      return { ...state, ...payload, logged: true, loading: false };
+      return { ...state, ...payload, logged: true, loading: false, error: {} };
 
     case STAFF_LOADED:
-      return { ...state, logged: true, loading: false, staff: payload };
+      return { ...state, logged: true, loading: false, staff: payload, error: {} };
 
     case LOGIN_FAIL:
     case LOGOUT:
       localStorage.removeItem('token');
-      return { ...state, token: null, logged: false, loading: false, staff: {} };
+      return { ...state, token: null, logged: false, loading: false, staff: {}, error: {} };
 
     case STAFF_LOAD_ERROR:
       localStorage.removeItem('token');

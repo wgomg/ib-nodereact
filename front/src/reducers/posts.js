@@ -3,10 +3,10 @@ import { GET_LATEST_POSTS, LATEST_POSTS_ERROR } from '../actions/types';
 const initState = {
   latests: [],
   loading: true,
-  error: {}
+  error: {},
 };
 
-export default function(state = initState, action) {
+export default function (state = initState, action) {
   const { type, payload } = action;
 
   switch (type) {

@@ -13,6 +13,7 @@ const modPermissionsMap = new Map([
   ['Post', ['update', 'delete']],
   ['Report', ['updateSolved']],
   ['Rule', ['save', 'update', 'delete']],
+  ['Staff', ['getAuth', 'get', 'updatePassword']],
   ['Thread', ['delete']],
 ]);
 
@@ -26,6 +27,7 @@ const auth = (routes) => {
 
     try {
       req.staff = jwt.decode(token);
+      req.procId = genProcId();
 
       const isStaffAuthorized = await checkStaffAuthorization(req);
       if (!isStaffAuthorized) return res.status(401).json('Unauthorized');
@@ -44,8 +46,9 @@ const checkStaffAuthorization = async (req) => {
   if (staff.disabled) return false;
 
   const route = req.route.path;
-  if (!staff.admin && privateRoutesMap.has(route)) {
-    const modelMethod = privateRoutesMap.get(route).split('.');
+
+  if (!staff.admin && privateRoutesMap.has(req.method + route)) {
+    const modelMethod = privateRoutesMap.get(req.method + route).split('.');
 
     /**
      * modelMethod[0] = model name
@@ -56,31 +59,37 @@ const checkStaffAuthorization = async (req) => {
 
     if (!modPermissionsMap.get(modelMethod[0]).includes(modelMethod[1])) return false;
 
-    const staffIsBoardModerator = await checkStaffBoard(
-      req.body || req.params || null,
-      staff,
-      modelMethod
-    );
-    if (!staffIsBoardModerator) return false;
+    let reqData = null;
+    if (Object.keys(req.body).length > 0) reqData = req.body;
+    else if (Object.keys(req.params).length > 0) reqData = req.params;
+
+    if (modelMethod[0] !== 'Staff') {
+      const staffIsBoardModerator = await checkStaffBoard(reqData, staff, modelMethod, req.procId);
+      if (!staffIsBoardModerator) return false;
+    }
+
+    return true;
   }
 
   return true;
 };
 
-const checkStaffBoard = async (reqData, staff, modelMethod) => {
+const checkStaffBoard = async (reqData, staff, modelMethod, procId) => {
   const Model = models[modelMethod[0]];
-  const idField = modelName.idField;
-
-  let args = [];
-  if (reqData) args.push(reqData[idField]);
+  const idField = Model.idField;
+  Model.procId = procId;
 
   let board_id = null;
+
   if (idField === 'board_id') board_id = reqData[idField];
-  else board_id = await Model.getBoardId(...args);
+  else if (reqData.board_id) board_id = reqData.board_id;
+  else board_id = await Model.getBoardId(reqData[idField]);
 
   if (!board_id || (board_id && board_id !== staff.board_id)) return false;
 
   return true;
 };
+
+const genProcId = () => Math.random().toString(20).substr(2, 6);
 
 module.exports = auth;

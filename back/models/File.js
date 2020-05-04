@@ -20,6 +20,7 @@ function File() {
     name: { type: 'alphanum', length: 50, required: true },
     extension: { type: 'ext', length: 4, required: true },
     size: { type: 'num', required: true },
+    folder: { type: 'dir', length: 20, required: true },
   };
 
   this.save = (file) => {
@@ -27,8 +28,12 @@ function File() {
 
     const allowed = new AllowedFile(file);
 
+    if (allowed.invalidFile) return { validationError: { file: 'Invalid File' } };
+
     const rootDir = __dirname.split('/').slice(0, -1).join('/');
     const fileAbsolutePath = `${rootDir}/${config.dir}/${allowed.name}.${allowed.extension}`;
+
+    allowed.folder = config.dir;
 
     try {
       file.mv(fileAbsolutePath);

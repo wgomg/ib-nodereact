@@ -37,6 +37,7 @@ function Thread() {
 
     const Post = require('./Post');
     Post.procId = this.procId;
+    Post.schema.file_id.required = true;
 
     const post = await Post.save(threadOP);
 
@@ -44,7 +45,7 @@ function Thread() {
       db.remove({ table: this.table, id: { field: this.idField, value: res.insertId } }, this.procId);
 
       delete post.validationError[this.idField];
-      return post;
+      return { ...post, subject: newThread.subject };
     }
 
     const thread = await db.select(
@@ -72,6 +73,7 @@ function Thread() {
       {
         table: this.table,
         filters: [{ field: 'board_id', value: board_id }],
+        orderBy: { field: 'created_on', direction: 'DESC' },
       },
       this.procId
     );
@@ -96,11 +98,14 @@ function Thread() {
     return db.remove({ table: this.table, id: { field: this.idField, value: thread_id } }, this.procId);
   };
 
+  // TODO: latest threads
+  // SELECT MAX(post_id) AS post_id,thread_id, text, name, file_id, created_on FROM Posts GROUP BY thread_id ORDER BY created_on DESC;
+
   this.getBoardId = async (thread_id) => {
-    logger.debug({ name: `${this.name}.getBoard()`, data: thread_id }, this.procId, 'method');
+    logger.debug({ name: `${this.name}.getBoardId()`, data: thread_id }, this.procId, 'method');
 
     const thread = await db.select(
-      { table: this.table, filters: [{ [this.idField]: thread_id }] },
+      { table: this.table, filters: [{ field: this.idField, value: thread_id }] },
       this.procId
     );
 

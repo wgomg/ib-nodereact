@@ -2,39 +2,39 @@ import axios from 'axios';
 
 import { GET_STAFFS, GET_STAFF, DELETE_STAFF, STAFF_ERROR } from './types';
 
-export const getStaffs = () => async dispatch => {
+export const getStaffs = () => async (dispatch) => {
   try {
     const res = await axios.get('/staffs/');
 
     dispatch({
       type: GET_STAFFS,
-      payload: res.data
+      payload: res.data,
     });
   } catch (error) {
     dispatch({
       type: STAFF_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const getStaff = staff_id => async dispatch => {
+export const getStaff = (staff_id) => async (dispatch) => {
   try {
     const res = await axios.get(`/staffs/${staff_id}`);
 
     dispatch({
       type: GET_STAFF,
-      payload: res.data.length > 0 ? res.data[0] : []
+      payload: res.data.length > 0 ? res.data[0] : [],
     });
   } catch (error) {
     dispatch({
       type: STAFF_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const createStaff = (newStaff, history) => async dispatch => {
+export const createStaff = (newStaff, history) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
@@ -42,19 +42,19 @@ export const createStaff = (newStaff, history) => async dispatch => {
 
     dispatch({
       type: GET_STAFF,
-      payload: res.data
+      payload: res.data,
     });
 
     history.push('/staff/dash');
   } catch (error) {
     dispatch({
       type: STAFF_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const editStaff = (editedStaff, history) => async dispatch => {
+export const editStaff = (editedStaff, history) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
@@ -62,50 +62,52 @@ export const editStaff = (editedStaff, history) => async dispatch => {
 
     dispatch({
       type: GET_STAFF,
-      payload: res.data
+      payload: res.data,
     });
 
     history.push('/staff/dash');
   } catch (error) {
     dispatch({
       type: STAFF_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const changePassword = (staff, history) => async dispatch => {
+export const changePassword = (staff, history) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
-    const res = await axios.put('/staffs', staff, config);
+    const res = await axios.put('/staffs/password', staff, config);
 
     dispatch({
       type: GET_STAFF,
-      payload: res.data
+      payload: res.data,
     });
 
     history.push('/staff/dash');
   } catch (error) {
     dispatch({
       type: STAFF_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const deleteStaff = staff_id => async dispatch => {
+export const deleteStaff = (staff_id) => async (dispatch) => {
   try {
     await axios.delete(`/staffs/${staff_id}`);
 
+    console.log('deleteStaff');
+
     dispatch({
       type: DELETE_STAFF,
-      payload: staff_id
+      payload: staff_id,
     });
   } catch (error) {
     dispatch({
       type: STAFF_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };

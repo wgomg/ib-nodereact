@@ -39,6 +39,15 @@ function Board() {
     if (board.length > 0) {
       Thread.procId = this.procId;
       board[0].threads = await Thread.getByBoard(board[0].board_id);
+
+      if (board[0].threads.length > 0)
+        board[0].threads.sort((t1, t2) => {
+          if (t1.posts.length > 0 && t2.posts.length > 0)
+            return (
+              new Date(t2.posts[t2.posts.length - 1].created_on) -
+              new Date(t1.posts[t1.posts.length - 1].created_on)
+            );
+        });
     }
 
     return board;
@@ -71,11 +80,24 @@ function Board() {
     return db.remove({ id: { field: this.idField, value: board_id }, table: this.table }, this.procId);
   };
 
+  this.getByID = (board_id) => {
+    logger.debug({ name: `${this.name}.getByID()`, data: board_id }, this.procId, 'method');
+
+    return db.select(
+      {
+        table: this.table,
+        filters: [{ field: this.idField, value: board_id }],
+      },
+      this.procId
+    );
+  };
+
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
+    const excluded = ['getFunctions', 'getByID'];
 
     const functions = Object.entries(this)
-      .filter(([key, val]) => typeof val === 'function' && key !== 'getFunctions')
+      .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))
       .map(([fnName, fnDef]) => {
         const fnStr = fnDef.toString();
         const fnArgs = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(FN_ARGS);

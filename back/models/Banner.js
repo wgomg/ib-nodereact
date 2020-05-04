@@ -5,6 +5,7 @@ const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 
 const File = require('./File');
+const Board = require('./Board');
 
 function Banner() {
   this.name = this.constructor.name;
@@ -22,32 +23,110 @@ function Banner() {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const images = Object.values(body.files).filter((file) => file.size > 0);
+    File.procId = this.procId;
     const image = await File.save(images[0]);
     delete body.files;
 
-    const newBanner = { ...body, file_id: !image ? null : image[0].insertId };
+    let newBanner = { ...body };
+    if (image.validationError) return { validationError: { ...newBanner, ...image.validationError } };
+
+    newBanner.file_id = !image ? null : image.insertId;
 
     const errors = validate(newBanner, this.schema);
     if (errors) return { validationError: errors };
 
-    return db.insert({ newBanner, table: this.table }, this.procId);
+    newBanner = await db.insert({ body: newBanner, table: this.table }, this.procId);
+
+    if (newBanner.insertId) {
+      let banner = await db.select(
+        {
+          table: this.table,
+          filters: [{ field: this.idField, value: newBanner.insertId }],
+        },
+        this.procId
+      );
+
+      if (banner.length > 0) {
+        if (banner[0].file_id) {
+          File.procId = this.procId;
+          const image = await File.getByID(banner[0].file_id);
+          banner[0].image = image.length === 0 ? null : image[0];
+          delete banner[0].file_id;
+        }
+
+        if (banner[0].board_id) {
+          Board.procId = this.procId;
+          const board = await Board.getByID(banner[0].board_id);
+          banner[0].board = board.length === 0 ? null : board[0];
+          delete banner[0].board_id;
+        }
+      }
+
+      return banner;
+    }
+
+    return newBanner;
+  };
+
+  this.get = async (board_id) => {
+    logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
+
+    let banners = await db.select(
+      { table: this.table, filters: [{ field: 'board_id', value: board_id }] },
+      this.procId
+    );
+
+    if (banners.length > 0)
+      return Promise.all(
+        banners.map(async (banner) => {
+          if (banner.file_id) {
+            File.procId = this.procId;
+            const image = await File.getByID(banner.file_id);
+            banner.image = image.length === 0 ? null : image[0];
+            delete banner.file_id;
+          }
+
+          if (banner.board_id) {
+            Board.procId = this.procId;
+            const board = await Board.getByID(banner.board_id);
+            banner.board = board.length === 0 ? null : board[0];
+            delete banner.board_id;
+          }
+
+          return banner;
+        })
+      );
+
+    return banners;
   };
 
   this.getAll = async () => {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
-    let res = await db.select({ table: this.table }, this.procId);
+    let banners = await db.select({ table: this.table }, this.procId);
 
-    if (res.length > 0)
-      res = res.map((r) => ({
-        [this.idField]: r[this.idField],
-        contentType: 'image/' + path.extname(r.uri).replace('.', ''),
-        uri: r.uri,
-        name: r.name,
-        size: r.size,
-      }));
+    if (banners.length > 0)
+      return Promise.all(
+        banners.map(async (banner) => {
+          if (banner.file_id) {
+            File.procId = this.procId;
+            const image = await File.getByID(banner.file_id);
+            banner.image = image.length === 0 ? null : image[0];
+            delete banner.file_id;
+          }
 
-    return res;
+          if (banner.board_id) {
+            Board.procId = this.procId;
+            const board = await Board.getByID(banner.board_id);
+            banner.board = board.length === 0 ? null : board[0];
+            delete banner.board_id;
+          }
+
+          return banner;
+        })
+      );
+
+    return banners;
   };
 
   this.delete = (banner_id) => {

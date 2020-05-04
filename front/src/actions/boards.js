@@ -8,42 +8,42 @@ import {
   CREATE_THREAD,
   THREAD_ERROR,
   CREATE_POST,
-  POST_ERROR
+  POST_ERROR,
 } from './types';
 
-export const getBoardsList = () => async dispatch => {
+export const getBoardsList = () => async (dispatch) => {
   try {
     const res = await axios.get('/boards');
 
     dispatch({
       type: GET_BOARDS_LIST,
-      payload: res.data
+      payload: res.data,
     });
   } catch (error) {
     dispatch({
       type: BOARDS_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const getBoard = uri => async dispatch => {
+export const getBoard = (uri) => async (dispatch) => {
   try {
     const res = await axios.get(`/boards/${uri}`);
 
     dispatch({
       type: GET_BOARD,
-      payload: res.data.length > 0 ? res.data[0] : []
+      payload: res.data.length > 0 ? res.data[0] : {},
     });
   } catch (error) {
     dispatch({
       type: BOARDS_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const createBoard = (newBoard, history) => async dispatch => {
+export const createBoard = (newBoard, history) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
@@ -51,19 +51,19 @@ export const createBoard = (newBoard, history) => async dispatch => {
 
     dispatch({
       type: GET_BOARD,
-      payload: res.data
+      payload: res.data,
     });
 
     history.push('/staff/dash');
   } catch (error) {
     dispatch({
       type: BOARDS_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const editBoard = (editedBoard, history) => async dispatch => {
+export const editBoard = (editedBoard, history) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
@@ -71,35 +71,35 @@ export const editBoard = (editedBoard, history) => async dispatch => {
 
     dispatch({
       type: GET_BOARD,
-      payload: res.data
+      payload: res.data,
     });
 
     history.push('/staff/dash');
   } catch (error) {
     dispatch({
       type: BOARDS_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const deleteBoard = board_id => async dispatch => {
+export const deleteBoard = (board_id) => async (dispatch) => {
   try {
     await axios.delete(`/boards/${board_id}`);
 
     dispatch({
       type: DELETE_BOARD,
-      payload: board_id
+      payload: board_id,
     });
   } catch (error) {
     dispatch({
       type: BOARDS_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const createThread = newThread => async dispatch => {
+export const createThread = (newThread) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'multipart/form-data' } };
 
@@ -107,17 +107,17 @@ export const createThread = newThread => async dispatch => {
 
     dispatch({
       type: CREATE_THREAD,
-      payload: res.data
+      payload: res.data.length > 0 ? res.data[0] : {},
     });
   } catch (error) {
     dispatch({
       type: THREAD_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };
 
-export const createPost = newPost => async dispatch => {
+export const createPost = (newPost) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'multipart/form-data' } };
 
@@ -125,12 +125,14 @@ export const createPost = newPost => async dispatch => {
 
     dispatch({
       type: CREATE_POST,
-      payload: res.data[0]
+      payload: res.data[0],
     });
+
+    if (res.data[0]) return true;
   } catch (error) {
     dispatch({
       type: POST_ERROR,
-      payload: error.response
+      payload: error.response,
     });
   }
 };

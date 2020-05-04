@@ -45,7 +45,7 @@ const update = (queryData, procId) => {
 };
 
 const select = (queryData, procId) => {
-  const { fields, filters, table, orderBy, ipField } = queryData;
+  let { fields, filters, table, orderBy, ipField } = queryData;
 
   let sql = 'SELECT';
 
@@ -66,9 +66,15 @@ const select = (queryData, procId) => {
       .map((filter, pos) => {
         if (ipField && filter.field === ipField) ipFieldPos = pos;
 
-        return `\`${filter.field}\` = ?`;
+        let ff = `\`${filter.field}\``;
+        if (filter.value === null) ff += ' IS NULL';
+        else ff += ' = ?';
+
+        return ff;
       })
       .join(' AND ');
+
+    filters = filters.filter((filter) => filter.value !== null);
 
     filtersValues = filters.map((filter, pos) => {
       if (ipFieldPos > -1 && pos === ipFieldPos) return `INET6_ATON(${filter.value})`;
@@ -84,9 +90,9 @@ const select = (queryData, procId) => {
   }
 
   let queryArgs = [{ sql }];
-  if (filtersValues) queryArgs.push(filtersValues);
+  if (filtersValues && filtersValues.length > 0) queryArgs.push(filtersValues);
 
-  logger.debug({ name: 'select', data: { sql, filtersValues } }, procId, 'dbop');
+  logger.debug({ name: 'select', data: queryArgs }, procId, 'dbop');
 
   return query(...queryArgs);
 };
