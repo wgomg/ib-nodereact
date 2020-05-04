@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS `Bans` (
   `staff_id` bigint(20) unsigned NOT NULL,
   `post_id` bigint(20) unsigned NOT NULL,
   `rule_id` bigint(20) unsigned NOT NULL,
+  `user` int(10) unsigned NOT NULL,
   `comment` varchar(45) DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`ban_id`),
@@ -101,6 +102,7 @@ CREATE TABLE IF NOT EXISTS `Files` (
   `name` varchar(50) NOT NULL,
   `extension` varchar(4) NOT NULL,
   `size` int(10) unsigned NOT NULL,
+  `folder` varchar(20) NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`file_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -219,4 +221,4 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-04-24 21:30:39
+-- Dump completed on 2020-05-04 19:33:41
