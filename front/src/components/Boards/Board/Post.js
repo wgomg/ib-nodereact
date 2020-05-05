@@ -8,7 +8,7 @@ import prettyDate from '../../../utils/prettyDate';
 
 export default ({ thread, post }) => {
   return (
-    <div className='container post-container' id={'p' + post.post_id} key={post.post_id}>
+    <div className='container post-container' key={post.post_id}>
       <div className='post card card-post'>
         <ButtonLink text='[-]' altText='[+]' extraClass='hide-thread' />
 

@@ -12,12 +12,16 @@ export default ({ board, post, fullLink }) => {
 
   const arrows = postLink.split('/').length === 2 ? '>>>' : '>>';
 
-  postLink = postLink.replace(/t[\d]+#p/i, '');
-
-  const textLink = fullLink ? postLink : postLink.split('/').slice(-1).join('/');
+  const textLink = fullLink
+    ? postLink.replace(/t[\d]+#p/i, '')
+    : postLink
+        .split('/')
+        .slice(-1)
+        .join('/')
+        .replace(/t[\d]+#p/i, '');
 
   return (
-    <Link to={postLink}>
+    <Link to={{ pathname: postLink.split('#')[0], hash: '#' + postLink.split('#')[1] }}>
       {arrows}
       {textLink}
     </Link>
