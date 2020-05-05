@@ -5,6 +5,7 @@ import timeSince from '../../../utils/timeSince';
 import prettyDate from '../../../utils/prettyDate';
 
 import { ButtonLink, Image } from '../../common';
+import { Fragment } from 'react';
 
 export default ({ thread, post, isThread, hiddenPosts }) => {
   return (
@@ -17,13 +18,19 @@ export default ({ thread, post, isThread, hiddenPosts }) => {
         <p className='file-info'>
           <span className='small'>
             {' '}
-            File: {post.file.name + '.' + post.file.extension} ({prettyBytes(post.file.size)})
+            {post.file && (
+              <Fragment>
+                File: {post.file.name + '.' + post.file.extension} ({prettyBytes(post.file.size)})
+              </Fragment>
+            )}
           </span>
         </p>
-        <Image
-          className='post-image op'
-          src={'/' + post.file.folder + '/' + post.file.name + '.' + post.file.extension}
-        />
+        {post.file && (
+          <Image
+            className='post-image op'
+            src={'/' + post.file.folder + '/' + post.file.name + '.' + post.file.extension}
+          />
+        )}
       </div>
 
       <div className='post-body op'>
@@ -37,6 +44,7 @@ export default ({ thread, post, isThread, hiddenPosts }) => {
         </div>
         <div className='op-post-text'>{post.text}</div>
       </div>
+
       {hiddenPosts && <span className='small'>{hiddenPosts} respuestas ocultas</span>}
     </div>
   );

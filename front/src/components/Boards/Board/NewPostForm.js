@@ -71,7 +71,14 @@ const NewPostForm = ({ thread, createPost }) => {
       if (file) newPost.append('image', file);
 
       const res = await createPost(newPost);
-      if (res) window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      if (res) {
+        setFormData({
+          thread_id: 0,
+          text: '',
+          name: 'Anon',
+        });
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }
     }
   };
 
