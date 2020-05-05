@@ -12,6 +12,8 @@ export default ({ board, post, fullLink }) => {
 
   const arrows = postLink.split('/').length === 2 ? '>>>' : '>>';
 
+  postLink = postLink.replace(/t[\d]+#p/i, '');
+
   const textLink = fullLink ? postLink : postLink.split('/').slice(-1).join('/');
 
   return (

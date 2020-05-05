@@ -107,9 +107,16 @@ const remove = (queryData, procId) => {
   return query(sql);
 };
 
+const rawQuery = (sql, procId) => {
+  logger.debug({ name: 'rawQuery', data: { sql } }, procId, 'dbop');
+
+  return query(sql);
+};
+
 module.exports = {
   insert,
   select,
   update,
   remove,
+  rawQuery,
 };

@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 
 import Logo from './Logo';
 import BoardsList from './BoardsList';
-import LatestPosts from './LatestPosts';
+import LatestThreads from './LatestThreads';
 // import Statistics from './Statistics';
 
 import Footer from '../common/Footer';
@@ -14,7 +14,7 @@ const Home = () => {
       <div className='container centered'>
         <div className='columns'>
           <BoardsList />
-          <LatestPosts />
+          <LatestThreads />
         </div>
       </div>
       {/* <Statistics /> */}

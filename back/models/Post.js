@@ -171,7 +171,7 @@ function Post() {
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getByThread', 'getBoardId'];
+    const excluded = ['getFunctions', 'getByThread', 'getBoardId', 'getLatests'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

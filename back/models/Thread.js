@@ -100,6 +100,28 @@ function Thread() {
 
   // TODO: latest threads
   // SELECT MAX(post_id) AS post_id,thread_id, text, name, file_id, created_on FROM Posts GROUP BY thread_id ORDER BY created_on DESC;
+  this.getLatests = async () => {
+    logger.debug({ name: `${this.name}.getLatests()` }, this.procId, 'method');
+
+    const posts = await db.rawQuery(
+      `SELECT MAX(post_id) AS post_id, thread_id, created_on FROM Posts GROUP BY thread_id ORDER BY created_on DESC`,
+      this.procId
+    );
+
+    if (posts.length > 0)
+      return await Promise.all(
+        posts.slice(0, 10).map(async (post) => {
+          const thread = await db.select(
+            { table: this.table, filters: [{ field: this.idField, value: post.thread_id }] },
+            this.procId
+          );
+
+          return { ...thread[0], post };
+        })
+      );
+
+    return posts;
+  };
 
   this.getBoardId = async (thread_id) => {
     logger.debug({ name: `${this.name}.getBoardId()`, data: thread_id }, this.procId, 'method');
