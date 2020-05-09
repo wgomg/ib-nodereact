@@ -14,12 +14,12 @@ const formComponents = {
   textarea: TextArea,
   file: FileSelector,
   check: Checkbox,
-  select: Select
+  select: Select,
 };
 
 const Form = ({ onSubmit, elements }) => {
   return (
-    <form className='form centered' onSubmit={e => onSubmit(e)}>
+    <form className='form centered' onSubmit={(e) => onSubmit(e)}>
       {elements.map((element, index) => {
         const Component = formComponents[element.component];
         return (
@@ -43,7 +43,7 @@ const Form = ({ onSubmit, elements }) => {
 
 Form.propTypes = {
   onSubmit: PropTypes.func.isRequired,
-  elements: PropTypes.array.isRequired
+  elements: PropTypes.array.isRequired,
 };
 
 export default Form;

@@ -1,8 +1,10 @@
 'use strict';
+
 const cache = require('../libraries/cache');
 
 const db = require('../db');
 const logger = require('../libraries/logger');
+const tagger = require('../libraries/tagger');
 const validate = require('../libraries/validate');
 const ip = require('../libraries/ip');
 
@@ -68,9 +70,13 @@ function Post() {
         this.procId
       );
 
-      if (post.length > 0 && post[0].file_id) {
-        const file = await File.getByID(post[0].file_id);
-        post[0].file = file.length > 0 ? file[0] : null;
+      if (post.length > 0) {
+        if (post[0].file_id) {
+          const file = await File.getByID(post[0].file_id);
+          post[0].file = file.length > 0 ? file[0] : null;
+        }
+
+        post[0].text = await tagger.apply(post[0].text, this.procId);
       }
 
       return post;
@@ -106,6 +112,8 @@ function Post() {
 
         if (ip.isV4(cachedUser)) post.user = ip.hashV4(cachedUser);
         else if (ip.isV6(cachedUser)) post.user = ip.hashV6(cachedUser);
+
+        post.text = await tagger.apply(post.text, this.procId);
 
         return post;
       })

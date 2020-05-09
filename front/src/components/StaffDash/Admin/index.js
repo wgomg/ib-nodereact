@@ -16,6 +16,9 @@ import EditBanner from '../banners/EditBanner';
 //
 import RulesList from '../rules/RulesList';
 import CreateRule from '../rules/CreateRule';
+//
+import CreateTag from './tags/CreateTag';
+import TagsList from './tags/TagsList';
 
 //
 import StaffNavbar from '../StaffNavbar';
@@ -32,6 +35,7 @@ export default () => (
       <Route exact path='/staff/dash/create-banner' component={CreateBanner} />
       <Route exact path='/staff/dash/edit-banner/:banner_id' component={EditBanner} />
       <Route exact path='/staff/dash/create-rule' component={CreateRule} />
+      <Route exact path='/staff/dash/create-tag' component={CreateTag} />
       <Fragment>
         <div className='container centered'>
           <div className='columns'>
@@ -43,6 +47,12 @@ export default () => (
           <div className='columns'>
             <BannersList />
             <RulesList />
+          </div>
+        </div>
+        <div className='container centered'>
+          <div className='columns'>
+            <TagsList />
+            <div className='col-5' />
           </div>
         </div>
       </Fragment>

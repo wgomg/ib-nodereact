@@ -7,6 +7,4 @@ config/logger.json
 config/cache.json
 config/server.json
 
-data
-
 logs

@@ -40,7 +40,7 @@ export default ({ thread, post }) => {
           )}
         </div>
 
-        <div className='post-text'>{post.text}</div>
+        <div className='post-text' dangerouslySetInnerHTML={{ __html: post.text }} />
       </div>
     </div>
   );

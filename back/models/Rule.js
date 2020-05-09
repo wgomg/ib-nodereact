@@ -21,8 +21,6 @@ function Rule() {
   this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
-    console.log('SAVE RULE');
-
     const errors = validate(body, this.schema);
     if (errors) return { validationError: errors };
 

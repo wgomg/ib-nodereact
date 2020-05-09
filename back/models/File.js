@@ -31,9 +31,9 @@ function File() {
     if (allowed.invalidFile) return { validationError: { file: 'Invalid File' } };
 
     const rootDir = __dirname.split('/').slice(0, -1).join('/');
-    const fileAbsolutePath = `${rootDir}/${config.dir}/${allowed.name}.${allowed.extension}`;
+    const fileAbsolutePath = `${rootDir}/public/${config.data.dir}/${allowed.name}.${allowed.extension}`;
 
-    allowed.folder = config.dir;
+    allowed.folder = config.data.dir;
 
     try {
       file.mv(fileAbsolutePath);
@@ -58,7 +58,7 @@ function File() {
       this.procId
     );
 
-    if (file.length > 0) file.uri = `${config.dir}/${file[0].name}.${file[0].extension}`;
+    if (file.length > 0) file.uri = `${config.data.dir}/${file[0].name}.${file[0].extension}`;
 
     return file;
   };

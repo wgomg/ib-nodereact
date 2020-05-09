@@ -6,7 +6,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 // const path = require('path');
 
-const config = require('./config');
+const config = require('./config').logger;
 const logger = require('./libraries/logger');
 
 const app = express();
@@ -33,11 +33,11 @@ app.use(
   })
 );
 
-app.use('/' + config.files.dir, express.static(config.files.dir));
+app.use(express.static('public'));
 
 require('./routes')(app);
 
-if (config.logger.logRoutes)
+if (config.logRoutes)
   logger.info(app._router.stack.filter((s) => s.name === 'bound dispatch').map((s) => s.route));
 
 module.exports = app;

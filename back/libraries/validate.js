@@ -24,6 +24,12 @@ const validate = (entry, schema) => {
           msg: `Value exceeds max. length (${schema[field].length})`,
           value: entry[field],
         };
+
+      if (schema[field].minLength && entry[field].length < schema[field].minLength)
+        errors[field] = {
+          msg: `Value es below min. length (${schema[field].minLength})`,
+          value: entry[field],
+        };
     }
 
     if (!errors[field]) errors[field] = entry[field];
@@ -65,6 +71,9 @@ const isValidType = (value, type) => {
     case 'string':
       return typeof value === 'string';
 
+    case 'tag':
+      return !/^$|^[a-zA-Z 0-9]+$/i.test(value);
+
     case 'bool':
       return typeof value === 'boolean' || value == 1 || value == 0;
 
@@ -74,6 +83,11 @@ const isValidType = (value, type) => {
 
     case 'timestamp':
       return true;
+
+    case 'css':
+      return /((?:^\s*)([\w#.@*,:\-.:>,*\s]+)\s*{(?:[\s]*)((?:[A-Za-z\- \s]+[:]\s*['"0-9\w .,\/()\-!%]+;?)*)*\s*}(?:\s*))/g.test(
+        value
+      );
 
     default:
       return false;

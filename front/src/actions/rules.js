@@ -53,10 +53,9 @@ export const createRule = (newRule, history) => async (dispatch) => {
     });
   }
 };
+
 export const deleteRule = (rule_id) => async (dispatch) => {
   try {
-    console.log(rule_id);
-
     await axios.delete(`/rules/${rule_id}`);
 
     dispatch({ type: DELETE_RULE, payload: rule_id });

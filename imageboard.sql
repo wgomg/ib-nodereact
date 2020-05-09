@@ -194,6 +194,44 @@ CREATE TABLE IF NOT EXISTS `Staffs` (
 -- Default admin user, defaul password: admin
 --
 INSERT INTO `Staffs` (`board_id`, `name`, `password`, `admin`, `disabled`) VALUES (NULL,	'admin', '$2b$10$q.GKtwlGnVmtt/fW4ptHIuVcMIPbK7aGLh66dpJbVpS.39qSuHiLa',	1,	0);
+--
+-- Table structure for table `Tags`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `Tags` (
+  `tag_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tag` varchar(3) NOT NULL,
+  `name` varchar(10) NOT NULL,
+  `op_replacer` varchar(50) NOT NULL,
+  `cl_replacer` varchar(50) NOT NULL,
+  `css` varchar(250) DEFAULT NULL,
+  `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`tag_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Themes`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `Themes` (
+  `theme_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(10) NOT NULL,
+  `css` varchar(10000) NOT NULL,
+  `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`theme_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Default Theme
+--
+INSERT INTO `Themes` (`theme_id`, `name`, `css`, `created_on`) VALUES
+(1,	'default',	':root {   --general-bg: #0d100f;   --general-font: #cecfcc;   --general-border: #4d646e;   --card-bg: #232522;   --card-header-bg: #7da3b3;   --card-header-font: #151613;   --link: #8be2e4;   --link-visited: #436f70;   --link-hover: #b6e3e4;   --title: #a2bcc4;   --subtitle: #79868a;   --button-bg: #414340;   --button-font: #a7a8a6;   --input-bg: #373c3a;   --input-font: #9fafa9;   --admin: #ec0033;   --thread-title: #066606;   --mod: #00ec00;   --warning: #ec0000;   --separator: #484e4f;   --card-post-bg: #3c3d3b; }  * {   box-sizing: border-box;   margin: 0;   padding: 0; }  html {   font-family: \'Lucida Sans\', \'Lucida Sans Regular\', \'Lucida Grande\', \'Lucida Sans Unicode\', Geneva,     Verdana, sans-serif;   font-size: 0.9rem;   background-color: var(--general-bg);   color: var(--general-font);   height: 100%; }  body {   position: relative;   min-height: 100%; }  img {   display: block;   cursor: pointer; }  img.viewimage {   text-align: center;   position: absolute;   margin: auto;   top: 0;   right: 0;   bottom: 0;   left: 0; }  img.viewimage.not-visited {   max-width: 100vw;   max-height: 100vh; }  img.post-image {   border: none;   max-width: 100vw;   max-height: 100vh;   margin-top: 0.5rem;   margin-bottom: 0.5rem;   margin-right: 1.5rem;   margin-left: 1rem;   float: left; }  img.post-image.op {   float: left;   display: block; }  img.post-image.not-visited {   max-width: 10vw;   max-height: 20vh;   margin-left: 0.5rem; }  img.logo, img.banner {   max-width: 100vw;   max-height: 100vh; }  img.logo.not-visited, img.banner.not-visited {   max-width: 30%; }  img.loading {   width: 20px;   margin: auto;   display: block; }  div.container {   padding: 0.5%; }  .centered {   margin-left: auto;   margin-right: auto; }  div.centered {   width: 60%; }  img.centered {   width: 80%; }  h1.centered, h2.centered, h3.centered, h4.centered, h5.centered, h6.centered, p.centered {   text-align: center; }  h1.title, h2.title, h3.title, h4.title, h5.title, h6.title {   color: var(--title); }  h1.warning, h2.warning, h3.warning, h4.warning, h5.warning, h6.warning {   color: var(--warning); }  h1.subtitle, h2.subtitle, h3.subtitle, h4.subtitle, h5.subtitle, h6.subtitle, p.subtitle {   color: var(--subtitle); }  div.card {   border: 1px;   border-style: solid;   border-color: var(--general-border);   background-color: var(--card-bg);   margin-left: 1%; }  div.card > .card-header {   background-color: var(--card-header-bg);   color: var(--card-header-font);   padding-left: 1%; }  div.card-post {   display: inline-block;   margin-left: 0;   border-color: var(--card-post-bg); }  div.columns {   display: flex;   flex-direction: row;   flex-wrap: wrap; }  div.columns > .col {   flex: 1; }  div.columns > .col-1 {   flex: 1;   max-width: 10%; }  div.columns > .col-2 {   flex: 1;   max-width: 20%; }  div.columns > .col-3 {   flex: 1;   max-width: 30%; }  div.columns > .col-4 {   flex: 1;   max-width: 40%; }  div.columns > .col-5 {   flex: 1;   max-width: 50%; }  div.columns > .col-6 {   flex: 1;   max-width: 60%; }  div.columns > .col-7 {   flex: 1;   max-width: 70%; }  div.columns > .col-8 {   flex: 1;   max-width: 80%; }  div.columns > .col-9 {   flex: 1;   max-width: 90%; }  div.columns > .col-10 {   min-width: 100%; }  div.col.board-list {   max-width: 33%; }  ul {   padding-left: 3%; }  ul.no-style {   padding-left: 2%;   list-style: none; }  a {   text-decoration: none; }  a:link, button.link {   color: var(--link); }  a:visited, button.link.visited {   color: var(--link-visited); }  a:hover, button.link:hover {   color: var(--link-hover); }  button.hide-thread {   float: left;   margin-right: 5px;   margin-left: 5px; }  button.link {   background: none !important;   border: none;   padding: 0;   cursor: pointer; }  .form {   max-width: 50%; }  .form .form-group {   margin: 0.2rem 0;   display: block; }  .form input[type=\'text\'], .form input[type=\'email\'], .form input[type=\'password\'], .form select, .form textarea {   display: block;   width: 100%;   padding: 0.2rem;   font-size: 1rem;   background-color: var(--input-bg);   color: var(--input-font);   border: none;   white-space: pre-line; }  .form textarea {   resize: vertical; }  .form input[type=\'submit\'], button {   font: inherit; }  .btn {   display: block;   background-color: var(--button-bg);   color: var(--button-font);   padding: 0.4rem 1.3rem;   font-size: 1rem;   border: none;   cursor: pointer;   margin-right: 0.5rem;   outline: none;   width: 100%; }  .btn:hover {   opacity: 0.8; }  span.new-item {   float: right;   padding-right: 1rem; }  span.small {   font-size: 0.8rem; }  span.admin {   color: var(--admin); }  span.mod {   color: var(--mod); }  hr.separator {   width: 99%;   border-top: 1px solid var(--separator);   border-bottom: none; }  div.thread-preview {   display: block;   clear: both; }  span.thread-title {   color: var(--thread-title);   font-weight: bold;   font-size: 1.1rem; }  div.post-container {   padding-bottom: 0;   max-width: 80vw; }  div.post-file {   float: none; }  div.post-file.in-body {   margin-right: 1rem; }  div.post-info {   display: inline-block;   padding-right: 1rem; }  p.file-info {   display: block; }  p.file-info-post {   display: block;   padding-left: 1rem; }  div.post p {   display: block; }  div.post-text {   padding: 1rem;   word-wrap: break-word;   white-space: pre-wrap;   font-size: 0.9rem; }  div.op-post-text {   padding-right: 2rem;   padding-left: 1rem;   word-wrap: break-word;   white-space: pre-wrap;   font-size: 0.9rem; }  div.footer, div.pages {   display: block;   clear: both; }  @media (max-width: 700px) {   div.centered {     width: 80%;   }    div.columns > .col,   .col-1,   .col-2,   .col-3,   .col-4,   .col-5,   .col-6,   .col-7,   .col-8,   .col-9,   .col-10 {     max-width: 100%;     min-width: 100%;     margin-bottom: 2%;   }    img.post-image.not-visited {     max-width: 50vw;     max-height: 54vh;   }    img.logo.not-visited,   img.banner.not-visited {     max-width: 60%;   }    .form {     max-width: 100%;   }    div.post-text {     padding-top: 0;   } }',	'2020-05-07 21:47:17');
 
 --
 -- Table structure for table `Threads`
@@ -221,4 +259,4 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-05-04 19:33:41
+-- Dump completed on 2020-05-08 20:03:30

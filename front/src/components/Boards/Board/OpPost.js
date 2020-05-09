@@ -42,7 +42,7 @@ export default ({ thread, post, isThread, hiddenPosts }) => {
           <a href={`t${thread.thread_id}#qp${post.post_id}`}>{thread.thread_id}</a>{' '}
           {!isThread && <a href={`t${thread.thread_id}`}>[reply]</a>}
         </div>
-        <div className='op-post-text'>{post.text}</div>
+        <div className='op-post-text' dangerouslySetInnerHTML={{ __html: post.text }} />
       </div>
 
       {hiddenPosts && <span className='small'>{hiddenPosts} respuestas ocultas</span>}

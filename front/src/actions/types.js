@@ -35,3 +35,12 @@ export const GET_RULES = 'GET_RULES';
 export const GET_RULE = 'GET_RULE';
 export const RULES_ERROR = 'RULES_ERROR';
 export const DELETE_RULE = 'DELETE_RULE';
+
+export const GET_THEMES = 'GET_THEMES';
+export const GET_THEME = 'GET_THEME';
+export const THEMES_ERROR = 'THEMES_ERROR';
+
+export const GET_TAGS = 'GET_TAGS';
+export const GET_TAG = 'GET_TAG';
+export const TAGS_ERROR = 'TAGS_ERROR';
+export const DELETE_TAG = 'DELETE_TAG';
