@@ -42,12 +42,6 @@ function Tag() {
     return db.select({ table: this.table }, this.procId);
   };
 
-  this.getCss = () => {
-    logger.debug({ name: `${this.name}.getCss()` }, this.procId, 'method');
-
-    return db.select({ table: this.table, fields: ['css'] }, this.procId);
-  };
-
   this.delete = (tag_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: tag_id }, this.procId, 'method');
 
