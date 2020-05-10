@@ -24,11 +24,10 @@ export default ({ thread, board }) => {
     );
   });
 
-  if (hash && ref.current) {
-    setTimeout(() => {
+  setTimeout(() => {
+    if (hash && ref.current)
       window.scrollTo({ left: 0, top: ref.current.offsetTop, behavior: 'smooth' });
-    }, 100);
-  }
+  }, 100);
 
   return (
     <Fragment>

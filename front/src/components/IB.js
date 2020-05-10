@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -13,8 +13,18 @@ import { getTags } from '../actions/tags';
 
 import '../default.css';
 
-const IB = ({ getTheme, getTags, tags: { tags, tagsLoading }, themes: { theme, themesLoading } }) => {
-  if (!localStorage.theme) localStorage.setItem('theme', 'default');
+const IB = ({
+  getTheme,
+  getTags,
+  tags: { tags, loading: tagsLoading },
+  themes: { theme, loading: themesLoading },
+}) => {
+  const [cssInStorage, setCssInStorage] = useState(localStorage.getItem('css') !== null);
+
+  if (!localStorage.theme) {
+    localStorage.setItem('theme', 'default');
+    localStorage.setItem('css', null);
+  }
 
   const selectedTheme = localStorage.getItem('theme');
 
@@ -37,8 +47,13 @@ const IB = ({ getTheme, getTags, tags: { tags, tagsLoading }, themes: { theme, t
 
   let component = <div />;
 
-  if (!themesLoading) {
-    themeStyle.innerHTML = theme.css;
+  if (!cssInStorage && !themesLoading) {
+    localStorage.setItem('css', theme.css);
+    setCssInStorage(true);
+  }
+
+  if (cssInStorage) {
+    themeStyle.innerHTML = localStorage.getItem('css');
     component = (
       <Router>
         <Fragment>
