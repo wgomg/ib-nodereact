@@ -109,6 +109,8 @@ export const createThread = (newThread) => async (dispatch) => {
       type: CREATE_THREAD,
       payload: res.data.length > 0 ? res.data[0] : {},
     });
+
+    if (res.data[0]) return true;
   } catch (error) {
     dispatch({
       type: THREAD_ERROR,

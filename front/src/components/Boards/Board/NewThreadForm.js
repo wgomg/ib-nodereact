@@ -63,7 +63,7 @@ const NewThreadForm = ({ board, createThread }) => {
     },
   ];
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
 
     const { board_id, subject, text, name } = formData;
@@ -79,7 +79,16 @@ const NewThreadForm = ({ board, createThread }) => {
       newThread.set('name', name);
       if (file) newThread.append('image', file);
 
-      createThread(newThread);
+      const res = await createThread(newThread);
+      if (res) {
+        setFormData({
+          board_id: 0,
+          subject: '',
+          text: '',
+          name: 'Anon',
+        });
+        setFile(null);
+      }
     }
   };
 
