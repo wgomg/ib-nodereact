@@ -22,6 +22,8 @@ const NewThreadForm = ({ board, createThread }) => {
 
   const [file, setFile] = useState(null);
 
+  const [fileSelectorText, setFileSelectorFile] = useState(undefined);
+
   const { subject, text, name } = formData;
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -54,6 +56,7 @@ const NewThreadForm = ({ board, createThread }) => {
       component: 'file',
       name: 'image',
       label: 'Archivo',
+      value: fileSelectorText,
       onChange: (e) => onFileSelected(e),
     },
     {
@@ -87,7 +90,7 @@ const NewThreadForm = ({ board, createThread }) => {
           text: '',
           name: 'Anon',
         });
-        setFile(null);
+        setFileSelectorFile(undefined);
       }
     }
   };

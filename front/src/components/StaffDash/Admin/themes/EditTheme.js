@@ -15,7 +15,7 @@ const EditTheme = ({ editTheme, history, match, themes: { theme, loading } }) =>
 
   useEffect(() => {
     getTheme(match.params.name);
-  }, [getTheme, match.params.name]);
+  }, [match.params.name]);
 
   useEffect(() => {
     setFormData((formData) => {
