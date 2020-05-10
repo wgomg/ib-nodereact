@@ -4,6 +4,8 @@ const db = require('../db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 
+const tagger = require('../libraries/tagger');
+
 function Thread() {
   this.name = this.constructor.name;
   this.table = this.name + 's';
@@ -104,7 +106,7 @@ function Thread() {
     logger.debug({ name: `${this.name}.getLatests()` }, this.procId, 'method');
 
     const posts = await db.rawQuery(
-      `SELECT MAX(post_id) AS post_id, thread_id, created_on FROM Posts GROUP BY thread_id ORDER BY created_on DESC`,
+      `SELECT MAX(post_id) AS post_id, thread_id, text, created_on FROM Posts GROUP BY thread_id ORDER BY created_on DESC`,
       this.procId
     );
 
@@ -115,6 +117,8 @@ function Thread() {
             { table: this.table, filters: [{ field: this.idField, value: post.thread_id }] },
             this.procId
           );
+
+          post.text = await tagger.apply(post.text);
 
           return { ...thread[0], post };
         })

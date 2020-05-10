@@ -1,5 +1,7 @@
 'use strict';
 
+const css = require('css');
+
 const validate = (entry, schema) => {
   if (Object.keys(entry).length === 0) return { msg: 'Invalid' };
 
@@ -85,9 +87,8 @@ const isValidType = (value, type) => {
       return true;
 
     case 'css':
-      return /((?:^\s*)([\w#.@*,:\-.:>,*\s]+)\s*{(?:[\s]*)((?:[A-Za-z\- \s]+[:]\s*['"0-9\w .,\/()\-!%]+;?)*)*\s*}(?:\s*))/g.test(
-        value
-      );
+      const cssObj = css.parse(value, { silent: true });
+      return cssObj.stylesheet.parsingErrors.length === 0;
 
     default:
       return false;

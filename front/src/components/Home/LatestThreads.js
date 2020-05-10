@@ -9,6 +9,9 @@ import { getBoardsList } from '../../actions/boards';
 
 import timeSince from '../../utils/timeSince';
 
+import ReactTooltip from 'react-tooltip';
+import { Fragment } from 'react';
+
 const LatestThreads = ({
   getLatestThreads,
   getBoardsList,
@@ -30,7 +33,10 @@ const LatestThreads = ({
             <div className='col-2'>
               <PostLink board={board[0]} post={thread.post} fullLink />
             </div>
-            <div className='col'>{thread.subject}</div>
+            <div className='col' data-html={true} data-tip={thread.post.text}>
+              {' '}
+              {thread.subject}
+            </div>
             <div className='col-2'>{timeSince(thread.post.created_on)}</div>
           </div>
         );
@@ -39,7 +45,15 @@ const LatestThreads = ({
       <h4 className='centered'>No hay threads para mostrar</h4>
     );
 
-  const cardContent = boardsLoading || latestLoading ? <Loading /> : latestThreads;
+  const cardContent =
+    boardsLoading || latestLoading ? (
+      <Loading />
+    ) : (
+      <Fragment>
+        {latestThreads}
+        <ReactTooltip border={true} borderColor='#7da3b3' />
+      </Fragment>
+    );
 
   return <Card title='Últimos Bumpeos' content={cardContent} classes='col' />;
 };

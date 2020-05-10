@@ -19,6 +19,10 @@ import CreateRule from '../rules/CreateRule';
 //
 import CreateTag from './tags/CreateTag';
 import TagsList from './tags/TagsList';
+//
+import CreateTheme from './themes/CreateTheme';
+import EditTheme from './themes/EditTheme';
+import ThemesList from './themes/ThemesList';
 
 //
 import StaffNavbar from '../StaffNavbar';
@@ -36,6 +40,8 @@ export default () => (
       <Route exact path='/staff/dash/edit-banner/:banner_id' component={EditBanner} />
       <Route exact path='/staff/dash/create-rule' component={CreateRule} />
       <Route exact path='/staff/dash/create-tag' component={CreateTag} />
+      <Route exact path='/staff/dash/create-theme' component={CreateTheme} />
+      <Route exact path='/staff/dash/edit-theme/:name' component={EditTheme} />
       <Fragment>
         <div className='container centered'>
           <div className='columns'>
@@ -52,7 +58,7 @@ export default () => (
         <div className='container centered'>
           <div className='columns'>
             <TagsList />
-            <div className='col-5' />
+            <ThemesList />
           </div>
         </div>
       </Fragment>

@@ -39,6 +39,7 @@ export const DELETE_RULE = 'DELETE_RULE';
 export const GET_THEMES = 'GET_THEMES';
 export const GET_THEME = 'GET_THEME';
 export const THEMES_ERROR = 'THEMES_ERROR';
+export const DELETE_THEME = 'DELETE_THEME';
 
 export const GET_TAGS = 'GET_TAGS';
 export const GET_TAG = 'GET_TAG';

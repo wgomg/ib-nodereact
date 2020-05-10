@@ -33,6 +33,7 @@ const Form = ({ onSubmit, elements }) => {
               lead={element.lead}
               label={element.label}
               options={element.options}
+              rows={element.rows}
             />
           </div>
         );

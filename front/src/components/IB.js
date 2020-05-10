@@ -9,10 +9,11 @@ import Boards from './Boards';
 import { ViewImage } from './common';
 
 import { getTheme } from '../actions/themes';
+import { getTags } from '../actions/tags';
 
 import '../default.css';
 
-const IB = ({ getTheme, themes: { theme, loading } }) => {
+const IB = ({ getTheme, getTags, tags: { tags, tagsLoading }, themes: { theme, themesLoading } }) => {
   if (!localStorage.theme) localStorage.setItem('theme', 'default');
 
   const selectedTheme = localStorage.getItem('theme');
@@ -21,13 +22,23 @@ const IB = ({ getTheme, themes: { theme, loading } }) => {
     getTheme(selectedTheme);
   }, [getTheme, selectedTheme]);
 
-  const style = document.createElement('style');
-  document.head.appendChild(style);
+  useEffect(() => {
+    getTags();
+  }, [getTags]);
+
+  let themeStyle = document.getElementById('theme');
+
+  if (!themeStyle) {
+    themeStyle = document.createElement('style');
+    themeStyle.setAttribute('id', 'theme');
+    themeStyle.setAttribute('type', 'text/css');
+    document.head.appendChild(themeStyle);
+  }
 
   let component = <div />;
 
-  if (!loading) {
-    style.innerHTML = theme.css;
+  if (!themesLoading) {
+    themeStyle.innerHTML = theme.css;
     component = (
       <Router>
         <Fragment>
@@ -42,16 +53,30 @@ const IB = ({ getTheme, themes: { theme, loading } }) => {
     );
   }
 
+  let tagsStyle = document.getElementById('tags');
+
+  if (!tagsStyle) {
+    tagsStyle = document.createElement('style');
+    tagsStyle.setAttribute('id', 'tags');
+    tagsStyle.setAttribute('type', 'text/css');
+    document.head.appendChild(tagsStyle);
+  }
+
+  if (!tagsLoading) tagsStyle.innerHTML = tags.map((tag) => tag.css).join(' ');
+
   return component;
 };
 
 IB.propTypes = {
   getTheme: PropTypes.func.isRequired,
+  getTags: PropTypes.func.isRequired,
   themes: PropTypes.object.isRequired,
+  tags: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   themes: state.themes,
+  tags: state.tags,
 });
 
-export default connect(mapStateToProps, { getTheme })(IB);
+export default connect(mapStateToProps, { getTheme, getTags })(IB);

@@ -32,22 +32,42 @@ function Theme() {
     return theme;
   };
 
-  this.get = async (name) => {
-    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
+  this.update = async (body) => {
+    logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
 
-    let res = await db.select(
-      { table: this.table, filters: [{ field: 'name', value: name }] },
+    const idValue = body[this.idField];
+    delete body[this.idField];
+
+    const errors = validate(body, this.schema);
+    if (errors) return { validationError: errors };
+
+    const res = await db.update(
+      { body, table: this.table, id: { field: this.idField, value: idValue } },
       this.procId
     );
 
-    if (res.length > 0) {
-      Tag.procId = this.procId;
-      const tags = await Tag.getAll();
-
-      if (tags.length > 0) res[0].css += tags.map((tag) => tag.css).join(' ');
-    }
+    if (res.affectedRows > 0)
+      return db.select({ table: this.table, filters: [{ field: this.idField, value: idValue }] });
 
     return res;
+  };
+
+  this.get = (name) => {
+    logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
+
+    return db.select({ table: this.table, filters: [{ field: 'name', value: name }] }, this.procId);
+  };
+
+  this.getAll = () => {
+    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
+
+    return db.select({ table: this.table }, this.procId);
+  };
+
+  this.delete = (theme_id) => {
+    logger.debug({ name: `${this.name}.delete()`, data: theme_id }, this.procId, 'method');
+
+    return db.remove({ id: { field: this.idField, value: theme_id }, table: this.table }, this.procId);
   };
 
   this.getFunctions = () => {

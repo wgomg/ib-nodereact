@@ -1,4 +1,4 @@
-import { GET_THEME, GET_THEMES, THEMES_ERROR } from '../actions/types';
+import { GET_THEME, GET_THEMES, THEMES_ERROR, DELETE_THEME } from '../actions/types';
 
 const initState = {
   themes: [],
@@ -19,6 +19,14 @@ export default function (state = initState, action) {
 
     case THEMES_ERROR:
       return { ...state, loading: false, error: payload.data };
+
+    case DELETE_THEME:
+      return {
+        ...state,
+        themes: state.themes.filter((theme) => theme.theme_id !== payload),
+        loading: false,
+        error: {},
+      };
 
     default:
       return state;

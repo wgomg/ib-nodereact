@@ -16,7 +16,7 @@ const privateMethods = new Map([
   ['Rule', ['save', 'update', 'delete']],
   ['Staff', ['save', 'get', 'getAuth', 'getAll', 'update', 'delete', 'updatePassword']],
   ['Tag', ['save', 'delete']],
-  ['Theme', 'save'],
+  ['Theme', ['save', 'update', 'delete']],
   ['Thread', ['delete']],
 ]);
 
