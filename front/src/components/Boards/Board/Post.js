@@ -1,13 +1,71 @@
 import React, { Fragment } from 'react';
+import { connect } from 'react-redux';
 
 import { ButtonLink, Image } from '../../common';
+
+import ReactTooltip from 'react-tooltip';
 
 import timeSince from '../../../utils/timeSince';
 import prettyBytes from '../../../utils/prettyBytes';
 import prettyDate from '../../../utils/prettyDate';
 
-export default ({ thread, post }) => {
-  return (
+import QuotePost from './QuotePost';
+
+const striptags = require('striptags');
+
+const Post = ({ thread, post }) => {
+  const textArray = post.text;
+  let reactToolTips = [];
+  const text = textArray.map((elem, index) => {
+    if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem)) {
+      let props = {
+        style: { display: 'inline-grid' },
+        dangerouslySetInnerHTML: { __html: elem },
+      };
+
+      let quotePost = null;
+
+      if (/<\s*a[^>]*>(.*?)<\s*\/\s*a>/g.test(elem) && /(>{2}(\d+))/g.test(elem)) {
+        const quotePostId = striptags(elem.replace('>>', '')) + '_' + post.post_id;
+        const quoted = post.quoted.filter((q) => q.post_id.toString() === quotePostId.split('_')[0])[0];
+
+        return (
+          <Fragment key={index}>
+            <div {...props} data-tip data-for={quotePostId} />
+            <ReactTooltip
+              className='tooltip'
+              id={quotePostId}
+              place='right'
+              type='dark'
+              effect='solid'
+              overridePosition={({ left, top }, currentEvent, currentTarget, node) => {
+                const { height } = node.getBoundingClientRect();
+
+                let newTop = null;
+                if (top + height > window.innerHeight)
+                  newTop = top - Math.abs(top + height - window.innerHeight) - 10;
+
+                return { left, top: newTop || top };
+              }}
+            >
+              <QuotePost post={quoted} />
+            </ReactTooltip>
+          </Fragment>
+        );
+      }
+
+      return (
+        <Fragment key={index}>
+          <div {...props} />
+          {quotePost}
+        </Fragment>
+      );
+    }
+
+    return elem;
+  });
+
+  const postComponent = (
     <div className='container post-container' key={post.post_id}>
       <div className='post card card-post'>
         <ButtonLink text='[-]' altText='[+]' extraClass='hide-thread' />
@@ -39,8 +97,17 @@ export default ({ thread, post }) => {
           )}
         </div>
 
-        <div className='post-text' dangerouslySetInnerHTML={{ __html: post.text }} />
+        <div className='post-text'>{text}</div>
       </div>
     </div>
   );
+
+  return (
+    <Fragment>
+      {postComponent}
+      {reactToolTips}
+    </Fragment>
+  );
 };
+
+export default connect(null)(Post);

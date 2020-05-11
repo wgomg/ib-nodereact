@@ -76,7 +76,13 @@ function Post() {
           post[0].file = file.length > 0 ? file[0] : null;
         }
 
-        post[0].text = await tagger.apply(post[0].text, this.procId);
+        const tagged = await tagger.apply(post[0].text, this.procId);
+        post[0].text = tagged.text;
+
+        if (tagged.quoted.length > 0)
+          post.quoted = await Promise.all(
+            tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
+          );
       }
 
       return post;
@@ -113,7 +119,13 @@ function Post() {
         if (ip.isV4(cachedUser)) post.user = ip.hashV4(cachedUser);
         else if (ip.isV6(cachedUser)) post.user = ip.hashV6(cachedUser);
 
-        post.text = await tagger.apply(post.text, this.procId);
+        const tagged = await tagger.apply(post.text, this.procId);
+        post.text = tagged.text;
+
+        if (tagged.quoted.length > 0)
+          post.quoted = await Promise.all(
+            tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
+          );
 
         return post;
       })
@@ -139,6 +151,39 @@ function Post() {
     logger.debug({ name: `${this.name}.delete()`, data: post_id }, this.procId, 'method');
 
     return db.remove({ id: { field: this.idField, value: post_id }, table: this.table }, this.procId);
+  };
+
+  this.get = async (post_id) => {
+    logger.debug({ name: `${this.name}.get()`, data: post_id }, this.procId, 'method');
+
+    let post = await db.select({
+      table: this.table,
+      filters: [{ field: this.idField, value: post_id }],
+    });
+
+    if (post.length > 0) {
+      post = post[0];
+
+      if (post.file_id) {
+        const file = await File.getByID(post.file_id);
+        post.file = file.length === 0 ? null : file[0];
+        delete post.file_id;
+      }
+
+      const board_id = await this.getBoardId(post_id);
+      const Board = require('./Board');
+      Board.procId = this.procId;
+      post.board = await Board.getByID(board_id);
+
+      const tagged = await tagger.apply(post.text, this.procId);
+      post.text = tagged.text;
+      if (tagged.quoted.length > 0)
+        post.quoted = await Promise.all(
+          tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
+        );
+    }
+
+    return post;
   };
 
   this.getLatests = async () => {
@@ -175,25 +220,6 @@ function Post() {
 
     Thread.procId = this.procId;
     return Thread.getBoardId(post[0].thread_id);
-  };
-
-  this.get = async (post_id) => {
-    logger.debug({ name: `${this.name}.get()`, data: post_id }, this.procId, 'method');
-
-    let post = await db.select({
-      table: this.table,
-      filters: [{ field: this.idField, value: post_id }],
-    });
-
-    if (post.length > 0) {
-      post = post[0];
-      const board_id = await this.getBoardId(post_id);
-      const Board = require('./Board');
-      Board.procId = this.procId;
-      post.board = await Board.getByID(board_id);
-    }
-
-    return post;
   };
 
   this.getFunctions = () => {

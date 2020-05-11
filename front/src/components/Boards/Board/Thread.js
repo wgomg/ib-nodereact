@@ -12,8 +12,8 @@ export default ({ thread, board }) => {
 
   const opPost = <OpPost thread={thread} post={posts[0]} isThread={true} />;
 
-  const postsList = posts.splice(1).map((post) => {
-    let props = { id: 'p' + post.post_id, key: post.post_id };
+  const postsList = posts.splice(1).map((post, index) => {
+    let props = { id: 'p' + post.post_id, key: index };
 
     if (hash && hash.includes(post.post_id)) props.ref = ref;
 

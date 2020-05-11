@@ -10,6 +10,7 @@ export const DELETE_BOARD = 'DELETE_BOARD';
 export const BOARDS_ERROR = 'BOARDS_ERROR';
 
 export const CREATE_POST = 'CREATE_POST';
+export const GET_POST = 'GET_POST';
 export const POST_ERROR = 'POST_ERROR';
 
 export const GET_LATEST_THREADS = 'GET_LATEST_THREADS';

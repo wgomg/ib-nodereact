@@ -1,5 +1,7 @@
 'use strict';
 
+const cache = require('../libraries/cache');
+
 const db = require('../db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
@@ -27,11 +29,15 @@ function Tag() {
 
     const tag = await db.insert({ body, table: this.table }, this.procId);
 
-    if (tag.insertId)
+    if (tag.insertId) {
+      const tags = await this.getAll();
+      cache.set('tags', tags);
+
       return db.select(
         { table: this.table, filters: [{ field: this.idField, value: tag.insertId }] },
         this.procId
       );
+    }
 
     return tag;
   };
