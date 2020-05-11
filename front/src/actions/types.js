@@ -9,8 +9,8 @@ export const GET_BOARD = 'GET_BOARD';
 export const DELETE_BOARD = 'DELETE_BOARD';
 export const BOARDS_ERROR = 'BOARDS_ERROR';
 
-export const GET_LATEST_POSTS = 'GET_LATEST_POSTS';
-export const LATEST_POSTS_ERROR = 'LATEST_POSTS_ERROR';
+export const CREATE_POST = 'CREATE_POST';
+export const POST_ERROR = 'POST_ERROR';
 
 export const GET_LATEST_THREADS = 'GET_LATEST_THREADS';
 export const LATEST_THREADS_ERROR = 'LATEST_THREADS_ERROR';
@@ -22,9 +22,6 @@ export const BANNERS_ERROR = 'BANNERS_ERROR';
 
 export const CREATE_THREAD = 'CREATE_THREAD';
 export const THREAD_ERROR = 'THREAD_ERROR';
-
-export const CREATE_POST = 'CREATE_POST';
-export const POST_ERROR = 'POST_ERROR';
 
 export const GET_STAFFS = 'GET_STAFFS';
 export const GET_STAFF = 'GET_STAFF';

@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import { ButtonLink, Image } from '../../common';
 
 import timeSince from '../../../utils/timeSince';
 import prettyBytes from '../../../utils/prettyBytes';
 import prettyDate from '../../../utils/prettyDate';
-import { Fragment } from 'react';
 
 export default ({ thread, post }) => {
   return (

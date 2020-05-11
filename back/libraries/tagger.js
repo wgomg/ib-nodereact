@@ -32,6 +32,30 @@ const apply = async (text, procId) => {
     );
   });
 
+  let links = new Map();
+
+  let quotedPosts = text.match(/(>{2}(\d+))/g);
+  if (quotedPosts)
+    for (const qp of quotedPosts) {
+      const post_id = qp.replace('>>', '');
+      const Post = require('../models/Post');
+      Post.procId = procId;
+      const post = await Post.get(post_id);
+
+      links.set(qp, `<a href='/${post.board[0].uri}/t${post.thread_id}#p${post_id}'>${qp}</a>`);
+    }
+
+  let linkedBoard = text.match(/(>{3}((\/\w+\/)))/g);
+  if (linkedBoard)
+    for (const lb of linkedBoard) {
+      const board_uri = lb.replace('>>>', '');
+
+      links.set(lb, `<a href='${board_uri}'>${lb}</a>`);
+    }
+
+  if (links.size > 0)
+    for (const [linked, link] of links) replacedText = replacedText.replace(linked, link);
+
   return replacedText;
 };
 

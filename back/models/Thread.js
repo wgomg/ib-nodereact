@@ -100,8 +100,6 @@ function Thread() {
     return db.remove({ table: this.table, id: { field: this.idField, value: thread_id } }, this.procId);
   };
 
-  // TODO: latest threads
-  // SELECT MAX(post_id) AS post_id,thread_id, text, name, file_id, created_on FROM Posts GROUP BY thread_id ORDER BY created_on DESC;
   this.getLatests = async () => {
     logger.debug({ name: `${this.name}.getLatests()` }, this.procId, 'method');
 

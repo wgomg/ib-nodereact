@@ -33,7 +33,7 @@ const Board = ({ getBoard, boards: { board, loading }, uri }) => {
         <Route
           exact
           path={`/${uri}/t${thread.thread_id}`}
-          render={(props) => <NewPostForm {...props} thread={thread} boardUri={uri} />}
+          render={(props) => <NewPostForm {...props} thread={thread} />}
           key={thread.thread_id}
         />
       ))}

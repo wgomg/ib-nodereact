@@ -24,6 +24,16 @@ const NewPostForm = ({ thread, createPost }) => {
 
   const { text, name } = formData;
 
+  const hash = window.location.hash;
+  let quotedPost = null;
+  if (hash && hash.includes('#qp')) quotedPost = '>>' + hash.split('#qp')[1];
+
+  useEffect(() => {
+    setFormData((formData) => {
+      return quotedPost ? { ...formData, text: (formData.text += quotedPost) } : formData;
+    });
+  }, [quotedPost]);
+
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onFileSelected = (e) => setFile(e.target.files[0]);
@@ -77,6 +87,7 @@ const NewPostForm = ({ thread, createPost }) => {
           text: '',
           name: 'Anon',
         });
+
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       }
     }

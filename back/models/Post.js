@@ -177,9 +177,28 @@ function Post() {
     return Thread.getBoardId(post[0].thread_id);
   };
 
+  this.get = async (post_id) => {
+    logger.debug({ name: `${this.name}.get()`, data: post_id }, this.procId, 'method');
+
+    let post = await db.select({
+      table: this.table,
+      filters: [{ field: this.idField, value: post_id }],
+    });
+
+    if (post.length > 0) {
+      post = post[0];
+      const board_id = await this.getBoardId(post_id);
+      const Board = require('./Board');
+      Board.procId = this.procId;
+      post.board = await Board.getByID(board_id);
+    }
+
+    return post;
+  };
+
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getByThread', 'getBoardId', 'getLatests'];
+    const excluded = ['getFunctions', 'getByThread', 'getBoardId', 'getLatests', 'get'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

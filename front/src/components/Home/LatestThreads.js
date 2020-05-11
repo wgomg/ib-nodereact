@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Card, Loading, PostLink } from '../common';
+import { Card, Loading } from '../common';
 
 import { getLatestThreads } from '../../actions/threads';
 import { getBoardsList } from '../../actions/boards';
@@ -11,6 +11,7 @@ import timeSince from '../../utils/timeSince';
 
 import ReactTooltip from 'react-tooltip';
 import { Fragment } from 'react';
+import { Link } from 'react-router-dom';
 
 const LatestThreads = ({
   getLatestThreads,
@@ -31,7 +32,14 @@ const LatestThreads = ({
         return (
           <div className='columns' key={thread.thread_id}>
             <div className='col-2'>
-              <PostLink board={board[0]} post={thread.post} fullLink />
+              <Link
+                to={{
+                  pathname: `/${board[0].uri}/t${thread.thread_id}`,
+                  hash: `#p${thread.post.post_id}`,
+                }}
+              >
+                {`>>/${board[0].uri}/${thread.post.post_id}`}
+              </Link>
             </div>
             <div className='col' data-html={true} data-tip={thread.post.text}>
               {' '}
