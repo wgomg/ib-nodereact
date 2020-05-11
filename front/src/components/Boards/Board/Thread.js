@@ -8,14 +8,18 @@ export default ({ thread, board }) => {
   let posts = [...thread.posts];
 
   const hash = window.location.hash;
-  const ref = useRef(null);
+  const currRef = useRef(null);
 
   const opPost = <OpPost thread={thread} post={posts[0]} isThread={true} />;
 
   const postsList = posts.splice(1).map((post, index) => {
     let props = { id: 'p' + post.post_id, key: index };
 
-    if (hash && hash.includes(post.post_id)) props.ref = ref;
+    if (hash && hash.includes(post.post_id)) {
+      if (currRef.current) currRef.current.firstChild.firstChild.classList.remove('hashed');
+
+      props.ref = currRef;
+    }
 
     return (
       <div {...props}>
@@ -25,8 +29,10 @@ export default ({ thread, board }) => {
   });
 
   setTimeout(() => {
-    if (hash && ref.current)
-      window.scrollTo({ left: 0, top: ref.current.offsetTop, behavior: 'smooth' });
+    if (hash && currRef.current) {
+      window.scrollTo({ left: 0, top: currRef.current.offsetTop, behavior: 'smooth' });
+      currRef.current.firstChild.firstChild.classList.add('hashed');
+    }
   }, 100);
 
   return (

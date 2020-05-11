@@ -15,7 +15,7 @@ const striptags = require('striptags');
 
 const Post = ({ thread, post }) => {
   const textArray = post.text;
-  let reactToolTips = [];
+
   const text = textArray.map((elem, index) => {
     if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem)) {
       let props = {
@@ -102,12 +102,7 @@ const Post = ({ thread, post }) => {
     </div>
   );
 
-  return (
-    <Fragment>
-      {postComponent}
-      {reactToolTips}
-    </Fragment>
-  );
+  return postComponent;
 };
 
 export default connect(null)(Post);
