@@ -8,7 +8,6 @@ import { Loading } from '../../common';
 import Banner from './Banner';
 import BoardTitle from './BoardTitle';
 import NewThreadForm from './NewThreadForm';
-import NewPostForm from './NewPostForm';
 import ThreadsList from './ThreadsList';
 import Thread from './Thread';
 
@@ -20,24 +19,11 @@ const Board = ({ getBoard, boards: { board, loading }, uri }) => {
   }, [getBoard, uri]);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (!window.location.hash) window.scrollTo(0, 0);
   });
 
   const newThreadRoute = (
     <Route exact path={'/' + uri} render={(props) => <NewThreadForm {...props} board={board} />} />
-  );
-
-  const newPostsRoutes = board.threads && (
-    <Fragment>
-      {board.threads.map((thread) => (
-        <Route
-          exact
-          path={`/${uri}/t${thread.thread_id}`}
-          render={(props) => <NewPostForm {...props} thread={thread} />}
-          key={thread.thread_id}
-        />
-      ))}
-    </Fragment>
   );
 
   const threadsListRoute = (
@@ -72,10 +58,7 @@ const Board = ({ getBoard, boards: { board, loading }, uri }) => {
       <Banner board={board} />
       <BoardTitle board={board} />
 
-      <Switch>
-        {newThreadRoute}
-        {newPostsRoutes}
-      </Switch>
+      <Switch>{newThreadRoute}</Switch>
 
       <Switch>
         {threadsListRoute}

@@ -1,42 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-
-import { createPost } from '../../../actions/boards';
 
 import { Form } from '../../common';
-import { useEffect } from 'react';
 
-const NewPostForm = ({ thread, createPost }) => {
-  const [formData, setFormData] = useState({
-    thread_id: 0,
-    text: '',
-    name: 'Anon',
-  });
-
-  useEffect(() => {
-    setFormData((formData) => {
-      return { ...formData, thread_id: thread.thread_id };
-    });
-  }, [thread]);
-
-  const [file, setFile] = useState(null);
-
+const NewPostForm = ({ formData, onChange, onFileSelected, onSubmit, isFloatin }) => {
   const { text, name } = formData;
-
-  const hash = window.location.hash;
-  let quotedPost = null;
-  if (hash && hash.includes('#qp')) quotedPost = '>>' + hash.split('#qp')[1];
-
-  useEffect(() => {
-    setFormData((formData) => {
-      return quotedPost ? { ...formData, text: (formData.text += quotedPost) } : formData;
-    });
-  }, [quotedPost]);
-
-  const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const onFileSelected = (e) => setFile(e.target.files[0]);
 
   const elements = [
     {
@@ -66,43 +34,21 @@ const NewPostForm = ({ thread, createPost }) => {
     },
   ];
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
+  const formProps = { onSubmit, elements, isFloatin };
 
-    const { thread_id, text, name } = formData;
+  const form = <Form {...formProps} />;
 
-    if (text === '') alert('El campo "Texto" es obligatorio');
-    else {
-      const newPost = new FormData();
+  const newPostForm = isFloatin ? form : <div className='container centered'>{form}</div>;
 
-      newPost.set('thread_id', thread_id);
-      newPost.set('text', text);
-      newPost.set('name', name);
-      if (file) newPost.append('image', file);
-
-      const res = await createPost(newPost);
-      if (res) {
-        setFormData({
-          thread_id: 0,
-          text: '',
-          name: 'Anon',
-        });
-
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      }
-    }
-  };
-
-  return (
-    <div className='container centered'>
-      <Form onSubmit={onSubmit} elements={elements} />
-    </div>
-  );
+  return newPostForm;
 };
 
 NewPostForm.propTypes = {
-  createPost: PropTypes.func.isRequired,
-  thread: PropTypes.object.isRequired,
+  formData: PropTypes.object.isRequired,
+  onChange: PropTypes.func.isRequired,
+  onFileSelected: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  isFloatin: PropTypes.bool,
 };
 
-export default connect(null, { createPost })(NewPostForm);
+export default NewPostForm;

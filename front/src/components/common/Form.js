@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import Button from './form-elements/Button';
 import Text from './form-elements/Text';
@@ -17,34 +16,25 @@ const formComponents = {
   select: Select,
 };
 
-const Form = ({ onSubmit, elements }) => {
-  return (
-    <form className='form centered' onSubmit={(e) => onSubmit(e)}>
-      {elements.map((element, index) => {
-        const Component = formComponents[element.component];
-        return (
-          <div className={'form-group'} key={index}>
-            <Component
-              component={element.component}
-              name={element.name}
-              value={element.value}
-              text={element.text}
-              onChange={element.onChange}
-              lead={element.lead}
-              label={element.label}
-              options={element.options}
-              rows={element.rows}
-            />
-          </div>
-        );
-      })}
-    </form>
-  );
-};
-
-Form.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-  elements: PropTypes.array.isRequired,
-};
-
-export default Form;
+export default ({ onSubmit, elements, isFloatin }) => (
+  <form className={`form centered${isFloatin ? ' floatin' : ''}`} onSubmit={(e) => onSubmit(e)}>
+    {elements.map((element, index) => {
+      const Component = formComponents[element.component];
+      return (
+        <div className={'form-group'} key={index}>
+          <Component
+            component={element.component}
+            name={element.name}
+            value={element.value}
+            text={element.text}
+            onChange={element.onChange}
+            lead={element.lead}
+            label={element.label}
+            options={element.options}
+            rows={element.rows}
+          />
+        </div>
+      );
+    })}
+  </form>
+);

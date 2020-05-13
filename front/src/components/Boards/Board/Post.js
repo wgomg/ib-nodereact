@@ -3,18 +3,29 @@ import { connect } from 'react-redux';
 
 import { ButtonLink, Image } from '../../common';
 
-import ReactTooltip from 'react-tooltip';
-
 import timeSince from '../../../utils/timeSince';
 import prettyBytes from '../../../utils/prettyBytes';
 import prettyDate from '../../../utils/prettyDate';
 
+import ReactTooltip from 'react-tooltip';
 import QuotePost from './QuotePost';
 
 const striptags = require('striptags');
 
 const Post = ({ thread, post }) => {
   const textArray = post.text;
+
+  const tooltipOverridePosition = ({ left, top }, currentEvent, currentTarget, node) => {
+    const { height } = node.getBoundingClientRect();
+
+    let newTop = null;
+    if (top + height > window.innerHeight)
+      newTop = top - Math.abs(top + height - window.innerHeight) - 10;
+
+    return { left, top: newTop || top };
+  };
+
+  let onQuoteLinkClick = (quotedPost) => sessionStorage.setItem('qp', quotedPost.post_id);
 
   const text = textArray.map((elem, index) => {
     if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem)) {
@@ -38,15 +49,7 @@ const Post = ({ thread, post }) => {
               place='right'
               type='dark'
               effect='solid'
-              overridePosition={({ left, top }, currentEvent, currentTarget, node) => {
-                const { height } = node.getBoundingClientRect();
-
-                let newTop = null;
-                if (top + height > window.innerHeight)
-                  newTop = top - Math.abs(top + height - window.innerHeight) - 10;
-
-                return { left, top: newTop || top };
-              }}
+              overridePosition={tooltipOverridePosition}
             >
               <QuotePost post={quoted} />
             </ReactTooltip>
@@ -74,7 +77,9 @@ const Post = ({ thread, post }) => {
           <strong>{post.name || 'Anon'}</strong> {prettyDate(post.created_on).toLocaleString()}{' '}
           <span className='small'>({timeSince(post.created_on)}) </span>{' '}
           <a href={`t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
-          <a href={`t${thread.thread_id}#qp${post.post_id}`}>{post.post_id}</a>
+          <a href={`t${thread.thread_id}#qp${post.post_id}`} onClick={(e) => onQuoteLinkClick(post)}>
+            {post.post_id}
+          </a>
         </div>
 
         <p className='file-info-post'>
