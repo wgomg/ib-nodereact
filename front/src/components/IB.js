@@ -25,8 +25,6 @@ const IB = ({
 
   const selectedTheme = getThemeFromStorage();
 
-  const selectedTheme = localStorage.getItem('theme');
-
   useEffect(() => {
     getTheme(selectedTheme);
   }, [getTheme, selectedTheme]);
@@ -35,17 +33,9 @@ const IB = ({
     getTags();
   }, [getTags]);
 
-  let themeStyle = document.getElementById('theme');
-
-  if (!themeStyle) {
-    themeStyle = document.createElement('style');
-    themeStyle.setAttribute('id', 'theme');
-    themeStyle.setAttribute('type', 'text/css');
-    document.head.appendChild(themeStyle);
-  }
-
   let component = <div />;
 
+  let themeStyle = getStyleElement('theme');
   if (!selectedCss && !themesLoading) setSelectedCss(setCssInStorage(theme.css));
 
   if (selectedCss) {
@@ -64,18 +54,23 @@ const IB = ({
     );
   }
 
-  let tagsStyle = document.getElementById('tags');
-
-  if (!tagsStyle) {
-    tagsStyle = document.createElement('style');
-    tagsStyle.setAttribute('id', 'tags');
-    tagsStyle.setAttribute('type', 'text/css');
-    document.head.appendChild(tagsStyle);
-  }
-
+  let tagsStyle = getStyleElement('tags');
   if (!tagsLoading) tagsStyle.innerHTML = tags.map((tag) => tag.css).join(' ');
 
   return component;
+};
+
+const getStyleElement = (id) => {
+  let ele = document.getElementById(id);
+
+  if (!ele) {
+    ele = document.createElement('style');
+    ele.setAttribute('id', id);
+    ele.setAttribute('type', 'text/css');
+    document.head.appendChild(ele);
+  }
+
+  return ele;
 };
 
 IB.propTypes = {
