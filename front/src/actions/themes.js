@@ -2,6 +2,8 @@ import axios from 'axios';
 
 import { GET_THEME, GET_THEMES, THEMES_ERROR, DELETE_THEME } from './types';
 
+import { getThemeFromStorage, setCssInStorage } from '../utils/theme';
+
 export const getThemes = () => async (dispatch) => {
   try {
     const res = await axios.get('/themes');
@@ -55,6 +57,8 @@ export const editTheme = (editedTheme, history) => async (dispatch) => {
     const data = res.data.length > 0 ? res.data[0] : {};
 
     dispatch({ type: GET_THEME, payload: data });
+
+    if (editedTheme.name === getThemeFromStorage()) setCssInStorage(editedTheme.css);
 
     history.push('/staff/dash');
   } catch (error) {

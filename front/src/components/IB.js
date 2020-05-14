@@ -11,6 +11,8 @@ import { ViewImage } from './common';
 import { getTheme } from '../actions/themes';
 import { getTags } from '../actions/tags';
 
+import { getThemeFromStorage, setCssInStorage, getCssFromStorage } from '../utils/theme';
+
 import '../default.css';
 
 const IB = ({
@@ -19,12 +21,9 @@ const IB = ({
   tags: { tags, loading: tagsLoading },
   themes: { theme, loading: themesLoading },
 }) => {
-  const [cssInStorage, setCssInStorage] = useState(localStorage.getItem('css') !== null);
+  const [selectedCss, setSelectedCss] = useState(getCssFromStorage());
 
-  if (!localStorage.theme) {
-    localStorage.setItem('theme', 'default');
-    localStorage.setItem('css', null);
-  }
+  const selectedTheme = getThemeFromStorage();
 
   const selectedTheme = localStorage.getItem('theme');
 
@@ -47,13 +46,10 @@ const IB = ({
 
   let component = <div />;
 
-  if (!cssInStorage && !themesLoading) {
-    localStorage.setItem('css', theme.css);
-    setCssInStorage(true);
-  }
+  if (!selectedCss && !themesLoading) setSelectedCss(setCssInStorage(theme.css));
 
-  if (cssInStorage) {
-    themeStyle.innerHTML = localStorage.getItem('css');
+  if (selectedCss) {
+    themeStyle.innerHTML = selectedCss;
     component = (
       <Router>
         <Fragment>
