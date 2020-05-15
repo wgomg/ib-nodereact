@@ -67,6 +67,8 @@ function Theme() {
   this.delete = (theme_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: theme_id }, this.procId, 'method');
 
+    if (!/^[0-9]+$/i.test(theme_id)) return { validationError: 'Invalid ID' };
+
     return db.remove({ id: { field: this.idField, value: theme_id }, table: this.table }, this.procId);
   };
 

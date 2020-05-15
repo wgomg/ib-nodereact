@@ -94,6 +94,8 @@ function Post() {
   this.getByThread = async (thread_id) => {
     logger.debug({ name: `${this.name}.getByThread()`, data: thread_id }, this.procId, 'method');
 
+    if (!/^[0-9]+$/i.test(thread_id)) return { validationError: 'Invalid ID' };
+
     let posts = await db.select(
       {
         table: this.table,
@@ -156,6 +158,8 @@ function Post() {
   this.get = async (post_id) => {
     logger.debug({ name: `${this.name}.get()`, data: post_id }, this.procId, 'method');
 
+    if (!/^[0-9]+$/i.test(post_id)) return { validationError: 'Invalid ID' };
+
     let post = await db.select({
       table: this.table,
       filters: [{ field: this.idField, value: post_id }],
@@ -210,6 +214,8 @@ function Post() {
 
   this.getBoardId = async (post_id) => {
     logger.debug({ name: `${this.name}.getBoardId()`, data: post_id }, this.procId, 'method');
+
+    if (!/^[0-9]+$/i.test(post_id)) return { validationError: 'Invalid ID' };
 
     const post = await db.select(
       { table: this.table, filters: [{ field: this.idField, value: post_id }] },

@@ -71,6 +71,8 @@ function Banner() {
   this.get = async (board_id) => {
     logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
 
+    if (!/^[0-9]+$/i.test(board_id)) return { validationError: 'Invalid ID' };
+
     let banners = await db.select(
       { table: this.table, filters: [{ field: 'board_id', value: board_id }] },
       this.procId
@@ -132,11 +134,15 @@ function Banner() {
   this.delete = (banner_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: banner_id }, this.procId, 'method');
 
+    if (!/^[0-9]+$/i.test(banner_id)) return { validationError: 'Invalid ID' };
+
     return db.remove({ id: { field: this.idField, value: banner_id }, table: this.table }, this.procId);
   };
 
   this.getBoardId = async (banner_id) => {
     logger.debug({ name: `${this.name}.getBoard()`, data: banner_id }, this.procId, 'method');
+
+    if (!/^[0-9]+$/i.test(banner_id)) return { validationError: 'Invalid ID' };
 
     const banner = await db.select(
       { table: this.table, filters: [{ [this.idField]: banner_id }] },

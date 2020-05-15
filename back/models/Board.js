@@ -77,11 +77,15 @@ function Board() {
   this.delete = (board_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: board_id }, this.procId, 'method');
 
+    if (!/^[0-9]+$/i.test(board_id)) return { validationError: 'Invalid ID' };
+
     return db.remove({ id: { field: this.idField, value: board_id }, table: this.table }, this.procId);
   };
 
   this.getByID = (board_id) => {
     logger.debug({ name: `${this.name}.getByID()`, data: board_id }, this.procId, 'method');
+
+    if (!/^[0-9]+$/i.test(board_id)) return { validationError: 'Invalid ID' };
 
     return db.select(
       {

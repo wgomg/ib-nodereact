@@ -33,6 +33,8 @@ function Report() {
   this.updateSolved = (report_id) => {
     logger.debug({ name: `{this.name}.setAsSolved()`, data: report_id }, this.procId);
 
+    if (!/^[0-9]+$/i.test(report_id)) return { validationError: 'Invalid ID' };
+
     return db.update(
       {
         body: { solved: true },
@@ -51,6 +53,8 @@ function Report() {
 
   this.getBoardId = async (report_id) => {
     logger.debug({ name: `${this.name}.getBoard()`, data: report_id }, this.procId, 'method');
+
+    if (!/^[0-9]+$/i.test(report_id)) return { validationError: 'Invalid ID' };
 
     const report = await db.select(
       { table: this.table, filters: [{ [this.idField]: report_id }] },

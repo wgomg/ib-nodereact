@@ -116,6 +116,8 @@ function Staff() {
   this.get = async (staff_id) => {
     logger.debug({ name: `${this.name}.get()`, data: staff_id }, this.procId, 'method');
 
+    if (!/^[0-9]+$/i.test(staff_id)) return { validationError: 'Invalid ID' };
+
     const staff = await db.select(
       {
         table: this.table,
@@ -193,6 +195,8 @@ function Staff() {
 
   this.delete = (staff_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: staff_id }, this.procId, 'method');
+
+    if (!/^[0-9]+$/i.test(staff_id)) return { validationError: 'Invalid ID' };
 
     return db.remove({ table: this.table, id: { field: this.idField, value: staff_id } });
   };

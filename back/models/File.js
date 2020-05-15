@@ -50,6 +50,8 @@ function File() {
   this.getByID = async (file_id) => {
     logger.debug({ name: `${this.name}.getByID()`, data: file_id }, this.procId, 'method');
 
+    if (!/^[0-9]+$/i.test(file_id)) return { validationError: 'Invalid ID' };
+
     let file = await db.select(
       {
         table: this.table,
