@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import { Card, Loading } from '../common';
 
@@ -10,8 +11,6 @@ import { getBoardsList } from '../../actions/boards';
 import timeSince from '../../utils/timeSince';
 
 import ReactTooltip from 'react-tooltip';
-import { Fragment } from 'react';
-import { Link } from 'react-router-dom';
 
 const LatestThreads = ({
   getLatestThreads,

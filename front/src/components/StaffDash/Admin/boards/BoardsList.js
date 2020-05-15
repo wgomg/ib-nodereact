@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { Card, Loading } from '../../../common';
 import { getBoardsList, deleteBoard } from '../../../../actions/boards';
 
+import ReactTooltip from 'react-tooltip';
+
 const BoardsList = ({ getBoardsList, deleteBoard, boards: { boards, loading } }) => {
   useEffect(() => {
     getBoardsList();
@@ -32,7 +34,11 @@ const BoardsList = ({ getBoardsList, deleteBoard, boards: { boards, loading } })
 
         const uri = <div className='col-1'>{board.uri}</div>;
 
-        const name = <div className='col'>{board.name}</div>;
+        const name = (
+          <div className='col' data-tip={board.description}>
+            {board.name}
+          </div>
+        );
 
         return (
           <div className='columns' key={board.board_id}>
@@ -56,6 +62,7 @@ const BoardsList = ({ getBoardsList, deleteBoard, boards: { boards, loading } })
     <Fragment>
       {boardsList}
       {newBoard}
+      <ReactTooltip border={true} borderColor='#7da3b3' />
     </Fragment>
   );
 
