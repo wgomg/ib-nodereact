@@ -43,3 +43,7 @@ export const GET_TAGS = 'GET_TAGS';
 export const GET_TAG = 'GET_TAG';
 export const TAGS_ERROR = 'TAGS_ERROR';
 export const DELETE_TAG = 'DELETE_TAG';
+
+export const CREATE_REPORT = 'CREATE_REPORT';
+export const REPORT_ERROR = 'REPORT_ERROR';
+export const GET_REPORTS = 'GET_REPORTS';

@@ -6,6 +6,7 @@ import TextArea from './form-elements/TextArea';
 import FileSelector from './form-elements/FileSelector';
 import Checkbox from './form-elements/Checkbox';
 import Select from './form-elements/Select';
+import Radio from './form-elements/Radio';
 
 const formComponents = {
   btn: Button,
@@ -14,6 +15,7 @@ const formComponents = {
   file: FileSelector,
   check: Checkbox,
   select: Select,
+  radio: Radio,
 };
 
 export default ({ onSubmit, elements, isFloatin }) => (

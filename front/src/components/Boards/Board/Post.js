@@ -1,5 +1,4 @@
 import React, { Fragment } from 'react';
-import { connect } from 'react-redux';
 
 import { ButtonLink, Image } from '../../common';
 
@@ -12,7 +11,7 @@ import QuotePost from './QuotePost';
 
 const striptags = require('striptags');
 
-const Post = ({ thread, post }) => {
+export default ({ thread, board, post, onClick }) => {
   const textArray = post.text;
 
   const tooltipOverridePosition = ({ left, top }, currentEvent, currentTarget, node) => {
@@ -24,8 +23,6 @@ const Post = ({ thread, post }) => {
 
     return { left, top: newTop || top };
   };
-
-  let onQuoteLinkClick = (quotedPost) => sessionStorage.setItem('qp', quotedPost.post_id);
 
   const text = textArray.map((elem, index) => {
     if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem)) {
@@ -76,9 +73,18 @@ const Post = ({ thread, post }) => {
         <div className='post-info'>
           <strong>{post.name || 'Anon'}</strong> {prettyDate(post.created_on).toLocaleString()}{' '}
           <span className='small'>({timeSince(post.created_on)}) </span>{' '}
-          <a href={`t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
-          <a href={`t${thread.thread_id}#qp${post.post_id}`} onClick={(e) => onQuoteLinkClick(post)}>
+          <a href={`/${board.uri}/t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
+          <a
+            href={`/${board.uri}/t${thread.thread_id}#qp${post.post_id}`}
+            onClick={() => onClick('qp', post.post_id)}
+          >
             {post.post_id}
+          </a>{' '}
+          <a
+            href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
+            onClick={() => onClick('rp', post.post_id)}
+          >
+            [!!!]
           </a>
         </div>
 
@@ -109,5 +115,3 @@ const Post = ({ thread, post }) => {
 
   return postComponent;
 };
-
-export default connect(null)(Post);

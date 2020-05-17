@@ -23,6 +23,8 @@ import TagsList from './tags/TagsList';
 import CreateTheme from './themes/CreateTheme';
 import EditTheme from './themes/EditTheme';
 import ThemesList from './themes/ThemesList';
+//
+import ReportsList from '../reports/ReportsList';
 
 //
 import StaffNavbar from '../StaffNavbar';
@@ -59,6 +61,12 @@ export default () => (
           <div className='columns'>
             <TagsList />
             <ThemesList />
+          </div>
+        </div>
+        <div className='container centered'>
+          <div className='columns'>
+            <ReportsList />
+            <div className='col-5' />
           </div>
         </div>
       </Fragment>

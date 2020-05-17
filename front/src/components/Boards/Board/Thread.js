@@ -7,50 +7,130 @@ import { Link } from 'react-router-dom';
 import Post from './Post';
 import OpPost from './OpPost';
 
-import NewPostForm from '../Board/NewPostForm';
+import NewPostForm from './NewPostForm';
+import ReportForm from './ReportForm';
 
 import { createPost } from '../../../actions/boards';
+import { createReport } from '../../../actions/reports';
 
 import ReactTooltip from 'react-tooltip';
 
-const Thread = ({ thread, board, createPost }) => {
-  const [formData, setFormData] = useState({
+const Thread = ({ thread, board, createPost, createReport, rules }) => {
+  const hash = window.location.hash;
+
+  const [newPostData, setNewPostData] = useState({
     thread_id: 0,
     text: '',
     name: 'Anon',
   });
-
-  const [qp, setQp] = useState(null);
-  const [prevQp, setPrevQp] = useState(null);
-
-  useEffect(() => {
-    setFormData((formData) => {
-      return { ...formData, thread_id: thread.thread_id };
-    });
-  }, [thread]);
-
   const [file, setFile] = useState(null);
 
-  const hash = window.location.hash;
+  const [reportData, setReportData] = useState({
+    post_id: 0,
+    rule_id: 0,
+  });
 
-  const sessionQp =
-    sessionStorage.getItem('qp') || (hash.includes('#qp') ? hash.replace('#qp', '') : null);
-  useEffect(() => {
-    setQp(sessionQp);
-  }, [sessionQp]);
+  const [tooltipData, setTooltipData] = useState({
+    qp: null,
+    rp: null,
+  });
+
+  const [prevTooltipPost, setPrevTooltipPost] = useState({
+    prevQp: null,
+    prevRp: null,
+  });
+
+  const { qp, rp } = tooltipData;
 
   useEffect(() => {
-    setFormData((formData) => (qp ? { ...formData, text: (formData.text += `>>${qp}\n`) } : formData));
+    setNewPostData((newPostData) => ({ ...newPostData, thread_id: thread.thread_id }));
+  }, [thread]);
+
+  useEffect(() => {
+    setTooltipData((tooltipData) => {
+      if (qp) return { ...tooltipData, qp };
+
+      if (hash.includes('#qp')) return { ...tooltipData, qp: hash.replace('#qp', '') };
+
+      return tooltipData;
+    });
+  }, [qp, hash]);
+
+  useEffect(() => {
+    setTooltipData((tooltipData) => {
+      if (rp) return { ...tooltipData, rp };
+
+      if (hash.includes('#rp')) return { ...tooltipData, rp: hash.replace('#rp', '') };
+
+      return tooltipData;
+    });
+  }, [rp, hash]);
+
+  useEffect(() => {
+    setNewPostData((newPostData) =>
+      qp ? { ...newPostData, text: (newPostData.text += `>>${qp}\n`) } : newPostData
+    );
   }, [qp]);
 
-  const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  useEffect(() => {
+    setReportData((reportData) => (rp ? { ...reportData, post_id: rp } : reportData));
+  }, [rp]);
+
+  setTimeout(() => {
+    if (hash && currRef.current) {
+      window.scrollTo({ left: 0, top: currRef.current.offsetTop, behavior: 'smooth' });
+      currRef.current.firstChild.firstChild.classList.add('hashed');
+
+      if (hash.includes('#qp') || hash.includes('#rp')) {
+        const key = hash.replace('#', '').replace(/\d+/g, '');
+        openTooltip(key);
+      }
+    }
+  }, 100);
+
+  const onToolTipClick = (key, value) => {
+    setTooltipData({ ...tooltipData, [key]: value });
+    openTooltip(key);
+    scrollToTooltipDiv(key, value);
+  };
+
+  const openTooltip = (key) => {
+    const keyUp = key.charAt(0).toUpperCase() + 'p';
+
+    const dummyDiv = document.getElementById('dummy' + keyUp);
+    dummyDiv.click();
+  };
+
+  const scrollToTooltipDiv = (key, value) => {
+    const keyUp = key.charAt(0).toUpperCase() + 'p';
+
+    setTimeout(() => {
+      const postDiv = document.getElementById(`p${value}`);
+
+      const prevDiv = prevTooltipPost['prev' + keyUp];
+
+      if (prevDiv && value !== prevDiv.id.replace('p', ''))
+        prevDiv.firstChild.firstChild.classList.remove('hashed');
+
+      setPrevTooltipPost({ ...prevTooltipPost, ['prev' + keyUp]: postDiv });
+
+      postDiv.firstChild.firstChild.classList.add('hashed');
+
+      window.scrollTo({ left: 0, top: postDiv.offsetTop, behavior: 'smooth' });
+    }, 100);
+  };
+
+  const onPostChange = (e) => setNewPostData({ ...newPostData, [e.target.name]: e.target.value });
+
+  const onReportChange = (e) =>
+    setReportData({ ...reportData, [e.target.name]: parseInt(e.target.value) });
 
   const onFileSelected = (e) => setFile(e.target.files[0]);
 
-  const onSubmit = async (e) => {
+  const onPostSubmit = async (e) => {
     e.preventDefault();
 
-    const { thread_id, text, name } = formData;
+    const { thread_id, text, name } = newPostData;
 
     if (text === '') alert('El campo "Texto" es obligatorio');
     else {
@@ -63,7 +143,7 @@ const Thread = ({ thread, board, createPost }) => {
 
       const res = await createPost(newPost);
       if (res) {
-        setFormData({
+        setNewPostData({
           thread_id: 0,
           text: '',
           name: 'Anon',
@@ -71,6 +151,20 @@ const Thread = ({ thread, board, createPost }) => {
 
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       }
+    }
+  };
+
+  const onReportSubmit = (e) => {
+    e.preventDefault();
+
+    const { rule_id } = reportData;
+
+    if (rule_id === 0) alert('Selecciona una regla');
+    else {
+      const res = createReport(reportData);
+
+      if (res) alert('Reporte enviado');
+      else alert('Ocurrió un error, inténtalo de nuevo');
     }
   };
 
@@ -83,10 +177,7 @@ const Thread = ({ thread, board, createPost }) => {
   const postsList = posts.splice(1).map((post, index) => {
     let props = { id: 'p' + post.post_id, key: index };
 
-    if (hash && hash.includes('#qp') && currRef.current)
-      currRef.current.firstChild.firstChild.classList.remove('hashed');
-
-    if (hash && hash.includes(`#p${post.post_id}`)) {
+    if (hash && hash.includes(post.post_id)) {
       if (currRef.current) currRef.current.firstChild.firstChild.classList.remove('hashed');
 
       props.ref = currRef;
@@ -94,17 +185,10 @@ const Thread = ({ thread, board, createPost }) => {
 
     return (
       <div {...props}>
-        <Post thread={thread} post={post} isThread={true} />
+        <Post thread={thread} board={board} post={post} onClick={onToolTipClick} />
       </div>
     );
   });
-
-  setTimeout(() => {
-    if (hash && currRef.current) {
-      window.scrollTo({ left: 0, top: currRef.current.offsetTop, behavior: 'smooth' });
-      currRef.current.firstChild.firstChild.classList.add('hashed');
-    }
-  }, 100);
 
   const tooltipOverridePosition = ({ left }, currentEvent, currentTarget, node) => {
     const { width: nodeWidth } = node.getBoundingClientRect();
@@ -128,46 +212,56 @@ const Thread = ({ thread, board, createPost }) => {
       type='dark'
       effect='solid'
       clickable={true}
-      overridePosition={tooltipOverridePosition}
       globalEventOff='click'
+      isCapture={true}
+      overridePosition={tooltipOverridePosition}
     >
       <NewPostForm
-        formData={formData}
-        onChange={onChange}
+        formData={newPostData}
+        onChange={onPostChange}
         onFileSelected={onFileSelected}
-        onSubmit={onSubmit}
+        onSubmit={onPostSubmit}
         isFloatin={true}
       />
-      ;
     </ReactTooltip>
   );
 
-  useEffect(() => {
-    if (qp) {
-      const dummy = document.getElementById('dummy');
-      dummy.click();
-      setTimeout(() => {
-        const qpDiv = document.getElementById(`p${qp}`);
-        setPrevQp(qpDiv);
-        qpDiv.firstChild.firstChild.classList.add('hashed');
-        window.scrollTo({ left: 0, top: qpDiv.offsetTop, behavior: 'smooth' });
-        sessionStorage.removeItem('qp');
-      }, 100);
-    }
-  }, [qp]);
+  const reportProps = {
+    'data-tip': true,
+    'data-for': 'reportForm',
+    'data-event': 'click',
+    'data-iscapture': 'true',
+    'data-scroll-hide': 'false',
+  };
 
-  useEffect(() => {
-    if (prevQp && qp !== prevQp.id.replace('p', ''))
-      prevQp.firstChild.firstChild.classList.remove('hashed');
-  }, [prevQp, qp]);
+  const reportTooltip = (
+    <ReactTooltip
+      className='tooltip'
+      id='reportForm'
+      place='right'
+      type='dark'
+      effect='solid'
+      clickable={true}
+      globalEventOff='click'
+      isCapture={true}
+      overridePosition={tooltipOverridePosition}
+    >
+      <ReportForm
+        formData={reportData}
+        onChange={onReportChange}
+        onSubmit={onReportSubmit}
+        rules={rules}
+      />
+    </ReactTooltip>
+  );
 
   return (
     <Fragment>
       <NewPostForm
-        formData={formData}
-        onChange={onChange}
+        formData={newPostData}
+        onChange={onPostChange}
         onFileSelected={onFileSelected}
-        onSubmit={onSubmit}
+        onSubmit={onPostSubmit}
         isFloatin={false}
       />
       {opPost}
@@ -175,8 +269,11 @@ const Thread = ({ thread, board, createPost }) => {
       <hr className='separator' />
       <div className='container centered'>[ {<Link to={`/${board.uri}/`}>return</Link>} ]</div>
 
-      <div id='dummy' {...qpProps} style={{ display: 'none' }} />
+      <div id='dummyQp' {...qpProps} style={{ display: 'none' }} />
       {quotePost}
+
+      <div id='dummyRp' {...reportProps} style={{ display: 'none' }} />
+      {reportTooltip}
     </Fragment>
   );
 };
@@ -185,6 +282,8 @@ Thread.propTypes = {
   thread: PropTypes.object.isRequired,
   board: PropTypes.object.isRequired,
   createPost: PropTypes.func.isRequired,
+  createReport: PropTypes.func.isRequired,
+  rules: PropTypes.array.isRequired,
 };
 
-export default connect(null, { createPost })(Thread);
+export default connect(null, { createPost, createReport })(Thread);

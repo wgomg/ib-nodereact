@@ -34,6 +34,26 @@ export const getGlobal = () => async (dispatch) => {
   }
 };
 
+export const getGlobalAndBoard = (board_id) => async (dispatch) => {
+  try {
+    const glob = await axios.get('/rules/global');
+    const board = await axios.get(`/rules/board/${board_id}`);
+
+    let rules = glob.data.length > 0 ? glob.data : [];
+    rules = board.data.length > 0 ? [...rules, ...board.data] : rules;
+
+    dispatch({
+      type: GET_RULES,
+      payload: rules.sort((a, b) => a.rule_id > b.rule_id),
+    });
+  } catch (error) {
+    dispatch({
+      type: RULES_ERROR,
+      payload: error.response,
+    });
+  }
+};
+
 export const createRule = (newRule, history) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };

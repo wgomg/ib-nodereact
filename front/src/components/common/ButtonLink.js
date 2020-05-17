@@ -1,16 +1,16 @@
 import React from 'react';
 import { useState } from 'react';
 
-export default ({ text, altText, extraClass }) => {
+export default ({ text, altText, extraClass, onClick }) => {
   const [btnVisited, setBtnVisited] = useState(false);
 
-  const onClick = e => {
-    e.preventDefault();
+  const buttonClick = () => {
     setBtnVisited(!btnVisited);
+    if (onClick) onClick();
   };
 
   return (
-    <button className={`link ${btnVisited ? ' visited' : ''} ${extraClass || ''}`} onClick={onClick}>
+    <button className={`link ${btnVisited ? ' visited' : ''} ${extraClass || ''}`} onClick={buttonClick}>
       {!btnVisited ? text : altText || text}
     </button>
   );

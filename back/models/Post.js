@@ -160,10 +160,13 @@ function Post() {
 
     if (!/^[0-9]+$/i.test(post_id)) return { validationError: 'Invalid ID' };
 
-    let post = await db.select({
-      table: this.table,
-      filters: [{ field: this.idField, value: post_id }],
-    });
+    let post = await db.select(
+      {
+        table: this.table,
+        filters: [{ field: this.idField, value: post_id }],
+      },
+      this.procId
+    );
 
     if (post.length > 0) {
       post = post[0];

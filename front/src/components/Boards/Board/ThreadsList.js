@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Post from './Post';
 import OpPost from './OpPost';
 
-export default ({ threads }) => {
+export default ({ threads, board }) => {
   const [page, setPage] = useState(0);
   const [btnVisited, setBtnVisited] = useState([]);
 
@@ -32,7 +32,7 @@ export default ({ threads }) => {
             thread.posts.length > 1
               ? thread.posts
                   .slice(Math.max(thread.posts.length - 5, 1))
-                  .map((post) => <Post thread={thread} post={post} key={post.post_id} />)
+                  .map((post) => <Post thread={thread} board={board} post={post} key={post.post_id} />)
               : '';
 
           const hiddenPosts = thread.posts.length - 6;

@@ -8,6 +8,7 @@ import threads from './threads';
 import themes from './themes';
 import tags from './tags';
 import posts from './posts';
+import reports from './reports';
 
 export default combineReducers({
   auth,
@@ -19,4 +20,5 @@ export default combineReducers({
   themes,
   tags,
   posts,
+  reports,
 });

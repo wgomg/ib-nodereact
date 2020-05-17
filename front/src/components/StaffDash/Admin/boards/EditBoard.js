@@ -66,6 +66,7 @@ const EditBoard = ({ boards: { board, loading }, editBoard, getBoard, history, m
     if (name === '' || uri === '' || description === '') alert('Todos los campos son obligatorios');
     else editBoard(formData, history);
   };
+
   return (
     <Fragment>
       <div className='container centered'>

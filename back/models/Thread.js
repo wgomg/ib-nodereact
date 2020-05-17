@@ -120,7 +120,7 @@ function Thread() {
             this.procId
           );
 
-          post.text = await tagger.apply(post.text);
+          post.text = await tagger.apply(post.text, this.procId);
 
           return { ...thread[0], post };
         })

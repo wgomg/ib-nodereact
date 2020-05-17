@@ -61,8 +61,6 @@ const ChangePassword = ({ staffs: { staff, loading }, getStaff, changePassword, 
     let editedStaff = { ...formData };
     delete editedStaff.password2;
 
-    console.log(editedStaff);
-
     changePassword(editedStaff, history);
   };
 

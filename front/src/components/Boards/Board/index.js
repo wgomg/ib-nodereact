@@ -12,11 +12,22 @@ import ThreadsList from './ThreadsList';
 import Thread from './Thread';
 
 import { getBoard } from '../../../actions/boards';
+import { getGlobalAndBoard } from '../../../actions/rules';
 
-const Board = ({ getBoard, boards: { board, loading }, uri }) => {
+const Board = ({
+  getBoard,
+  getGlobalAndBoard,
+  boards: { board, loading: boardLoading },
+  rules: { rules, loading: rulesLoading },
+  uri,
+}) => {
   useEffect(() => {
     getBoard(uri);
   }, [getBoard, uri]);
+
+  useEffect(() => {
+    if (!boardLoading) getGlobalAndBoard(board.board_id);
+  }, [getGlobalAndBoard, boardLoading, board]);
 
   useEffect(() => {
     if (!window.location.hash) window.scrollTo(0, 0);
@@ -42,7 +53,7 @@ const Board = ({ getBoard, boards: { board, loading }, uri }) => {
             <Route
               exact
               path={`/${uri}/t${thread.thread_id}`}
-              render={(props) => <Thread {...props} thread={thread} board={board} />}
+              render={(props) => <Thread {...props} thread={thread} board={board} rules={rules} />}
               key={thread.thread_id}
             />
           ))}
@@ -51,33 +62,37 @@ const Board = ({ getBoard, boards: { board, loading }, uri }) => {
     </Fragment>
   );
 
-  const pageView = loading ? (
-    <Loading />
-  ) : (
-    <Fragment>
-      <Banner board={board} />
-      <BoardTitle board={board} />
+  const pageView =
+    boardLoading || rulesLoading ? (
+      <Loading />
+    ) : (
+      <Fragment>
+        <Banner board={board} />
+        <BoardTitle board={board} />
 
-      <Switch>{newThreadRoute}</Switch>
+        <Switch>{newThreadRoute}</Switch>
 
-      <Switch>
-        {threadsListRoute}
-        {threadViewRoutes}
-      </Switch>
-    </Fragment>
-  );
+        <Switch>
+          {threadsListRoute}
+          {threadViewRoutes}
+        </Switch>
+      </Fragment>
+    );
 
   return pageView;
 };
 
 Board.propTypes = {
   getBoard: PropTypes.func.isRequired,
+  getGlobalAndBoard: PropTypes.func.isRequired,
+  rules: PropTypes.object.isRequired,
   boards: PropTypes.object.isRequired,
   uri: PropTypes.string.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   boards: state.boards,
+  rules: state.rules,
 });
 
-export default connect(mapStateToProps, { getBoard })(Board);
+export default connect(mapStateToProps, { getBoard, getGlobalAndBoard })(Board);

@@ -16,13 +16,11 @@ function Report() {
   this.schema = {
     post_id: { type: 'table', required: true },
     rule_id: { type: 'table', required: true },
-    text: { type: 'alphanum', length: 45, required: true },
-    details: { type: 'string', length: 250 },
     solved: { type: 'bool' },
   };
 
   this.save = (body) => {
-    logger.debug({ name: `${this.name}.save()`, data: body }, this.procId);
+    logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const errors = validate(body, this.schema);
     if (errors) return { validationError: errors };
@@ -31,7 +29,7 @@ function Report() {
   };
 
   this.updateSolved = (report_id) => {
-    logger.debug({ name: `{this.name}.setAsSolved()`, data: report_id }, this.procId);
+    logger.debug({ name: `{this.name}.setAsSolved()`, data: report_id }, this.procId, 'method');
 
     if (!/^[0-9]+$/i.test(report_id)) return { validationError: 'Invalid ID' };
 
@@ -45,10 +43,69 @@ function Report() {
     );
   };
 
-  this.getAll = () => {
-    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
+  this.gBoard = async (board_id) => {
+    logger.debug({ name: `${this.name}.gBoard()` }, this.procId, 'method');
 
-    return db.select({ table: this.table }, this.procId);
+    if (!/^[0-9]+$/i.test(board_id)) return { validationError: 'Invalid ID' };
+
+    const sql =
+      'SELECT ' +
+      'report_id, Reports.post_id, Boards.uri, Reports.rule_id, Rules.text, duration, solved, Reports.created_on ' +
+      ' FROM Reports' +
+      ' INNER JOIN Rules ON Reports.rule_id = Rules.rule_id' +
+      ' INNER JOIN Boards ON Rules.board_id = Boards.board_id' +
+      ' WHERE Rules.board_id = ' +
+      board_id;
+
+    const reports = await db.rawQuery(sql, this.procId);
+
+    if (reports.length > 0) {
+      const Post = require('./Post');
+      Post.procId = this.procId;
+
+      return await Promise.all(
+        reports.map(async (report) => {
+          report.post = await Post.get(report.post_id);
+          delete report.post_id;
+
+          return report;
+        })
+      );
+    }
+
+    return reports;
+  };
+
+  this.getGlobal = async () => {
+    logger.debug({ name: `${this.name}.getGlobal()` }, this.procId, 'method');
+
+    const sql =
+      'SELECT ' +
+      'report_id, Reports.post_id, Boards.uri, Reports.rule_id, Rules.text, duration, solved, Reports.created_on ' +
+      ' FROM Reports' +
+      ' INNER JOIN Rules ON Reports.rule_id = Rules.rule_id' +
+      ' INNER JOIN Posts ON Reports.post_id = Posts.post_id' +
+      ' INNER JOIN Threads ON Posts.thread_id = Threads.thread_id' +
+      ' INNER JOIN Boards ON Threads.board_id = Boards.board_id' +
+      ' WHERE Rules.board_id IS NULL';
+
+    const reports = await db.rawQuery(sql, this.procId);
+
+    if (reports.length > 0) {
+      const Post = require('./Post');
+      Post.procId = this.procId;
+
+      return await Promise.all(
+        reports.map(async (report) => {
+          report.post = await Post.get(report.post_id);
+          delete report.post_id;
+
+          return report;
+        })
+      );
+    }
+
+    return reports;
   };
 
   this.getBoardId = async (report_id) => {

@@ -98,8 +98,6 @@ export const deleteStaff = (staff_id) => async (dispatch) => {
   try {
     await axios.delete(`/staffs/${staff_id}`);
 
-    console.log('deleteStaff');
-
     dispatch({
       type: DELETE_STAFF,
       payload: staff_id,

@@ -7,6 +7,8 @@ import CreateBanner from '../banners/CreateBanner';
 import RulesList from '../rules/RulesList';
 import CreateRule from '../rules/CreateRule';
 //
+import ReportsList from '../reports/ReportsList';
+//
 import ChangePassword from '../ChangePassword';
 
 //
@@ -33,6 +35,12 @@ export default ({ board_id }) => {
             <div className='columns'>
               <BannersList board_id={board_id} />
               <RulesList board_id={board_id} />
+            </div>
+          </div>
+          <div className='container centered'>
+            <div className='columns'>
+              <ReportsList board_id={board_id} />
+              <div className='col-5' />
             </div>
           </div>
         </Fragment>

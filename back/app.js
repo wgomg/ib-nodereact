@@ -38,6 +38,6 @@ app.use(express.static('public'));
 require('./routes')(app);
 
 if (config.logRoutes)
-  logger.info(app._router.stack.filter((s) => s.name === 'bound dispatch').map((s) => s.route));
+  logger.debug(app._router.stack.filter((s) => s.name === 'bound dispatch').map((s) => s.route));
 
 module.exports = app;
