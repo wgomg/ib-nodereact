@@ -1,4 +1,6 @@
 import React, { Fragment } from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
 import { ButtonLink, Image } from '../../common';
 
@@ -11,7 +13,7 @@ import QuotePost from './QuotePost';
 
 const striptags = require('striptags');
 
-export default ({ thread, board, post, onClick }) => {
+const Post = ({ thread, board, post, onClick, auth: { logged } }) => {
   const textArray = post.text;
 
   const tooltipOverridePosition = ({ left, top }, currentEvent, currentTarget, node) => {
@@ -86,6 +88,12 @@ export default ({ thread, board, post, onClick }) => {
           >
             [!!!]
           </a>
+          {logged && (
+            <span className='small muted'>
+              {'  '}
+              <i>{post.user}</i>
+            </span>
+          )}
         </div>
 
         <p className='file-info-post'>
@@ -115,3 +123,17 @@ export default ({ thread, board, post, onClick }) => {
 
   return postComponent;
 };
+
+Post.propTypes = {
+  thread: PropTypes.object.isRequired,
+  board: PropTypes.object.isRequired,
+  post: PropTypes.object.isRequired,
+  onClick: PropTypes.func,
+  auth: PropTypes.object.isRequired,
+};
+
+const mapStateToProps = (state) => ({
+  auth: state.auth,
+});
+
+export default connect(mapStateToProps)(Post);

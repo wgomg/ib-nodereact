@@ -1,4 +1,6 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
 import prettyBytes from '../../../utils/prettyBytes';
 import timeSince from '../../../utils/timeSince';
@@ -7,7 +9,7 @@ import prettyDate from '../../../utils/prettyDate';
 import { ButtonLink, Image } from '../../common';
 import { Fragment } from 'react';
 
-export default ({ thread, post, isThread, hiddenPosts }) => {
+const OpPost = ({ thread, post, isThread, hiddenPosts, auth: { logged } }) => {
   return (
     <div className='op' id={'p' + post.post_id}>
       <hr className='separator' />
@@ -41,6 +43,12 @@ export default ({ thread, post, isThread, hiddenPosts }) => {
           <a href={`t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
           <a href={`t${thread.thread_id}#qp${post.post_id}`}>{thread.thread_id}</a>{' '}
           {!isThread && <a href={`t${thread.thread_id}`}>[reply]</a>}
+          {logged && (
+            <span className='small muted'>
+              {'  '}
+              <i>{post.user}</i>
+            </span>
+          )}
         </div>
         <div className='op-post-text' dangerouslySetInnerHTML={{ __html: post.text }} />
       </div>
@@ -49,3 +57,17 @@ export default ({ thread, post, isThread, hiddenPosts }) => {
     </div>
   );
 };
+
+OpPost.propTypes = {
+  thread: PropTypes.object.isRequired,
+  post: PropTypes.object.isRequired,
+  isThread: PropTypes.bool,
+  hiddenPosts: PropTypes.number,
+  auth: PropTypes.object.isRequired,
+};
+
+const mapStateToProps = (state) => ({
+  auth: state.auth,
+});
+
+export default connect(mapStateToProps)(OpPost);
