@@ -108,7 +108,10 @@ function Thread() {
     logger.debug({ name: `${this.name}.getLatests()` }, this.procId, 'method');
 
     const posts = await db.rawQuery(
-      `SELECT MAX(post_id) AS post_id, thread_id, text, created_on FROM Posts GROUP BY thread_id ORDER BY created_on DESC`,
+      `SELECT * FROM Posts ` +
+        `WHERE created_on = ` +
+        `(SELECT MAX(created_on) FROM Posts latest WHERE thread_id = Posts.thread_id) ` +
+        `ORDER BY created_on DESC LIMIT 10`,
       this.procId
     );
 

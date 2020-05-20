@@ -28,6 +28,19 @@ const LatestThreads = ({
       latests.map((thread) => {
         const board = boards.filter((board) => board.board_id === thread.board_id);
 
+        const postText = thread.post.text.text.map((elem, index) => {
+          if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem))
+            return (
+              <div
+                style={{ display: 'inline-grid' }}
+                dangerouslySetInnerHTML={{ __html: elem }}
+                key={index}
+              />
+            );
+
+          return elem;
+        });
+
         return (
           <div className='columns' key={thread.thread_id}>
             <div className='col-2'>
@@ -40,11 +53,22 @@ const LatestThreads = ({
                 {`>>/${board[0].uri}/${thread.post.post_id}`}
               </Link>
             </div>
-            <div className='col' data-html={true} data-tip={thread.post.text}>
+            <div className='col' data-tip data-for={'bmp' + thread.post.post_id}>
               {' '}
               {thread.subject}
             </div>
             <div className='col-2'>{timeSince(thread.post.created_on)}</div>
+            <ReactTooltip
+              className='tooltip'
+              id={'bmp' + thread.post.post_id}
+              place='left'
+              type='dark'
+              effect='solid'
+              border={true}
+              borderColor='#7da3b3'
+            >
+              <div className='post-text'>{postText}</div>
+            </ReactTooltip>
           </div>
         );
       })
@@ -52,15 +76,7 @@ const LatestThreads = ({
       <h4 className='centered'>No hay threads para mostrar</h4>
     );
 
-  const cardContent =
-    boardsLoading || latestLoading ? (
-      <Loading />
-    ) : (
-      <Fragment>
-        {latestThreads}
-        <ReactTooltip border={true} borderColor='#7da3b3' />
-      </Fragment>
-    );
+  const cardContent = boardsLoading || latestLoading ? <Loading /> : latestThreads;
 
   return <Card title='Últimos Bumpeos' content={cardContent} classes='col' />;
 };
