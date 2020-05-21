@@ -193,28 +193,6 @@ function Post() {
     return post;
   };
 
-  this.getLatests = async () => {
-    logger.debug({ name: `${this.name}.getLatests()` }, this.procId, 'method');
-
-    const posts = await db.select(
-      {
-        table: this.table,
-        orderBy: { field: 'created_on', direction: 'DESC' },
-      },
-      this.procId
-    );
-
-    if (posts.length > 0)
-      return await Promise.all(
-        posts.slice(0, 10).map(async (post) => {
-          post.board_id = await this.getBoardId(post.post_id);
-          return post;
-        })
-      );
-
-    return posts;
-  };
-
   this.getBoardId = async (post_id) => {
     logger.debug({ name: `${this.name}.getBoardId()`, data: post_id }, this.procId, 'method');
 
@@ -233,7 +211,7 @@ function Post() {
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getByThread', 'getBoardId', 'getLatests', 'get'];
+    const excluded = ['getFunctions', 'getByThread', 'getBoardId', 'get'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))
