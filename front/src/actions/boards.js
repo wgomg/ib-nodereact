@@ -13,7 +13,7 @@ import {
 
 export const getBoardsList = () => async (dispatch) => {
   try {
-    const res = await axios.get('/boards');
+    const res = await axios.get('/_back/api/boards');
 
     dispatch({
       type: GET_BOARDS_LIST,
@@ -29,7 +29,7 @@ export const getBoardsList = () => async (dispatch) => {
 
 export const getBoard = (uri) => async (dispatch) => {
   try {
-    const res = await axios.get(`/boards/${uri}`);
+    const res = await axios.get(`/_back/api/boards/${uri}`);
 
     dispatch({
       type: GET_BOARD,
@@ -47,7 +47,7 @@ export const createBoard = (newBoard, history) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
-    const res = await axios.post('/boards', newBoard, config);
+    const res = await axios.post('/_back/api/boards', newBoard, config);
 
     dispatch({
       type: GET_BOARD,
@@ -67,7 +67,7 @@ export const editBoard = (editedBoard, history) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
-    const res = await axios.put('/boards', editedBoard, config);
+    const res = await axios.put('/_back/api/boards', editedBoard, config);
 
     dispatch({
       type: GET_BOARD,
@@ -85,7 +85,7 @@ export const editBoard = (editedBoard, history) => async (dispatch) => {
 
 export const deleteBoard = (board_id) => async (dispatch) => {
   try {
-    await axios.delete(`/boards/${board_id}`);
+    await axios.delete(`/_back/api/boards/${board_id}`);
 
     dispatch({
       type: DELETE_BOARD,
@@ -103,7 +103,7 @@ export const createThread = (newThread) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'multipart/form-data' } };
 
-    const res = await axios.post('/threads', newThread, config);
+    const res = await axios.post('/_back/api/threads', newThread, config);
 
     dispatch({
       type: CREATE_THREAD,
@@ -123,7 +123,7 @@ export const createPost = (newPost) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'multipart/form-data' } };
 
-    const res = await axios.post('/posts', newPost, config);
+    const res = await axios.post('/_back/api/posts', newPost, config);
 
     dispatch({
       type: CREATE_POST,

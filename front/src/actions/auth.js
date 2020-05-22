@@ -8,7 +8,7 @@ export const loadStaff = () => async (dispatch) => {
   if (localStorage.token) setAuthToken(localStorage.token);
 
   try {
-    const res = await axios.get('/staffs/auth');
+    const res = await axios.get('/_back/api/staffs/auth');
 
     dispatch({
       type: STAFF_LOADED,
@@ -26,7 +26,7 @@ export const login = (staffData) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
-    const res = await axios.post('/staffs/login', staffData, config);
+    const res = await axios.post('/_back/api/staffs/login', staffData, config);
 
     dispatch({
       type: LOGIN_SUCCESS,

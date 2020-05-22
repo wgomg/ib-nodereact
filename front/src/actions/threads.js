@@ -4,7 +4,7 @@ import { GET_LATEST_THREADS, LATEST_THREADS_ERROR } from './types';
 
 export const getLatestThreads = () => async (dispatch) => {
   try {
-    const res = await axios.get('/threads/latests');
+    const res = await axios.get('/_back/api/threads/latests');
 
     dispatch({
       type: GET_LATEST_THREADS,

@@ -6,7 +6,7 @@ export const createReport = (newReport) => async (dispatch) => {
   try {
     const config = { headers: { 'Content-Type': 'application/json' } };
 
-    const res = await axios.post('/reports', newReport, config);
+    const res = await axios.post('/_back/api/reports', newReport, config);
 
     dispatch({ type: CREATE_REPORT, payload: 'insertId' in res.data });
 
@@ -18,7 +18,7 @@ export const createReport = (newReport) => async (dispatch) => {
 
 export const getBoardReports = (board_id) => async (dispatch) => {
   try {
-    const res = await axios.get(`/reports/board/${board_id}`);
+    const res = await axios.get(`/_back/api/reports/board/${board_id}`);
 
     dispatch({
       type: GET_REPORTS,
@@ -31,7 +31,7 @@ export const getBoardReports = (board_id) => async (dispatch) => {
 
 export const getGlobal = () => async (dispatch) => {
   try {
-    const res = await axios.get('/reports/global');
+    const res = await axios.get('/_back/api/reports/global');
 
     dispatch({
       type: GET_REPORTS,

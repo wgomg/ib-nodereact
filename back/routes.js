@@ -22,6 +22,8 @@ const privateMethods = new Map([
 
 let privateRoutes = new Map([]);
 
+const baseRoute = '/_back/api';
+
 /**
  * Ejemplo: 
 Map(n) {
@@ -41,7 +43,7 @@ const routesMap = new Map(
       const fnArgs = fn.args;
       const fnHttpMethod = httpMethods[fnName.charAt(0)];
 
-      let route = `/${Model.table.toLowerCase()}`;
+      let route = `${baseRoute}/${Model.table.toLowerCase()}`;
       const fnNameArray = fnName
         .split(/(?=[A-Z])/)
         .slice(1)
