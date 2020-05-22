@@ -23,7 +23,7 @@
 -- Cambiar si estos se modifican en back/config/db.json
 --
 CREATE DATABASE /*!32312 IF NOT EXISTS*/ `imageboard` /*!40100 DEFAULT CHARACTER SET utf8 */;
-CREATE USER 'imageboard'@'locahost' IDENTIFIED BY 'imageboard';
+CREATE USER 'imageboard'@'localhost' IDENTIFIED BY 'imageboard';
 GRANT ALL PRIVILEGES ON imageboard.* TO 'imageboard'@'localhost';
 FLUSH PRIVILEGES;
 
