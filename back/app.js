@@ -4,7 +4,7 @@ const express = require('express');
 const fileupload = require('express-fileupload');
 const compression = require('compression');
 const morgan = require('morgan');
-// const path = require('path');
+const path = require('path');
 
 const config = require('./config').logger;
 const logger = require('./libraries/logger');
@@ -21,9 +21,6 @@ app.use(
   })
 );
 
-// app.use('/files', express.static(path.join(__dirname, 'data/image/posts')));
-// app.use('/src/banners', express.static(path.join(__dirname, 'data/image/banners')));
-
 app.use(compression());
 
 morgan.token('procId', (req, res) => req.procId);
@@ -33,9 +30,16 @@ app.use(
   })
 );
 
-app.use(express.static('public'));
+app.use(express.static(__dirname + '/public'));
 
 require('./routes')(app);
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '..', 'front', 'build')));
+  app.get('/*', (req, res) => {
+    res.sendFile(path.resolve('front', 'build', 'index.html'));
+  });
+}
 
 if (config.logRoutes)
   logger.debug(app._router.stack.filter((s) => s.name === 'bound dispatch').map((s) => s.route));

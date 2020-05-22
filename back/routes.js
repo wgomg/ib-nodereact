@@ -70,13 +70,6 @@ const routesMap = new Map(
 const routes = (app) => {
   for (let [modelName, endpoints] of routesMap)
     endpoints.forEach((ep) => app[ep.httpMethod](...appMethodArgs(modelName, ep)));
-
-  app.all('*', (req, res) => {
-    req.procId = genProcId();
-
-    logger.info(`Request ${req.method} ${req.route.path}`, req.procId);
-    res.status(404).send('Page Not Found');
-  });
 };
 
 const appMethodArgs = (modelName, ep) => {

@@ -13,8 +13,6 @@ import { getTags } from '../actions/tags';
 
 import { getThemeFromStorage, setCssInStorage, getCssFromStorage } from '../utils/theme';
 
-import '../default.css';
-
 const IB = ({
   getTheme,
   getTags,
