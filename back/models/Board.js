@@ -15,7 +15,7 @@ function Board() {
 
   this.schema = {
     name: { type: 'alpha', length: 45, required: true },
-    uri: { type: 'boarduri', length: 10, required: true },
+    uri: { type: 'boarduri', length: 4, required: true },
     description: { type: 'alphanum', length: 250 },
   };
 

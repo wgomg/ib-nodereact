@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS `Bans` (
 CREATE TABLE IF NOT EXISTS `Boards` (
   `board_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
-  `uri` varchar(10) NOT NULL,
+  `uri` varchar(4) NOT NULL,
   `description` varchar(250) NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`board_id`),
