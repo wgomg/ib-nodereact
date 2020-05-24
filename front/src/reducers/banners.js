@@ -4,10 +4,10 @@ const initState = {
   banners: [],
   banner: {},
   loading: true,
-  error: {}
+  error: null,
 };
 
-export default function(state = initState, action) {
+export default function (state = initState, action) {
   const { type, payload } = action;
 
   switch (type) {
@@ -15,14 +15,14 @@ export default function(state = initState, action) {
       return { ...state, banners: payload, loading: false };
 
     case GET_BANNER:
-      return { ...state, banners: [], banner: payload, loading: false, error: {} };
+      return { ...state, banners: [], banner: payload, loading: false, error: null };
 
     case DELETE_BANNER:
       return {
         ...state,
-        banners: state.banners.filter(banner => banner.banner_id !== payload),
+        banners: state.banners.filter((banner) => banner.banner_id !== payload),
         loading: false,
-        error: {}
+        error: null,
       };
 
     case BANNERS_ERROR:

@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -7,7 +7,7 @@ import { createBoard } from '../../../../actions/boards';
 
 import { Form } from '../../../common';
 
-const CreateBoard = ({ createBoard, history }) => {
+const CreateBoard = ({ createBoard, history, boards: { error } }) => {
   const [formData, setFormData] = useState({
     name: '',
     uri: '',
@@ -17,6 +17,15 @@ const CreateBoard = ({ createBoard, history }) => {
   const { name, uri, description } = formData;
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const elements = [
     {
@@ -70,4 +79,8 @@ CreateBoard.propTypes = {
   createBoard: PropTypes.func.isRequired,
 };
 
-export default connect(null, { createBoard })(withRouter(CreateBoard));
+const mapStateToProps = (state) => ({
+  boards: state.boards,
+});
+
+export default connect(mapStateToProps, { createBoard })(withRouter(CreateBoard));

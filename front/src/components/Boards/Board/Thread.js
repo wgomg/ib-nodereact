@@ -15,7 +15,7 @@ import { createReport } from '../../../actions/reports';
 
 import ReactTooltip from 'react-tooltip';
 
-const Thread = ({ thread, board, createPost, createReport, rules }) => {
+const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
   const hash = window.location.hash;
 
   const [newPostData, setNewPostData] = useState({
@@ -45,6 +45,15 @@ const Thread = ({ thread, board, createPost, createReport, rules }) => {
   useEffect(() => {
     setNewPostData((newPostData) => ({ ...newPostData, thread_id: thread.thread_id }));
   }, [thread]);
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   useEffect(() => {
     setTooltipData((tooltipData) => {
@@ -142,6 +151,7 @@ const Thread = ({ thread, board, createPost, createReport, rules }) => {
       if (file) newPost.append('image', file);
 
       const res = await createPost(newPost);
+
       if (res) {
         setNewPostData({
           thread_id: 0,

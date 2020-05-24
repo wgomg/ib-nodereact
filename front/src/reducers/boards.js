@@ -13,7 +13,7 @@ const initState = {
   boards: [],
   board: {},
   loading: true,
-  error: {},
+  error: null,
 };
 
 export default function (state = initState, action) {
@@ -21,17 +21,17 @@ export default function (state = initState, action) {
 
   switch (type) {
     case GET_BOARDS_LIST:
-      return { ...state, boards: payload, loading: false, error: {} };
+      return { ...state, boards: payload, loading: false, error: null };
 
     case GET_BOARD:
-      return { ...state, board: payload, loading: false, error: {} };
+      return { ...state, board: payload, loading: false, error: null };
 
     case DELETE_BOARD:
       return {
         ...state,
         boards: state.boards.filter((board) => board.board_id !== payload),
         loading: false,
-        error: {},
+        error: null,
       };
 
     case CREATE_THREAD:
@@ -39,7 +39,7 @@ export default function (state = initState, action) {
         ...state,
         board: { ...state.board, threads: [payload, ...state.board.threads] },
         loading: false,
-        error: {},
+        error: null,
       };
 
     case CREATE_POST:
@@ -65,7 +65,7 @@ export default function (state = initState, action) {
           ],
         },
         loading: false,
-        error: {},
+        error: null,
       };
 
     case BOARDS_ERROR:

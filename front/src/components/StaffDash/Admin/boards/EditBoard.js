@@ -7,7 +7,7 @@ import { editBoard, getBoard } from '../../../../actions/boards';
 
 import { Form } from '../../../common';
 
-const EditBoard = ({ boards: { board, loading }, editBoard, getBoard, history, match }) => {
+const EditBoard = ({ boards: { board, error, loading }, editBoard, getBoard, history, match }) => {
   const [formData, setFormData] = useState({
     board_id: '',
     name: '',
@@ -26,6 +26,15 @@ const EditBoard = ({ boards: { board, loading }, editBoard, getBoard, history, m
         : { board_id: board.board_id, name: board.name, uri: board.uri, description: board.description };
     });
   }, [board, loading]);
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const { name, uri, description } = formData;
 

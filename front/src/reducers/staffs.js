@@ -4,25 +4,25 @@ const initState = {
   staffs: [],
   staff: {},
   loading: true,
-  error: {}
+  error: null,
 };
 
-export default function(state = initState, action) {
+export default function (state = initState, action) {
   const { type, payload } = action;
 
   switch (type) {
     case GET_STAFFS:
-      return { ...state, staffs: payload, staff: {}, loading: false, error: {} };
+      return { ...state, staffs: payload, staff: {}, loading: false, error: null };
 
     case GET_STAFF:
-      return { ...state, staffs: [], staff: payload, loading: false, error: {} };
+      return { ...state, staffs: [], staff: payload, loading: false, error: null };
 
     case DELETE_STAFF:
       return {
         ...state,
-        staffs: state.staffs.filter(staff => staff.staff_id !== payload),
+        staffs: state.staffs.filter((staff) => staff.staff_id !== payload),
         loading: false,
-        error: {}
+        error: null,
       };
 
     case STAFF_ERROR:

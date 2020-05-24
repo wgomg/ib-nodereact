@@ -4,7 +4,7 @@ const initState = {
   tags: [],
   tag: {},
   loading: true,
-  error: {},
+  error: null,
 };
 
 export default function (state = initState, action) {
@@ -12,10 +12,10 @@ export default function (state = initState, action) {
 
   switch (type) {
     case GET_TAGS:
-      return { ...state, tags: payload, loading: false, error: {} };
+      return { ...state, tags: payload, loading: false, error: null };
 
     case GET_TAG:
-      return { ...state, tag: payload, loading: false, error: {} };
+      return { ...state, tag: payload, loading: false, error: null };
 
     case TAGS_ERROR:
       return { ...state, error: payload.data, loading: false };
@@ -25,7 +25,7 @@ export default function (state = initState, action) {
         ...state,
         tags: state.tags.filter((tag) => tag.tag_id !== payload),
         loading: false,
-        error: {},
+        error: null,
       };
 
     default:

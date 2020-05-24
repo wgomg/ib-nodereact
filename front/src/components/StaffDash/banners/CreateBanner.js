@@ -8,12 +8,27 @@ import { getBoardsList } from '../../../actions/boards';
 
 import { Form } from '../../common';
 
-const CreateBanner = ({ createBanner, getBoardsList, history, boards: { boards, loading } }) => {
+const CreateBanner = ({
+  createBanner,
+  getBoardsList,
+  history,
+  boards: { boards, loading },
+  banners: { error },
+}) => {
   const [board_id, setBoardId] = useState(0);
 
   useEffect(() => {
     getBoardsList();
   }, [getBoardsList]);
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const [file, setFile] = useState(null);
 
@@ -86,10 +101,12 @@ CreateBanner.propTypes = {
   createBanner: PropTypes.func.isRequired,
   getBoardsList: PropTypes.func.isRequired,
   boards: PropTypes.object.isRequired,
+  banners: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   boards: state.boards,
+  banners: state.banners,
 });
 
 export default connect(mapStateToProps, { createBanner, getBoardsList })(withRouter(CreateBanner));

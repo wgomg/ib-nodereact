@@ -4,7 +4,7 @@ const initState = {
   sent: false,
   reports: [],
   loading: true,
-  error: {},
+  error: null,
 };
 
 export default function (state = initState, action) {
@@ -12,10 +12,10 @@ export default function (state = initState, action) {
 
   switch (type) {
     case CREATE_REPORT:
-      return { ...state, sent: payload, loading: false, error: {} };
+      return { ...state, sent: payload, loading: false, error: null };
 
     case GET_REPORTS:
-      return { ...state, reports: payload, loading: false, error: {} };
+      return { ...state, reports: payload, loading: false, error: null };
 
     case REPORT_ERROR:
       return { ...state, error: payload.data, sent: false, loading: false };

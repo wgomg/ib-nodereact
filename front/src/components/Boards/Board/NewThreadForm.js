@@ -6,19 +6,38 @@ import { createThread } from '../../../actions/boards';
 
 import { Form } from '../../common';
 
-const NewThreadForm = ({ board, createThread }) => {
+const NewThreadForm = ({ board, createThread, error }) => {
   const [formData, setFormData] = useState({
     board_id: 0,
     subject: '',
     text: '',
     name: 'Anon',
   });
+  const [errors, setErrors] = useState(null);
 
   useEffect(() => {
     setFormData((formData) => {
       return { ...formData, board_id: board.board_id };
     });
   }, [board]);
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
+
+  useEffect(() => {
+    if (errors)
+      alert(
+        Object.keys(errors)
+          .map((field) => `${field}: ${errors[field]}`)
+          .join('\n')
+      );
+  }, [errors]);
 
   const [file, setFile] = useState(null);
 

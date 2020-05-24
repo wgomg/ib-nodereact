@@ -4,7 +4,7 @@ const initState = {
   themes: [],
   theme: {},
   loading: true,
-  error: {},
+  error: null,
 };
 
 export default function (state = initState, action) {
@@ -12,10 +12,10 @@ export default function (state = initState, action) {
 
   switch (type) {
     case GET_THEMES:
-      return { ...state, themes: payload, loading: false, error: {} };
+      return { ...state, themes: payload, loading: false, error: null };
 
     case GET_THEME:
-      return { ...state, theme: payload, loading: false, error: {} };
+      return { ...state, theme: payload, loading: false, error: null };
 
     case THEMES_ERROR:
       return { ...state, loading: false, error: payload.data };
@@ -25,7 +25,7 @@ export default function (state = initState, action) {
         ...state,
         themes: state.themes.filter((theme) => theme.theme_id !== payload),
         loading: false,
-        error: {},
+        error: null,
       };
 
     default:

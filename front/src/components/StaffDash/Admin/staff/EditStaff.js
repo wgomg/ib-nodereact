@@ -9,7 +9,7 @@ import { getBoardsList } from '../../../../actions/boards';
 import { Form } from '../../../common';
 
 const EditStaff = ({
-  staffs: { staff, loading: staffLoading },
+  staffs: { staff, error, loading: staffLoading },
   boards: { boards, loading: boardsLoading },
   auth: { staff: loggedStaff },
   editStaff,
@@ -47,6 +47,15 @@ const EditStaff = ({
           };
     });
   }, [staff, staffLoading]);
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const { staff_id, board_id, name, admin, disabled } = formData;
 

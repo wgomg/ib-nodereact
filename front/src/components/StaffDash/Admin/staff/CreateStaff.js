@@ -8,7 +8,13 @@ import { getBoardsList } from '../../../../actions/boards';
 
 import { Form } from '../../../common';
 
-const CreateStaff = ({ createStaff, getBoardsList, history, boards: { boards, loading } }) => {
+const CreateStaff = ({
+  createStaff,
+  getBoardsList,
+  history,
+  boards: { boards, loading },
+  staffs: { error },
+}) => {
   const [formData, setFormData] = useState({
     board_id: 0,
     name: '',
@@ -19,6 +25,15 @@ const CreateStaff = ({ createStaff, getBoardsList, history, boards: { boards, lo
   useEffect(() => {
     getBoardsList();
   }, [getBoardsList]);
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const { board_id, name, admin, disabled } = formData;
 
@@ -104,10 +119,12 @@ CreateStaff.propTypes = {
   createStaff: PropTypes.func.isRequired,
   getBoardsList: PropTypes.func.isRequired,
   boards: PropTypes.object.isRequired,
+  staffs: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   boards: state.boards,
+  staffs: state.staffs,
 });
 
 export default connect(mapStateToProps, { createStaff, getBoardsList })(withRouter(CreateStaff));

@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -7,7 +7,7 @@ import { createTag } from '../../../../actions/tags';
 
 import { Form } from '../../../common';
 
-const CreateTag = ({ createTag, history }) => {
+const CreateTag = ({ createTag, history, tags: { error } }) => {
   const [formData, setFormData] = useState({
     tag: '',
     name: '',
@@ -15,6 +15,15 @@ const CreateTag = ({ createTag, history }) => {
     cl_replacer: '',
     css: '',
   });
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const { tag, name, op_replacer, cl_replacer, css } = formData;
 
@@ -91,4 +100,8 @@ CreateTag.propTypes = {
   createTag: PropTypes.func.isRequired,
 };
 
-export default connect(null, { createTag })(withRouter(CreateTag));
+const mapStateToProps = (state) => ({
+  tags: state.tags,
+});
+
+export default connect(mapStateToProps, { createTag })(withRouter(CreateTag));

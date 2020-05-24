@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -7,11 +7,20 @@ import { createTheme } from '../../../../actions/themes';
 
 import { Form } from '../../../common';
 
-const CreateTheme = ({ createTheme, history }) => {
+const CreateTheme = ({ createTheme, history, themes: { error } }) => {
   const [formData, setFormData] = useState({
     name: '',
     css: '',
   });
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const { name, css } = formData;
 
@@ -65,6 +74,11 @@ const CreateTheme = ({ createTheme, history }) => {
 
 CreateTheme.propTypes = {
   createTheme: PropTypes.func.isRequired,
+  tags: PropTypes.object.isRequired,
 };
 
-export default connect(null, { createTheme })(withRouter(CreateTheme));
+const mapStateToProps = (state) => ({
+  themes: state.themes,
+});
+
+export default connect(mapStateToProps, { createTheme })(withRouter(CreateTheme));

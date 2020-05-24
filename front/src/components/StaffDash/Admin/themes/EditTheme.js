@@ -7,7 +7,7 @@ import { editTheme, getTheme } from '../../../../actions/themes';
 
 import { Form } from '../../../common';
 
-const EditTheme = ({ editTheme, history, match, themes: { theme, loading } }) => {
+const EditTheme = ({ editTheme, history, match, themes: { theme, error, loading } }) => {
   const [formData, setFormData] = useState({
     name: '',
     css: '',
@@ -28,6 +28,15 @@ const EditTheme = ({ editTheme, history, match, themes: { theme, loading } }) =>
           };
     });
   }, [theme, loading]);
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const { name, css } = formData;
 

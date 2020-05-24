@@ -7,7 +7,7 @@ import { createRule } from '../../../actions/rules';
 
 import { Form } from '../../common';
 
-const CreateRule = ({ createRule, history, board_id }) => {
+const CreateRule = ({ createRule, history, board_id, rules: { error } }) => {
   const [formData, setFormData] = useState({
     board_id: null,
     text: '',
@@ -20,6 +20,15 @@ const CreateRule = ({ createRule, history, board_id }) => {
       return !board_id ? formData : { ...formData, board_id };
     });
   }, [board_id]);
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const { text, duration } = formData;
 
@@ -73,6 +82,11 @@ const CreateRule = ({ createRule, history, board_id }) => {
 CreateRule.propTypes = {
   createRule: PropTypes.func.isRequired,
   board_id: PropTypes.number,
+  rules: PropTypes.object.isRequired,
 };
 
-export default connect(null, { createRule })(withRouter(CreateRule));
+const mapStateToProps = (state) => ({
+  rules: state.rules,
+});
+
+export default connect(mapStateToProps, { createRule })(withRouter(CreateRule));

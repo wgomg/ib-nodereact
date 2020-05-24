@@ -7,7 +7,13 @@ import { getStaff, changePassword } from '../../actions/staffs';
 
 import { Form } from '../common';
 
-const ChangePassword = ({ staffs: { staff, loading }, getStaff, changePassword, match, history }) => {
+const ChangePassword = ({
+  staffs: { staff, error, loading },
+  getStaff,
+  changePassword,
+  match,
+  history,
+}) => {
   const [formData, setFormData] = useState({
     staff_id: '',
     name: '',
@@ -24,6 +30,15 @@ const ChangePassword = ({ staffs: { staff, loading }, getStaff, changePassword, 
       return !staff || loading ? formData : { ...formData, staff_id: staff.staff_id, name: staff.name };
     });
   }, [staff, loading]);
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const { password, password2 } = formData;
 

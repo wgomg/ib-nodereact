@@ -17,7 +17,7 @@ import { getGlobalAndBoard } from '../../../actions/rules';
 const Board = ({
   getBoard,
   getGlobalAndBoard,
-  boards: { board, loading: boardLoading },
+  boards: { board, error, loading: boardLoading },
   rules: { rules, loading: rulesLoading },
   uri,
 }) => {
@@ -34,7 +34,11 @@ const Board = ({
   });
 
   const newThreadRoute = (
-    <Route exact path={'/' + uri} render={(props) => <NewThreadForm {...props} board={board} />} />
+    <Route
+      exact
+      path={'/' + uri}
+      render={(props) => <NewThreadForm {...props} board={board} error={error} />}
+    />
   );
 
   const threadsListRoute = (
@@ -53,7 +57,9 @@ const Board = ({
             <Route
               exact
               path={`/${uri}/t${thread.thread_id}`}
-              render={(props) => <Thread {...props} thread={thread} board={board} rules={rules} />}
+              render={(props) => (
+                <Thread {...props} thread={thread} board={board} error={error} rules={rules} />
+              )}
               key={thread.thread_id}
             />
           ))}

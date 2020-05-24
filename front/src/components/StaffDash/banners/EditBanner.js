@@ -15,7 +15,7 @@ const EditBanner = ({
   getBoard,
   getBoardsList,
   history,
-  banners: { banner, loading: bannerLoading },
+  banners: { banner, error, loading: bannerLoading },
   boards: { boards, board, loading: boardsLoading },
   match,
 }) => {
@@ -58,6 +58,15 @@ const EditBanner = ({
       return !board || boardsLoading ? formData : { ...formData, board_id: board.board_id };
     });
   }, [board, boardsLoading]);
+
+  useEffect(() => {
+    if (error)
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const { board_id } = formData;
 

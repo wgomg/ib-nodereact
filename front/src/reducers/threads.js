@@ -3,7 +3,7 @@ import { GET_LATEST_THREADS, LATEST_THREADS_ERROR } from '../actions/types';
 const initState = {
   latests: [],
   loading: true,
-  error: {},
+  error: null,
 };
 
 export default function (state = initState, action) {
@@ -11,7 +11,7 @@ export default function (state = initState, action) {
 
   switch (type) {
     case GET_LATEST_THREADS:
-      return { ...state, latests: payload, loading: false };
+      return { ...state, latests: payload, loading: false, error: null };
 
     case LATEST_THREADS_ERROR:
       return { ...state, error: payload.data, loading: false };
