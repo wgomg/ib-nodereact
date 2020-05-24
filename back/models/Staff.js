@@ -29,7 +29,7 @@ function Staff() {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     body.password = bcrypt.hashSync(body.name, 10);
 
@@ -66,7 +66,7 @@ function Staff() {
     delete body[this.idField];
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     return db.update(
       { body, table: this.table, id: { field: this.idField, value: idValue } },
@@ -82,7 +82,7 @@ function Staff() {
     delete body[this.idField];
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     body.password = bcrypt.hashSync(body.password, 10);
 
@@ -110,13 +110,13 @@ function Staff() {
       return res;
     }
 
-    return { validationError: 'Authorization denied' };
+    return { errors: { auth: 'Authorization denied' } };
   };
 
   this.get = async (staff_id) => {
     logger.debug({ name: `${this.name}.get()`, data: staff_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(staff_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(staff_id)) return { errors: { staff: 'Invalid ID' } };
 
     const staff = await db.select(
       {
@@ -165,10 +165,10 @@ function Staff() {
       this.procId
     );
 
-    if (res.length === 0) return { validationError: { user: 'Not Found' } };
+    if (res.length === 0) return { errors: { user: 'Not Found' } };
 
     const passwordMatch = bcrypt.compareSync(body.password, res[0].password);
-    if (!passwordMatch) return { validationError: { password: 'Invalid password' } };
+    if (!passwordMatch) return { errors: { password: 'Invalid password' } };
 
     const tzoffset = new Date().getTimezoneOffset() * 60000;
     const now = (tzoffset) => new Date(Date.now() - tzoffset).toISOString();
@@ -196,7 +196,7 @@ function Staff() {
   this.delete = (staff_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: staff_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(staff_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(staff_id)) return {   errors: { staff: 'Invalid ID' }  };
 
     return db.remove({ table: this.table, id: { field: this.idField, value: staff_id } });
   };

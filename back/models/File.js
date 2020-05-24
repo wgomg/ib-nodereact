@@ -28,7 +28,7 @@ function File() {
 
     const allowed = new AllowedFile(file);
 
-    if (allowed.invalidFile) return { validationError: { file: 'Invalid File' } };
+    if (allowed.invalidFile) return { errors: { file: 'Invalid File' } };
 
     const rootDir = __dirname.split('/').slice(0, -1).join('/');
     const fileAbsolutePath = `${rootDir}/public/${config.data.dir}/${allowed.name}.${allowed.extension}`;
@@ -42,7 +42,7 @@ function File() {
     }
 
     const errors = validate(allowed, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     return db.insert({ body: allowed, table: this.table }, this.procId);
   };
@@ -50,7 +50,7 @@ function File() {
   this.getByID = async (file_id) => {
     logger.debug({ name: `${this.name}.getByID()`, data: file_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(file_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(file_id)) return { errors: { file: 'Invalid ID' } };
 
     let file = await db.select(
       {

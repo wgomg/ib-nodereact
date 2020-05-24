@@ -25,7 +25,7 @@ function Ban() {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     return db.insert({ body, table: this.table, ipField: 'user' }, this.procId);
   };
@@ -33,7 +33,7 @@ function Ban() {
   this.getBoardId = async (ban_id) => {
     logger.debug({ name: `${this.name}.getBoard()`, data: ban_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(ban_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(ban_id)) return { errors: { ban: 'Invalid ID' } };
 
     const ban = await db.select(
       {

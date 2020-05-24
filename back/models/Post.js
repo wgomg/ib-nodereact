@@ -34,7 +34,7 @@ function Post() {
     const Ban = require('./Ban');
     Ban.procId = this.procId;
     const userBanned = await Ban.isUserBanned(user);
-    if (userBanned) return { validationError: { user: 'User is banned' } };
+    if (userBanned) return { errors: { user: 'User is banned' } };
 
     let file = null;
 
@@ -49,13 +49,12 @@ function Post() {
     delete body.files;
 
     let newPost = { ...body };
-    if (file && file.validationError)
-      return { validationError: { ...newPost, ...file.validationError } };
+    if (file && file.errors) return { errors: file.errors };
 
     if (file) newPost.file_id = file.insertId;
 
     const errors = validate(newPost, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     newPost = await db.insert({ body: newPost, table: this.table }, this.procId);
 
@@ -79,7 +78,7 @@ function Post() {
         const tagged = await tagger.apply(post[0].text, this.procId);
         post[0].text = tagged.text;
 
-        if (tagged.quoted.length > 0)
+        if (tagged.quoted && tagged.quoted.length > 0)
           post.quoted = await Promise.all(
             tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
           );
@@ -94,7 +93,7 @@ function Post() {
   this.getByThread = async (thread_id) => {
     logger.debug({ name: `${this.name}.getByThread()`, data: thread_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(thread_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { post: 'Invalid ID' } };
 
     let posts = await db.select(
       {
@@ -124,7 +123,7 @@ function Post() {
         const tagged = await tagger.apply(post.text, this.procId);
         post.text = tagged.text;
 
-        if (tagged.quoted.length > 0)
+        if (tagged.quoted && tagged.quoted.length > 0)
           post.quoted = await Promise.all(
             tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
           );
@@ -141,7 +140,7 @@ function Post() {
     delete body[this.idField];
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     return db.update(
       { body, table: this.table, id: { field: this.idField, value: idValue } },
@@ -158,7 +157,7 @@ function Post() {
   this.get = async (post_id) => {
     logger.debug({ name: `${this.name}.get()`, data: post_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(post_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(post_id)) return { errors: { post: 'Invalid ID' } };
 
     let post = await db.select(
       {
@@ -184,7 +183,8 @@ function Post() {
 
       const tagged = await tagger.apply(post.text, this.procId);
       post.text = tagged.text;
-      if (tagged.quoted.length > 0)
+
+      if (tagged.quoted && tagged.quoted.length > 0)
         post.quoted = await Promise.all(
           tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
         );
@@ -196,7 +196,7 @@ function Post() {
   this.getBoardId = async (post_id) => {
     logger.debug({ name: `${this.name}.getBoardId()`, data: post_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(post_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(post_id)) return { errors: { post: 'Invalid ID' } };
 
     const post = await db.select(
       { table: this.table, filters: [{ field: this.idField, value: post_id }] },

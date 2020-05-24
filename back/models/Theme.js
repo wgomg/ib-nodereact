@@ -22,7 +22,7 @@ function Theme() {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     const theme = await db.insert({ body, table: this.table }, this.procId);
 
@@ -39,7 +39,7 @@ function Theme() {
     delete body[this.idField];
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     const res = await db.update(
       { body, table: this.table, id: { field: this.idField, value: idValue } },
@@ -67,7 +67,7 @@ function Theme() {
   this.delete = (theme_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: theme_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(theme_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(theme_id)) return { errors: { theme: 'Invalid ID' } };
 
     return db.remove({ id: { field: this.idField, value: theme_id }, table: this.table }, this.procId);
   };

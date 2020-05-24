@@ -12,34 +12,23 @@ const validate = (entry, schema) => {
   for (let [field, value] of Object.entries(entry)) {
     if (!schemaFields.includes(field)) {
       delete errors[field];
-      errors[field] = { msg: 'Not expected' };
+      errors[field] = 'Not expected';
     }
 
-    if (schema[field].required && isEmpty(value)) errors[field] = { msg: 'Is required' };
+    if (schema[field].required && isEmpty(value)) errors[field] = 'Is required';
 
     if (!isEmpty(value)) {
-      if (!isValidType(value, schema[field].type))
-        errors[field] = { msg: 'Invalid value', value: entry[field] };
+      if (!isValidType(value, schema[field].type)) errors[field] = 'Invalid value';
 
       if (schema[field].length && entry[field].length > schema[field].length)
-        errors[field] = {
-          msg: `Value exceeds max. length (${schema[field].length})`,
-          value: entry[field],
-        };
+        errors[field] = `Value exceeds max. length (${schema[field].length})`;
 
       if (schema[field].minLength && entry[field].length < schema[field].minLength)
-        errors[field] = {
-          msg: `Value es below min. length (${schema[field].minLength})`,
-          value: entry[field],
-        };
+        errors[field] = `Value es below min. length (${schema[field].minLength})`;
     }
-
-    if (!errors[field]) errors[field] = entry[field];
   }
 
-  if (objectsAreNotEqual(entry, errors)) return errors;
-
-  return null;
+  return Object.keys(errors).length > 0 ? errors : null;
 };
 
 const isEmpty = (value) =>

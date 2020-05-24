@@ -25,7 +25,7 @@ function Thread() {
     const newThread = { board_id: body.board_id, subject: body.subject };
 
     const errors = validate(newThread, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     const res = await db.insert({ body: newThread, table: this.table }, this.procId);
 
@@ -43,11 +43,11 @@ function Thread() {
 
     const post = await Post.save(threadOP);
 
-    if (post.validationError) {
+    if (post.errors) {
       db.remove({ table: this.table, id: { field: this.idField, value: res.insertId } }, this.procId);
 
-      delete post.validationError[this.idField];
-      return { ...post, subject: newThread.subject };
+      delete post.errors[this.idField];
+      return { errors: post.errors };
     }
 
     const thread = await db.select(
@@ -71,7 +71,7 @@ function Thread() {
   this.getByBoard = async (board_id) => {
     logger.debug({ name: `${this.name}.getByBoard()`, data: board_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(board_id)) return { errors: { thread: 'Invalid ID' } };
 
     let threads = await db.select(
       {
@@ -99,7 +99,7 @@ function Thread() {
   this.delete = (thread_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: thread_id });
 
-    if (!/^[0-9]+$/i.test(thread_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { thread: 'Invalid ID' } };
 
     return db.remove({ table: this.table, id: { field: this.idField, value: thread_id } }, this.procId);
   };
@@ -135,7 +135,7 @@ function Thread() {
   this.getBoardId = async (thread_id) => {
     logger.debug({ name: `${this.name}.getBoardId()`, data: thread_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(thread_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { thread: 'Invalid ID' } };
 
     const thread = await db.select(
       { table: this.table, filters: [{ field: this.idField, value: thread_id }] },

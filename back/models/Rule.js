@@ -22,7 +22,7 @@ function Rule() {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     let rule = await db.insert({ body, table: this.table }, this.procId);
 
@@ -43,7 +43,7 @@ function Rule() {
     delete body[this.idField];
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     return db.update(
       { body, table: this.table, id: { field: this.idField, value: idValue } },
@@ -54,7 +54,7 @@ function Rule() {
   this.gBoard = async (board_id) => {
     logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(board_id)) return { errors: { rule: 'Invalid ID' } };
 
     return db.select(
       { table: this.table, filters: [{ field: 'board_id', value: board_id }] },
@@ -74,7 +74,7 @@ function Rule() {
   this.delete = (rule_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: rule_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(rule_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(rule_id)) return { errors: { rule: 'Invalid ID' } };
 
     return db.remove({ id: { field: this.idField, value: rule_id }, table: this.table }, this.procId);
   };
@@ -82,7 +82,7 @@ function Rule() {
   this.getBoardId = async (rule_id) => {
     logger.debug({ name: `${this.name}.getBoardId()`, data: rule_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(rule_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(rule_id)) return { errors: { rule: 'Invalid ID' } };
 
     const rule = await db.select(
       { table: this.table, filters: [{ field: this.idField, value: rule_id }] },

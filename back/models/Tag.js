@@ -25,7 +25,7 @@ function Tag() {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     const tag = await db.insert({ body, table: this.table }, this.procId);
 
@@ -51,7 +51,7 @@ function Tag() {
   this.delete = (tag_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: tag_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(tag_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(tag_id)) return { errors: { tag: 'Invalid ID' } };
 
     return db.remove({ id: { field: this.idField, value: tag_id }, table: this.table }, this.procId);
   };

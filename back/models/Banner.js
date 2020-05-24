@@ -28,12 +28,12 @@ function Banner() {
     delete body.files;
 
     let newBanner = { ...body };
-    if (image.validationError) return { validationError: { ...newBanner, ...image.validationError } };
+    if (image.errors) return { errors: image.errors };
 
     newBanner.file_id = !image ? null : image.insertId;
 
     const errors = validate(newBanner, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     newBanner = await db.insert({ body: newBanner, table: this.table }, this.procId);
 
@@ -71,7 +71,7 @@ function Banner() {
   this.get = async (board_id) => {
     logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(board_id)) return { errors: { board: 'Invalid ID' } };
 
     let banners = await db.select(
       { table: this.table, filters: [{ field: 'board_id', value: board_id }] },
@@ -134,7 +134,7 @@ function Banner() {
   this.delete = (banner_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: banner_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(banner_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(banner_id)) return { errors: { board: 'Invalid ID' } };
 
     return db.remove({ id: { field: this.idField, value: banner_id }, table: this.table }, this.procId);
   };
@@ -142,7 +142,7 @@ function Banner() {
   this.getBoardId = async (banner_id) => {
     logger.debug({ name: `${this.name}.getBoard()`, data: banner_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(banner_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(banner_id)) return { errors: { board: 'Invalid ID' } };
 
     const banner = await db.select(
       { table: this.table, filters: [{ [this.idField]: banner_id }] },

@@ -23,7 +23,7 @@ function Board() {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     return db.insert({ body, table: this.table }, this.procId);
   };
@@ -66,7 +66,7 @@ function Board() {
     delete body[this.idField];
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     return db.update(
       { body, table: this.table, id: { field: this.idField, value: idValue } },
@@ -77,7 +77,7 @@ function Board() {
   this.delete = (board_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: board_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(board_id)) return { errors: { board: 'Invalid ID' } };
 
     return db.remove({ id: { field: this.idField, value: board_id }, table: this.table }, this.procId);
   };
@@ -85,7 +85,7 @@ function Board() {
   this.getByID = (board_id) => {
     logger.debug({ name: `${this.name}.getByID()`, data: board_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(board_id)) return { errors: { board: 'Invalid ID' } };
 
     return db.select(
       {

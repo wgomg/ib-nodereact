@@ -23,7 +23,7 @@ function Report() {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const errors = validate(body, this.schema);
-    if (errors) return { validationError: errors };
+    if (errors) return { errors };
 
     return db.insert({ body, table: this.table }, this.procId);
   };
@@ -31,7 +31,7 @@ function Report() {
   this.updateSolved = (report_id) => {
     logger.debug({ name: `{this.name}.setAsSolved()`, data: report_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(report_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(report_id)) return { errors: { report: 'Invalid ID' } };
 
     return db.update(
       {
@@ -46,7 +46,7 @@ function Report() {
   this.gBoard = async (board_id) => {
     logger.debug({ name: `${this.name}.gBoard()` }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(board_id)) return { errors: { report: 'Invalid ID' } };
 
     const sql =
       'SELECT ' +
@@ -111,7 +111,7 @@ function Report() {
   this.getBoardId = async (report_id) => {
     logger.debug({ name: `${this.name}.getBoard()`, data: report_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(report_id)) return { validationError: 'Invalid ID' };
+    if (!/^[0-9]+$/i.test(report_id)) return { errors: { report: 'Invalid ID' } };
 
     const report = await db.select(
       { table: this.table, filters: [{ [this.idField]: report_id }] },

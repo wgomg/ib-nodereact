@@ -105,14 +105,14 @@ const appMethodArgs = (modelName, ep) => {
 
       const result = await Model[ep.fn](...fnArgs);
 
-      if (result.validationError) {
+      if (result.errors) {
         logger.debug(
           `[${Model.procId}] Validaton error on ${modelName}.${ep.fn}(), data: ${JSON.stringify(
-            result.validationError
+            result.errors
           )}`
         );
 
-        res.status(401).json(result);
+        res.status(401).json(result.errors);
       } else {
         logger.debug(`[${Model.procId}] DB: Entries returned ${result.length || result.affectedRows}`);
         res.json(result);
