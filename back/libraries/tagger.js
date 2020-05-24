@@ -2,12 +2,13 @@
 
 const cache = require('./cache');
 
-const Tag = require('../models/Tag');
+const striptags = require('striptags');
 
 const apply = async (text, procId) => {
   let cachedTags = cache.get('tags');
 
   if (!cachedTags) {
+    const Tag = require('../models/Tag');
     Tag.procId = procId;
     const tags = await Tag.getAll();
 
@@ -30,7 +31,12 @@ const apply = async (text, procId) => {
 
     replacedText = replacedText.replace(
       regex,
-      (match, string, offset) => splitMarker + tag.op_replacer + string + tag.cl_replacer + splitMarker
+      (match, string, offset) =>
+        splitMarker +
+        tag.op_replacer +
+        (string.charAt(0) === '>' ? setGreenText(string) : string) +
+        tag.cl_replacer +
+        splitMarker
     );
   });
 
@@ -42,8 +48,10 @@ const apply = async (text, procId) => {
     for (const qp of quotedPosts) {
       const post_id = qp.replace('>>', '');
       quotedIds.push(post_id);
+
       const Post = require('../models/Post');
       Post.procId = procId;
+
       const post = await Post.get(post_id);
 
       links.set(
@@ -63,9 +71,55 @@ const apply = async (text, procId) => {
   if (links.size > 0)
     for (const [linked, link] of links) replacedText = replacedText.replace(linked, link);
 
+  replacedText = replacedText
+    .split('\r\n')
+    .map((line) => {
+      // if (line.charAt(0) === '<')
+      //   return `${splitMarker}<span class='redtext'>${line
+      //     .replace('<', '&#60;')
+      //     .replace(splitMarker, '')
+      //     .replace(splitMarker, '')}</span>${splitMarker}`;
+      // else if (line.charAt(0) === '>')
+      //   return `${splitMarker}<span class='greentext'>${line
+      //     .replace('>', '&#62;')
+      //     .replace(splitMarker, '')
+      //     .replace(splitMarker, '')}</span>${splitMarker}`;
+      if (line.charAt(0) === '>') return splitMarker + setGreenText(line, splitMarker) + splitMarker;
+      else return line;
+    })
+    .join('\n');
+
   return { text: replacedText.split(splitMarker), quoted: quotedIds };
 };
 
+const strip = (text) =>
+  text
+    .split('\r\n')
+    .map((line) => {
+      // if (
+      //   line.charAt(0) === '<' &&
+      //   ((!line.includes('</') && !line.includes('/>')) ||
+      //     line.includes('</') ||
+      //     (line.includes('/>') && line.slice(1).includes('<')))
+      // )
+      //   return '<' + striptags(line.slice(1));
+      // else if (
+      //   line.charAt(0) !== '<' &&
+      //   ((!line.includes('</') && !line.includes('/>')) ||
+      //     line.includes('</') ||
+      //     (line.includes('/>') && line.slice(1).includes('<')))
+      // )
+      // else return striptags(line);
+      return striptags(line);
+    })
+    .join('\r\n');
+
 const gensSplitMarker = () => `$${Math.random().toString(20).substr(2, 10)}$`;
 
-module.exports = { apply };
+const setGreenText = (text, splitMarker) =>
+  `<span class='greentext'>${text
+    .replace('>', '&#62;')
+    .replace(splitMarker || '', '')
+    .replace(splitMarker || '', '')}</span>`;
+
+module.exports = { apply, strip };

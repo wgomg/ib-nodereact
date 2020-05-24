@@ -6,10 +6,9 @@ const util = require('util');
 const pool = mysql.createPool(config.db);
 const query = util.promisify(pool.query).bind(pool);
 
-const striptags = require('striptags');
-const allowTags = ['Tags'];
-
 const logger = require('./libraries/logger');
+const tagger = require('./libraries/tagger');
+const allowTags = ['Tags'];
 
 const insert = (queryData, procId) => {
   const { body, table, ipField } = queryData;
@@ -18,7 +17,7 @@ const insert = (queryData, procId) => {
 
   const fields = bodyKeysArray.map((field) => `\`${field}\``).join(', ');
   const values = Object.values(body).map((v) =>
-    allowTags.includes(table) || typeof v !== 'string' ? v : striptags(v)
+    allowTags.includes(table) || typeof v !== 'string' ? v : tagger.strip(v)
   );
   let placeholders = Array(fields.split(',').length).fill('?').join(', ');
 
