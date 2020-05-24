@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -7,14 +7,23 @@ import { Form } from '../common';
 
 import { login } from '../../actions/auth';
 
-const Login = ({ login, auth: { logged } }) => {
+const Login = ({ login, auth: { logged, error } }) => {
   const [formData, setFormData] = useState({ name: '', password: '' });
+
+  useEffect(() => {
+    if (error && error.constructor.name === 'Object')
+      alert(
+        Object.keys(error)
+          .map((field) => `${field}: ${error[field]}`)
+          .join('\n')
+      );
+  }, [error]);
 
   const { name, password } = formData;
 
-  const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const onSubmit = async e => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     login({ name, password });
   };
@@ -27,20 +36,20 @@ const Login = ({ login, auth: { logged } }) => {
       name: 'name',
       value: name,
       label: 'Nombre',
-      onChange: e => onChange(e)
+      onChange: (e) => onChange(e),
     },
     {
       component: 'text',
       name: 'password',
       value: password,
       label: 'Password',
-      onChange: e => onChange(e)
+      onChange: (e) => onChange(e),
     },
     {
       component: 'btn',
       type: 'submit',
-      text: 'Ingresar'
-    }
+      text: 'Ingresar',
+    },
   ];
 
   return (
@@ -52,11 +61,11 @@ const Login = ({ login, auth: { logged } }) => {
 
 Login.propTypes = {
   login: PropTypes.func.isRequired,
-  auth: PropTypes.object.isRequired
+  auth: PropTypes.object.isRequired,
 };
 
-const mapStateToProps = state => ({
-  auth: state.auth
+const mapStateToProps = (state) => ({
+  auth: state.auth,
 });
 
 export default connect(mapStateToProps, { login })(Login);

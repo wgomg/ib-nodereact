@@ -22,7 +22,7 @@ export default function (state = initState, action) {
     case LOGIN_FAIL:
     case LOGOUT:
       localStorage.removeItem('token');
-      return { ...state, token: null, logged: false, loading: false, staff: {}, error: null };
+      return { ...state, token: null, logged: false, loading: false, staff: {}, error: payload.data };
 
     case STAFF_LOAD_ERROR:
       localStorage.removeItem('token');
