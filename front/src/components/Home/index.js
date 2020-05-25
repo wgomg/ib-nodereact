@@ -3,7 +3,6 @@ import React, { Fragment } from 'react';
 import Logo from './Logo';
 import BoardsList from './BoardsList';
 import LatestThreads from './LatestThreads';
-// import Statistics from './Statistics';
 
 import Footer from '../common/Footer';
 
@@ -17,7 +16,6 @@ const Home = () => {
           <LatestThreads />
         </div>
       </div>
-      {/* <Statistics /> */}
       <Footer />
     </Fragment>
   );

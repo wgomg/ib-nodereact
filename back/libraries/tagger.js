@@ -73,20 +73,7 @@ const apply = async (text, procId) => {
 
   replacedText = replacedText
     .split('\r\n')
-    .map((line) => {
-      // if (line.charAt(0) === '<')
-      //   return `${splitMarker}<span class='redtext'>${line
-      //     .replace('<', '&#60;')
-      //     .replace(splitMarker, '')
-      //     .replace(splitMarker, '')}</span>${splitMarker}`;
-      // else if (line.charAt(0) === '>')
-      //   return `${splitMarker}<span class='greentext'>${line
-      //     .replace('>', '&#62;')
-      //     .replace(splitMarker, '')
-      //     .replace(splitMarker, '')}</span>${splitMarker}`;
-      if (line.charAt(0) === '>') return splitMarker + setGreenText(line, splitMarker) + splitMarker;
-      else return line;
-    })
+    .map((line) => line.charAt(0) === '>' ? splitMarker + setGreenText(line, splitMarker) + splitMarker : line)
     .join('\n');
 
   return { text: replacedText.split(splitMarker), quoted: quotedIds };
@@ -95,23 +82,7 @@ const apply = async (text, procId) => {
 const strip = (text) =>
   text
     .split('\r\n')
-    .map((line) => {
-      // if (
-      //   line.charAt(0) === '<' &&
-      //   ((!line.includes('</') && !line.includes('/>')) ||
-      //     line.includes('</') ||
-      //     (line.includes('/>') && line.slice(1).includes('<')))
-      // )
-      //   return '<' + striptags(line.slice(1));
-      // else if (
-      //   line.charAt(0) !== '<' &&
-      //   ((!line.includes('</') && !line.includes('/>')) ||
-      //     line.includes('</') ||
-      //     (line.includes('/>') && line.slice(1).includes('<')))
-      // )
-      // else return striptags(line);
-      return striptags(line);
-    })
+    .map((line) => striptags(line)) // TODO implementar texto rojo con '<'
     .join('\r\n');
 
 const gensSplitMarker = () => `$${Math.random().toString(20).substr(2, 10)}$`;
