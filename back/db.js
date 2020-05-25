@@ -37,7 +37,7 @@ const update = (queryData, procId) => {
   const { body, table, id } = queryData;
 
   const values = Object.values(body).map((v) =>
-    allowTags.includes(table) || typeof v !== 'string' ? v : striptags(v)
+    allowTags.includes(table) || typeof v !== 'string' ? v : tagger.strip(v)
   );
   const placeholders = Object.keys(body)
     .map((field) => `\`${field}\` = ?`)

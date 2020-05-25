@@ -1,5 +1,8 @@
 'use strict';
 
+const config = require('../config/').files;
+const thumb = require('./thumb');
+
 const signaturesMap = new Map([
   ['89504e47', { mimetype: 'image/png', extensions: ['png'] }],
   ['47494638', { mimetype: 'image/gif', extensions: ['gif'] }],
@@ -10,22 +13,56 @@ const signaturesMap = new Map([
   ['ffd8ffe8', { mimetype: 'image/jpeg', extensions: ['jpg'] }],
 ]);
 
+const rootDir = __dirname.split('/').slice(0, -1).join('/');
+const dataDir = `${rootDir}/public/${config.data.dir}/`;
+
 function AllowedFile(file) {
-  if (!file) this.noFile = true;
+  this.file = file;
 
-  const fileHeader = file.data.subarray(0, 4).toString('hex');
+  const fileHeader = this.file.data.subarray(0, 4).toString('hex');
 
-  if (file.truncated || signaturesMap.get(fileHeader) === undefined) this.invalidFile = true;
+  this.schemaData = {
+    mimetype: null,
+    name: null,
+    extension: null,
+    size: null,
+    folder: null,
+  };
+
+  this.error = null;
+
+  if (this.file.truncated || signaturesMap.get(fileHeader) === undefined) this.error = 'Invalid File';
   else {
-    let fileExtension = file.name.split('.').pop().toLowerCase();
+    let fileExtension = this.file.name.split('.').pop().toLowerCase();
     const extensions = signaturesMap.get(fileHeader).extensions;
     if (!extensions.includes(fileExtension)) fileExtension = extensions[0];
 
-    this.mimetype = signaturesMap.get(fileHeader).mimetype;
-    this.name = file.md5;
-    this.extension = fileExtension;
-    this.size = file.size;
+    this.schemaData = {
+      mimetype: signaturesMap.get(fileHeader).mimetype,
+      name: this.file.md5,
+      extension: fileExtension,
+      size: this.file.size,
+      folder: config.data.dir,
+    };
   }
+
+  this.saveToDisk = async () => {
+    const fileAbsolutePath = `${dataDir}/${this.schemaData.name}.${this.schemaData.extension}`;
+
+    if (this.error) return this.error;
+
+    try {
+      await this.file.mv(fileAbsolutePath);
+      this.error = null;
+    } catch (error) {
+      this.error = error.message;
+    }
+  };
+
+  this.generateThumb = async () => {
+    const fileThumb = await thumb.make({ name: this.schemaData.name, ext: this.schemaData.extension });
+    this.error = fileThumb ? null : 'Could generate thumb';
+  };
 }
 
 module.exports = AllowedFile;

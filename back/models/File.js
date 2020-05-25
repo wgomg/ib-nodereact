@@ -1,10 +1,9 @@
 'use strict';
 
-const config = require('../config/').files;
-
 const db = require('../db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
+const thumb = require('../libraries/thumb');
 
 const AllowedFile = require('../libraries/AllowedFile');
 
@@ -23,28 +22,22 @@ function File() {
     folder: { type: 'dir', length: 20, required: true },
   };
 
-  this.save = (file) => {
+  this.save = async (file) => {
     logger.debug({ name: `${this.name}.save()`, data: file }, this.procId, 'method');
 
     const allowed = new AllowedFile(file);
 
-    if (allowed.invalidFile) return { errors: { file: 'Invalid File' } };
+    if (allowed.errors) return { errors: { file: allowed.error } };
 
-    const rootDir = __dirname.split('/').slice(0, -1).join('/');
-    const fileAbsolutePath = `${rootDir}/public/${config.data.dir}/${allowed.name}.${allowed.extension}`;
-
-    allowed.folder = config.data.dir;
-
-    try {
-      file.mv(fileAbsolutePath);
-    } catch (error) {
-      return null;
-    }
-
-    const errors = validate(allowed, this.schema);
+    const errors = validate(allowed.schemaData, this.schema);
     if (errors) return { errors };
 
-    return db.insert({ body: allowed, table: this.table }, this.procId);
+    await allowed.saveToDisk();
+    await allowed.generateThumb();
+
+    if (allowed.errors) return { errors: { file: allowed.error } };
+
+    return db.insert({ body: allowed.schemaData, table: this.table }, this.procId);
   };
 
   this.getByID = async (file_id) => {
@@ -60,7 +53,7 @@ function File() {
       this.procId
     );
 
-    if (file.length > 0) file.uri = `${config.data.dir}/${file[0].name}.${file[0].extension}`;
+    if (file.length > 0) file[0].thumb = await thumb.get(file[0].name, file[0].extension);
 
     return file;
   };

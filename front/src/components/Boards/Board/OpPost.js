@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -14,6 +14,8 @@ import QuotePost from './QuotePost';
 const striptags = require('striptags');
 
 const OpPost = ({ thread, post, isThread, hiddenPosts, auth: { logged } }) => {
+  const [hide, setHide] = useState(true);
+
   const textArray = post.text;
 
   const tooltipOverridePosition = ({ left, top }, currentEvent, currentTarget, node) => {
@@ -85,10 +87,21 @@ const OpPost = ({ thread, post, isThread, hiddenPosts, auth: { logged } }) => {
           </span>
         </p>
         {post.file && (
-          <Image
-            className='post-image op'
-            src={'/' + post.file.folder + '/' + post.file.name + '.' + post.file.extension}
-          />
+          <Fragment>
+            <Image
+              className='post-image'
+              src={'/' + post.file.thumb + '/' + post.file.name + '.' + post.file.extension}
+              hide={!hide}
+              setHide={() => setHide(!hide)}
+            />
+
+            <Image
+              className='post-image'
+              src={'/' + post.file.folder + '/' + post.file.name + '.' + post.file.extension}
+              hide={hide}
+              setHide={() => setHide(!hide)}
+            />
+          </Fragment>
         )}
       </div>
 
