@@ -5,22 +5,37 @@ const cache = require('./cache');
 const striptags = require('striptags');
 
 const apply = async (text, procId) => {
-  let cachedTags = cache.get('tags');
+  const splitMarker = genSplitMarker();
 
-  if (!cachedTags) {
-    const Tag = require('../models/Tag');
-    Tag.procId = procId;
-    const tags = await Tag.getAll();
+  let replacedText = await applyTags(text, splitMarker, procId);
 
-    if (tags.length === 0) return text;
+  const { textWq, quotedIds } = await setQuotes(replacedText, splitMarker, procId);
 
-    cache.set('tags', tags);
-    cachedTags = tags;
-  }
+  replacedText = textWq;
 
+  replacedText = replacedText
+    .split('\r\n')
+    .map((line) =>
+      line.charAt(0) === '>' ? splitMarker + setGreenText(line, splitMarker) + splitMarker : line
+    )
+    .join('\n');
+
+  return { text: replacedText.split(splitMarker), quoted: quotedIds };
+};
+
+const strip = (text) =>
+  text
+    .split('\r\n')
+    .map((line) => striptags(line)) // TODO implementar texto rojo con '<'
+    .join('\r\n');
+
+/***********************************************************************************/
+
+const genSplitMarker = () => `$${Math.random().toString(20).substr(2, 10)}$`;
+
+const applyTags = async (text, splitMarker, procId) => {
+  let cachedTags = await getTags(procId);
   let replacedText = text;
-
-  const splitMarker = gensSplitMarker();
 
   cachedTags.forEach((tag) => {
     const tagChar = tag.tag.split('')[0];
@@ -40,10 +55,32 @@ const apply = async (text, procId) => {
     );
   });
 
-  let links = new Map();
+  return replacedText;
+};
 
-  let quotedPosts = text.match(/(>{2}(\d+))/g);
+const getTags = async (procId) => {
+  let cachedTags = cache.get('tags');
+
+  if (!cachedTags) {
+    const Tag = require('../models/Tag');
+    Tag.procId = procId;
+    const tags = await Tag.getAll();
+
+    if (tags.length === 0) return text;
+
+    cache.set('tags', tags);
+    cachedTags = tags;
+  }
+
+  return cachedTags;
+};
+
+const setQuotes = async (replacedText, splitMarker, procId) => {
+  let quotes = new Map();
+
+  let quotedPosts = replacedText.match(/(>{2}(\d+))/g);
   let quotedIds = [];
+
   if (quotedPosts)
     for (const qp of quotedPosts) {
       const post_id = qp.replace('>>', '');
@@ -54,38 +91,25 @@ const apply = async (text, procId) => {
 
       const post = await Post.get(post_id);
 
-      links.set(
+      quotes.set(
         qp,
         `${splitMarker}<a href='/${post.board[0].uri}/t${post.thread_id}#p${post_id}'>${qp}</a>${splitMarker}`
       );
     }
 
-  let linkedBoard = text.match(/(>{3}((\/\w+\/)))/g);
+  let linkedBoard = replacedText.match(/(>{3}((\/\w+\/)))/g);
   if (linkedBoard)
     for (const lb of linkedBoard) {
       const board_uri = lb.replace('>>>', '');
 
-      links.set(lb, `${splitMarker}<a href='${board_uri}'>${lb}</a>${splitMarker}`);
+      quotes.set(lb, `${splitMarker}<a href='${board_uri}'>${lb}</a>${splitMarker}`);
     }
 
-  if (links.size > 0)
-    for (const [linked, link] of links) replacedText = replacedText.replace(linked, link);
+  if (quotes.size > 0)
+    for (const [quoted, quote] of quotes) replacedText = replacedText.replace(quoted, quote);
 
-  replacedText = replacedText
-    .split('\r\n')
-    .map((line) => line.charAt(0) === '>' ? splitMarker + setGreenText(line, splitMarker) + splitMarker : line)
-    .join('\n');
-
-  return { text: replacedText.split(splitMarker), quoted: quotedIds };
+  return { textWq: replacedText, quotedIds };
 };
-
-const strip = (text) =>
-  text
-    .split('\r\n')
-    .map((line) => striptags(line)) // TODO implementar texto rojo con '<'
-    .join('\r\n');
-
-const gensSplitMarker = () => `$${Math.random().toString(20).substr(2, 10)}$`;
 
 const setGreenText = (text, splitMarker) =>
   `<span class='greentext'>${text
