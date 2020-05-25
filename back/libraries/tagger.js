@@ -20,6 +20,8 @@ const apply = async (text, procId) => {
     )
     .join('\n');
 
+  replacedText = setLinks(replacedText);
+
   return { text: replacedText.split(splitMarker), quoted: quotedIds };
 };
 
@@ -116,5 +118,11 @@ const setGreenText = (text, splitMarker) =>
     .replace('>', '&#62;')
     .replace(splitMarker || '', '')
     .replace(splitMarker || '', '')}</span>`;
+
+const setLinks = (replacedText) =>
+  replacedText.replace(
+    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi,
+    (match, string, offset) => `<a target='_blank' href='https://${match}'>${match}</a>`
+  );
 
 module.exports = { apply, strip };
