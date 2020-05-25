@@ -13,7 +13,6 @@ const NewThreadForm = ({ board, createThread, error }) => {
     text: '',
     name: 'Anon',
   });
-  const [errors, setErrors] = useState(null);
 
   useEffect(() => {
     setFormData((formData) => {
@@ -29,15 +28,6 @@ const NewThreadForm = ({ board, createThread, error }) => {
           .join('\n')
       );
   }, [error]);
-
-  useEffect(() => {
-    if (errors)
-      alert(
-        Object.keys(errors)
-          .map((field) => `${field}: ${errors[field]}`)
-          .join('\n')
-      );
-  }, [errors]);
 
   const [file, setFile] = useState(null);
 

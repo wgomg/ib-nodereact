@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -7,9 +7,66 @@ import timeSince from '../../../utils/timeSince';
 import prettyDate from '../../../utils/prettyDate';
 
 import { ButtonLink, Image } from '../../common';
-import { Fragment } from 'react';
+
+import ReactTooltip from 'react-tooltip';
+import QuotePost from './QuotePost';
+
+const striptags = require('striptags');
 
 const OpPost = ({ thread, post, isThread, hiddenPosts, auth: { logged } }) => {
+  const textArray = post.text;
+
+  const tooltipOverridePosition = ({ left, top }, currentEvent, currentTarget, node) => {
+    const { height } = node.getBoundingClientRect();
+
+    let newTop = null;
+    if (top + height > window.innerHeight)
+      newTop = top - Math.abs(top + height - window.innerHeight) - 10;
+
+    return { left, top: newTop || top };
+  };
+
+  const text = textArray.map((elem, index) => {
+    if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem)) {
+      let props = {
+        style: { display: 'inline-grid' },
+        dangerouslySetInnerHTML: { __html: elem },
+      };
+
+      let quotePost = null;
+
+      if (/<\s*a[^>]*>(.*?)<\s*\/\s*a>/g.test(elem) && /(>{2}(\d+))/g.test(elem)) {
+        const quotePostId = striptags(elem.replace('>>', '')) + '_' + post.post_id;
+        const quoted = post.quoted.filter((q) => q.post_id.toString() === quotePostId.split('_')[0])[0];
+
+        return (
+          <Fragment key={index}>
+            <div {...props} data-tip data-for={quotePostId} />
+            <ReactTooltip
+              className='tooltip'
+              id={quotePostId}
+              place='right'
+              type='dark'
+              effect='solid'
+              overridePosition={tooltipOverridePosition}
+            >
+              <QuotePost post={quoted} />
+            </ReactTooltip>
+          </Fragment>
+        );
+      }
+
+      return (
+        <Fragment key={index}>
+          <div {...props} />
+          {quotePost}
+        </Fragment>
+      );
+    }
+
+    return elem;
+  });
+
   return (
     <div className='op' id={'p' + post.post_id}>
       <hr className='separator' />
@@ -50,7 +107,7 @@ const OpPost = ({ thread, post, isThread, hiddenPosts, auth: { logged } }) => {
             </span>
           )}
         </div>
-        <div className='op-post-text' dangerouslySetInnerHTML={{ __html: post.text }} />
+        <div className='op-post-text'>{text}</div>
       </div>
 
       {hiddenPosts && <span className='small'>{hiddenPosts} respuestas ocultas</span>}
