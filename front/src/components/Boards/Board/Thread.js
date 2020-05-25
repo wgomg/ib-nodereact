@@ -159,7 +159,9 @@ const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
           name: 'Anon',
         });
 
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        setTimeout(() => {
+          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }, 100);
       }
     }
   };

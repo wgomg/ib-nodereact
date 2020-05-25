@@ -79,7 +79,7 @@ function Post() {
         post[0].text = tagged.text;
 
         if (tagged.quoted && tagged.quoted.length > 0)
-          post.quoted = await Promise.all(
+          post[0].quoted = await Promise.all(
             tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
           );
       }
