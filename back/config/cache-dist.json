@@ -1,3 +1,4 @@
 {
-  "ttl": 3600
+  "userAddressTTL": 3,
+  "dbDataTTL": 0
 }

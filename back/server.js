@@ -3,6 +3,7 @@
 const app = require('./app');
 
 const logger = require('./libraries/logger');
+const cache = require('./libraries/cache');
 
 const config = require('./config').server;
 
@@ -15,6 +16,14 @@ setInterval(
       logger.connection(`${connections} connections currently open`)
     ),
   1000
+);
+
+setInterval(
+  () =>
+    server.getConnections((err, connections) =>
+      logger.info(`Cache size (bytes): ${cache.stats('ksize')}`, 'CACHE')
+    ),
+  1000 * 60
 );
 
 process.on('SIGTERM', shutDown);

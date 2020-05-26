@@ -31,7 +31,8 @@ function Tag() {
 
     if (tag.insertId) {
       const tags = await this.getAll();
-      cache.set('tags', tags);
+      const config = require('../config').cache;
+      cache.set('tags', tags, config.dbDataTTL);
 
       return db.select(
         { table: this.table, filters: [{ field: this.idField, value: tag.insertId }] },

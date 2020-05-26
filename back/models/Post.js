@@ -59,7 +59,14 @@ function Post() {
     newPost = await db.insert({ body: newPost, table: this.table }, this.procId);
 
     if (newPost.insertId) {
-      cache.set(newPost.insertId, user);
+      const config = require('../config').cache;
+      let cachedUsers = cache.get('users') || {};
+
+      cache.set(
+        'users',
+        { ...cachedUsers, [newPost.insertId]: user },
+        config.userAddressTTL * 24 * 60 * 60
+      );
 
       let post = await db.select(
         {
@@ -115,7 +122,8 @@ function Post() {
           delete post.file_id;
         }
 
-        const cachedUser = cache.get(post.post_id);
+        const cachedUsers = cache.get('users') || {};
+        const cachedUser = cachedUsers[post.post_id];
 
         if (ip.isV4(cachedUser)) post.user = ip.hashV4(cachedUser);
         else if (ip.isV6(cachedUser)) post.user = ip.hashV6(cachedUser);
