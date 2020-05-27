@@ -111,7 +111,7 @@ function Staff() {
 
       if (res.length > 0) {
         res = {
-          staff_id: cachedId,
+          staff_id: staff.staff_id,
           name: res[0].name,
           admin: res[0].admin,
           board_id: res[0].board_id,
@@ -207,10 +207,10 @@ function Staff() {
   this.delete = (staff_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: staff_id }, this.procId, 'method');
 
-    const cachedId = cache.getKeyInObject('Banners', staff_id);
+    const cachedId = cache.getKeyInObject(this.table, staff_id);
     if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
-    return db.remove({ table: this.table, id: { field: this.idField, value: staff_id } });
+    return db.remove({ table: this.table, id: { field: this.idField, value: cachedId } });
   };
 
   this.getFunctions = () => {

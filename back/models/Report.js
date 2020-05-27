@@ -4,6 +4,8 @@ const db = require('../db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 
+const cache = require('../libraries/cache');
+
 const Rule = require('./Rule');
 
 function Report() {
@@ -31,13 +33,14 @@ function Report() {
   this.updateSolved = (report_id) => {
     logger.debug({ name: `{this.name}.setAsSolved()`, data: report_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(report_id)) return { errors: { report: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, report_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
     return db.update(
       {
         body: { solved: true },
         table: this.table,
-        id: { field: this.idField, value: report_id },
+        id: { field: this.idField, value: cachedId },
       },
       this.procId
     );
@@ -46,7 +49,8 @@ function Report() {
   this.gBoard = async (board_id) => {
     logger.debug({ name: `${this.name}.gBoard()` }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { errors: { report: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject('Boards', board_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
     const sql =
       'SELECT ' +
@@ -55,7 +59,7 @@ function Report() {
       ' INNER JOIN Rules ON Reports.rule_id = Rules.rule_id' +
       ' INNER JOIN Boards ON Rules.board_id = Boards.board_id' +
       ' WHERE Rules.board_id = ' +
-      board_id;
+      cachedId;
 
     const reports = await db.rawQuery(sql, this.procId);
 
@@ -67,6 +71,8 @@ function Report() {
         reports.map(async (report) => {
           report.post = await Post.get(report.post_id);
           delete report.post_id;
+
+          report.report_id = cache.setHashId(this.table, report.report_id, 'dbData');
 
           return report;
         })
@@ -99,6 +105,8 @@ function Report() {
         reports.map(async (report) => {
           report.post = await Post.get(report.post_id);
           delete report.post_id;
+
+          report.report_id = cache.setHashId(this.table, report.report_id, 'dbData');
 
           return report;
         })

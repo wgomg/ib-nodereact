@@ -4,6 +4,8 @@ const db = require('../db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 
+const cache = require('../libraries/cache');
+
 function Rule() {
   this.name = this.constructor.name;
   this.table = this.name + 's';
@@ -45,8 +47,11 @@ function Rule() {
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
+    const cachedId = cache.getKeyInObject(this.table, idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+
     return db.update(
-      { body, table: this.table, id: { field: this.idField, value: idValue } },
+      { body, table: this.table, id: { field: this.idField, value: cachedId } },
       this.procId
     );
   };
@@ -54,29 +59,47 @@ function Rule() {
   this.gBoard = async (board_id) => {
     logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { errors: { rule: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject('Boards', board_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
-    return db.select(
-      { table: this.table, filters: [{ field: 'board_id', value: board_id }] },
+    let rules = await db.select(
+      { table: this.table, filters: [{ field: 'board_id', value: cachedId }] },
       this.procId
     );
+
+    if (rules.length > 0)
+      rules = rules.map((rule) => {
+        rule.rule_id = cache.setHashId(this.table, rule.rule_id, 'dbData');
+        return rule;
+      });
+
+    return rules;
   };
 
   this.getGlobal = async () => {
     logger.debug({ name: `${this.name}.getGlobal()` }, this.procId, 'method');
 
-    return await db.select(
+    let rules = await db.select(
       { table: this.table, filters: [{ field: 'board_id', value: null }] },
       this.procId
     );
+
+    if (rules.length > 0)
+      rules = rules.map((rule) => {
+        rule.rule_id = cache.setHashId(this.table, rule.rule_id, 'dbData');
+        return rule;
+      });
+
+    return rules;
   };
 
   this.delete = (rule_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: rule_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(rule_id)) return { errors: { rule: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, rule_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
-    return db.remove({ id: { field: this.idField, value: rule_id }, table: this.table }, this.procId);
+    return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
   };
 
   this.getBoardId = async (rule_id) => {

@@ -73,10 +73,11 @@ function Banner() {
   this.get = async (board_id) => {
     logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { errors: { board: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject('Boards', board_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
     let banners = await db.select(
-      { table: this.table, filters: [{ field: 'board_id', value: board_id }] },
+      { table: this.table, filters: [{ field: 'board_id', value: cachedId }] },
       this.procId
     );
 
