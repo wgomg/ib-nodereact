@@ -4,7 +4,7 @@ const db = require('../db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 
-const Tag = require('./Tag');
+const cache = require('../libraries/cache');
 
 function Theme() {
   this.name = this.constructor.name;
@@ -41,35 +41,58 @@ function Theme() {
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    const res = await db.update(
-      { body, table: this.table, id: { field: this.idField, value: idValue } },
+    const cachedId = cache.getKeyInObject(this.table, idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+
+    let res = await db.update(
+      { body, table: this.table, id: { field: this.idField, value: cachedId } },
       this.procId
     );
 
-    if (res.affectedRows > 0)
-      return db.select({ table: this.table, filters: [{ field: this.idField, value: idValue }] });
+    if (res.affectedRows > 0) {
+      res = await db.select({ table: this.table, filters: [{ field: this.idField, value: idValue }] });
+
+      res[0].theme_id = cache.setHashId(this.table, res[0].theme_id, 'dbData');
+    }
 
     return res;
   };
 
-  this.get = (name) => {
+  this.get = async (name) => {
     logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
 
-    return db.select({ table: this.table, filters: [{ field: 'name', value: name }] }, this.procId);
+    const theme = await db.select(
+      { table: this.table, filters: [{ field: 'name', value: name }] },
+      this.procId
+    );
+
+    if (theme.length > 0) theme[0].theme_id = cache.setHashId(this.table, theme[0].theme_id, 'dbData');
+
+    return theme;
   };
 
-  this.getAll = () => {
+  this.getAll = async () => {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
-    return db.select({ table: this.table }, this.procId);
+    let themes = await db.select({ table: this.table }, this.procId);
+
+    if (themes.length > 0)
+      themes = themes.map((theme) => {
+        theme.theme_id = cache.setHashId(this.table, theme.theme_id, 'dbData');
+
+        return theme;
+      });
+
+    return themes;
   };
 
   this.delete = (theme_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: theme_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(theme_id)) return { errors: { theme: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, theme_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
-    return db.remove({ id: { field: this.idField, value: theme_id }, table: this.table }, this.procId);
+    return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
   };
 
   this.getFunctions = () => {

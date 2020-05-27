@@ -4,6 +4,8 @@ const db = require('../db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 
+const cache = require('../libraries/cache');
+
 const tagger = require('../libraries/tagger');
 
 function Thread() {
@@ -86,9 +88,10 @@ function Thread() {
     Post.procId = this.procId;
 
     if (threads.length > 0)
-      return Promise.all(
+      threads = await Promise.all(
         threads.map(async (thread) => {
           thread.posts = await Post.getByThread(thread.thread_id);
+
           return thread;
         })
       );
@@ -122,6 +125,8 @@ function Thread() {
             { table: this.table, filters: [{ field: this.idField, value: post.thread_id }] },
             this.procId
           );
+
+          thread[0].board_id = cache.setHashId('Boards', thread[0].board_id, 'dbData');
 
           post.text = await tagger.apply(post.text, this.procId);
 

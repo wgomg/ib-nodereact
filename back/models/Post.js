@@ -59,14 +59,7 @@ function Post() {
     newPost = await db.insert({ body: newPost, table: this.table }, this.procId);
 
     if (newPost.insertId) {
-      const config = require('../config').cache;
-      let cachedUsers = cache.get('users') || {};
-
-      cache.set(
-        'users',
-        { ...cachedUsers, [newPost.insertId]: user },
-        config.userAddressTTL * 24 * 60 * 60
-      );
+      cache.setValueInObject('users', { key: newPost.insertId, value: user }, 'userAddress');
 
       let post = await db.select(
         {
@@ -80,6 +73,7 @@ function Post() {
         if (post[0].file_id) {
           const file = await File.getByID(post[0].file_id);
           post[0].file = file.length > 0 ? file[0] : null;
+          delete post[0].file_id;
         }
 
         const tagged = await tagger.apply(post[0].text, this.procId);
@@ -122,8 +116,7 @@ function Post() {
           delete post.file_id;
         }
 
-        const cachedUsers = cache.get('users') || {};
-        const cachedUser = cachedUsers[post.post_id];
+        const cachedUser = cache.getValueInObject('Users', post.post_id);
 
         if (ip.isV4(cachedUser)) post.user = ip.hashV4(cachedUser);
         else if (ip.isV6(cachedUser)) post.user = ip.hashV6(cachedUser);
@@ -141,6 +134,12 @@ function Post() {
     );
   };
 
+  this.delete = (post_id) => {
+    logger.debug({ name: `${this.name}.delete()`, data: post_id }, this.procId, 'method');
+
+    return db.remove({ id: { field: this.idField, value: post_id }, table: this.table }, this.procId);
+  };
+
   this.update = (body) => {
     logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
 
@@ -154,12 +153,6 @@ function Post() {
       { body, table: this.table, id: { field: this.idField, value: idValue } },
       this.procId
     );
-  };
-
-  this.delete = (post_id) => {
-    logger.debug({ name: `${this.name}.delete()`, data: post_id }, this.procId, 'method');
-
-    return db.remove({ id: { field: this.idField, value: post_id }, table: this.table }, this.procId);
   };
 
   this.get = async (post_id) => {
@@ -219,7 +212,7 @@ function Post() {
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getByThread', 'getBoardId', 'get'];
+    const excluded = ['getFunctions', 'getByThread', 'getBoardId', 'get', 'update'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

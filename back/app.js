@@ -9,6 +9,8 @@ const path = require('path');
 const config = require('./config').logger;
 const logger = require('./libraries/logger');
 
+const cache = require('./libraries/cache');
+
 const app = express();
 
 app.use(express.json({ extended: false }));
@@ -43,5 +45,7 @@ if (process.env.NODE_ENV === 'production') {
 
 if (config.logRoutes)
   logger.debug(app._router.stack.filter((s) => s.name === 'bound dispatch').map((s) => s.route));
+
+cache.init();
 
 module.exports = app;

@@ -4,6 +4,8 @@ const db = require('../db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 
+const cache = require('../libraries/cache');
+
 const Thread = require('./Thread');
 
 function Board() {
@@ -48,15 +50,26 @@ function Board() {
               new Date(t1.posts[t1.posts.length - 1].created_on)
             );
         });
+
+      board[0].board_id = cache.setHashId(this.table, board[0].board_id, 'dbData');
     }
 
     return board;
   };
 
-  this.getAll = () => {
+  this.getAll = async () => {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
-    return db.select({ table: this.table }, this.procId);
+    let boards = await db.select({ table: this.table }, this.procId);
+
+    if (boards.length > 0)
+      boards = boards.map((board) => {
+        board.board_id = cache.setHashId(this.table, board.board_id, 'dbData');
+
+        return board;
+      });
+
+    return boards;
   };
 
   this.update = (body) => {
@@ -68,8 +81,11 @@ function Board() {
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
+    const cachedId = cache.getKeyInObject(this.table, idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+
     return db.update(
-      { body, table: this.table, id: { field: this.idField, value: idValue } },
+      { body, table: this.table, id: { field: this.idField, value: cachedId } },
       this.procId
     );
   };
@@ -77,9 +93,10 @@ function Board() {
   this.delete = (board_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: board_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { errors: { board: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
-    return db.remove({ id: { field: this.idField, value: board_id }, table: this.table }, this.procId);
+    return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
   };
 
   this.getByID = (board_id) => {

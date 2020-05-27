@@ -7,6 +7,8 @@ const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 const jwt = require('../libraries/jwt');
 
+const cache = require('../libraries/cache');
+
 const Board = require('./Board');
 
 function Staff() {
@@ -68,8 +70,11 @@ function Staff() {
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
+    const cachedId = cache.getKeyInObject('Banners', idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+
     return db.update(
-      { body, table: this.table, id: { field: this.idField, value: idValue } },
+      { body, table: this.table, id: { field: this.idField, value: cachedId } },
       this.procId
     );
   };
@@ -84,10 +89,13 @@ function Staff() {
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
+    const cachedId = cache.getKeyInObject('Banners', idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+
     body.password = bcrypt.hashSync(body.password, 10);
 
     return db.update(
-      { body, table: this.table, id: { field: this.idField, value: idValue } },
+      { body, table: this.table, id: { field: this.idField, value: cachedId } },
       this.procId
     );
   };
@@ -96,16 +104,22 @@ function Staff() {
     if (staff) {
       logger.debug({ name: `${this.name}.getAuth()`, data: staff }, this.procId, 'method');
 
+      const cachedId = cache.getKeyInObject(this.table, staff.staff_id);
+      if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+
       let res = await this.get(staff.staff_id);
 
-      if (res.length > 0)
+      if (res.length > 0) {
         res = {
-          staff_id: res[0].staff_id,
+          staff_id: cachedId,
           name: res[0].name,
           admin: res[0].admin,
           board_id: res[0].board_id,
           disabled: res[0].disabled,
         };
+
+        res.board_id = cache.setHashId('Boards', res.board_id, 'dbData');
+      }
 
       return res;
     }
@@ -116,12 +130,13 @@ function Staff() {
   this.get = async (staff_id) => {
     logger.debug({ name: `${this.name}.get()`, data: staff_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(staff_id)) return { errors: { staff: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, staff_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
     const staff = await db.select(
       {
         table: this.table,
-        filters: [{ field: this.idField, value: staff_id }],
+        filters: [{ field: this.idField, value: cachedId }],
       },
       this.procId
     );
@@ -147,8 +162,7 @@ function Staff() {
             delete staff.board_id;
           }
 
-          staff.board = board.length > 0 ? board[0] : null;
-          delete staff.password;
+          staff.staff_id = cache.setHashId(this.table, staff.staff_id, 'dbData');
 
           return staff;
         })
@@ -179,24 +193,22 @@ function Staff() {
       last_login: now(tzoffset).slice(0, 19).replace('T', ' '),
     };
 
-    const updatedLogin = await this.update(staff);
+    await this.update(staff);
 
-    if (updatedLogin.affectedRows > 0) {
-      staff = await db.select(
-        { table: this.table, filters: [{ field: 'name', value: staff.name }] },
-        this.procId
-      );
+    staff = { ...staff, ...res[0] };
 
-      return [{ token: jwt.set(staff[0]) }];
-    }
+    staff.staff_id = cache.setHashId(this.table, staff.staff_id, 'dbData');
 
-    return [];
+    if (staff.board_id) staff.board_id = cache.getValueInObject('Boards', res[0].board_id);
+
+    return [{ token: jwt.set(staff) }];
   };
 
   this.delete = (staff_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: staff_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(staff_id)) return {   errors: { staff: 'Invalid ID' }  };
+    const cachedId = cache.getKeyInObject('Banners', staff_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
     return db.remove({ table: this.table, id: { field: this.idField, value: staff_id } });
   };

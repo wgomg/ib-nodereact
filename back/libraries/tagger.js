@@ -61,18 +61,14 @@ const applyTags = async (text, splitMarker, procId) => {
 };
 
 const getTags = async (procId) => {
-  let cachedTags = cache.get('tags');
-  const config = require('../config').cache;
+  let cachedTags = cache.getSingleValue('tagger');
 
   if (!cachedTags) {
     const Tag = require('../models/Tag');
     Tag.procId = procId;
     const tags = await Tag.getAll();
 
-    if (tags.length === 0) return text;
-
-    cache.set('tags', tags, config.dbDataTTL);
-    cachedTags = tags;
+    cachedTags = cache.setSingleValue('tagger', tags, 'dbData');
   }
 
   return cachedTags;

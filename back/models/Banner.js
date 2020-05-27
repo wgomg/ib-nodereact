@@ -4,6 +4,8 @@ const db = require('../db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 
+const cache = require('../libraries/cache');
+
 const File = require('./File');
 const Board = require('./Board');
 
@@ -78,7 +80,7 @@ function Banner() {
       this.procId
     );
 
-    if (banners.length > 0)
+    if (banners.length > 0) {
       return Promise.all(
         banners.map(async (banner) => {
           if (banner.file_id) {
@@ -95,9 +97,12 @@ function Banner() {
             delete banner.board_id;
           }
 
+          banner.banner_id = cache.setHashId(this.table, banner.banner_id, 'dbData');
+
           return banner;
         })
       );
+    }
 
     return banners;
   };
@@ -124,6 +129,8 @@ function Banner() {
             delete banner.board_id;
           }
 
+          banner.banner_id = cache.setHashId(this.table, banner.banner_id, 'dbData');
+
           return banner;
         })
       );
@@ -134,18 +141,20 @@ function Banner() {
   this.delete = (banner_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: banner_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(banner_id)) return { errors: { board: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, banner_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
-    return db.remove({ id: { field: this.idField, value: banner_id }, table: this.table }, this.procId);
+    return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
   };
 
   this.getBoardId = async (banner_id) => {
     logger.debug({ name: `${this.name}.getBoard()`, data: banner_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(banner_id)) return { errors: { board: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, banner_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
     const banner = await db.select(
-      { table: this.table, filters: [{ [this.idField]: banner_id }] },
+      { table: this.table, filters: [{ [this.idField]: cachedId }] },
       this.procId
     );
 

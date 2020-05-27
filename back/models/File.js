@@ -53,7 +53,10 @@ function File() {
       this.procId
     );
 
-    if (file.length > 0) file[0].thumb = await thumb.get(file[0].name, file[0].extension);
+    if (file.length > 0) {
+      file[0].thumb = await thumb.get(file[0].name, file[0].extension);
+      delete file[0].file_id;
+    }
 
     return file;
   };

@@ -1,10 +1,10 @@
 'use strict';
 
-const cache = require('../libraries/cache');
-
 const db = require('../db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
+
+const cache = require('../libraries/cache');
 
 function Tag() {
   this.name = this.constructor.name;
@@ -30,10 +30,6 @@ function Tag() {
     const tag = await db.insert({ body, table: this.table }, this.procId);
 
     if (tag.insertId) {
-      const tags = await this.getAll();
-      const config = require('../config').cache;
-      cache.set('tags', tags, config.dbDataTTL);
-
       return db.select(
         { table: this.table, filters: [{ field: this.idField, value: tag.insertId }] },
         this.procId
@@ -43,18 +39,28 @@ function Tag() {
     return tag;
   };
 
-  this.getAll = () => {
+  this.getAll = async () => {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
-    return db.select({ table: this.table }, this.procId);
+    let tags = await db.select({ table: this.table }, this.procId);
+
+    if (tags.length > 0)
+      tags = tags.map((tag) => {
+        tag.tag_id = cache.setHashId(this.table, tag.tag_id, 'dbData');
+
+        return tag;
+      });
+
+    return tags;
   };
 
   this.delete = (tag_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: tag_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(tag_id)) return { errors: { tag: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, tag_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
-    return db.remove({ id: { field: this.idField, value: tag_id }, table: this.table }, this.procId);
+    return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
   };
 
   this.getFunctions = () => {

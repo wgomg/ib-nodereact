@@ -43,5 +43,5 @@ export const login = (staffData) => async (dispatch) => {
 };
 
 export const logout = () => (dispatch) => {
-  dispatch({ type: LOGOUT });
+  dispatch({ type: LOGOUT, payload: { data: null } });
 };
