@@ -1,1 +1,3 @@
 dump-db.sh
+
+.sync-exclude.lst

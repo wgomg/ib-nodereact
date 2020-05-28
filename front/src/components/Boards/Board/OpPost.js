@@ -13,7 +13,16 @@ import QuotePost from './QuotePost';
 
 const striptags = require('striptags');
 
-const OpPost = ({ thread, post, isThread, hiddenPosts, auth: { logged } }) => {
+const OpPost = ({
+  thread,
+  post,
+  isThread,
+  hiddenPosts,
+  auth: { logged },
+  hideButton,
+  onClick,
+  isHidden,
+}) => {
   const [hide, setHide] = useState(true);
 
   const textArray = post.text;
@@ -69,12 +78,31 @@ const OpPost = ({ thread, post, isThread, hiddenPosts, auth: { logged } }) => {
     return elem;
   });
 
-  return (
-    <div className='op' id={'p' + post.post_id}>
-      <hr className='separator' />
+  const postInfo = (
+    <div className='post-info'>
+      <span className='thread-title'>{thread.subject}</span> <strong>{post.name || 'Anon'}</strong>{' '}
+      {prettyDate(post.created_on).toLocaleString()}{' '}
+      <span className='small'>({timeSince(post.created_on)}) </span>
+      {!isHidden && (
+        <Fragment>
+          <a href={`t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
+          <a href={`t${thread.thread_id}#qp${post.post_id}`}>{thread.thread_id}</a>{' '}
+        </Fragment>
+      )}
+      {!isThread && !isHidden && <a href={`t${thread.thread_id}`}>[reply]</a>}
+      {logged && (
+        <span className='small muted'>
+          {'  '}
+          <i>{post.user}</i>
+        </span>
+      )}
+    </div>
+  );
 
-      <ButtonLink text='[-]' altText='[+]' extraClass='hide-thread' />
+  const hiddenContent = <span className='small muted'>{postInfo}</span>;
 
+  const opPost = (
+    <Fragment>
       <div className='post-file'>
         <p className='file-info'>
           <span className='small'>
@@ -106,24 +134,23 @@ const OpPost = ({ thread, post, isThread, hiddenPosts, auth: { logged } }) => {
       </div>
 
       <div className='post-body op'>
-        <div className='post-info'>
-          <span className='thread-title'>{thread.subject}</span> <strong>{post.name || 'Anon'}</strong>{' '}
-          {prettyDate(post.created_on).toLocaleString()}{' '}
-          <span className='small'>({timeSince(post.created_on)}) </span>
-          <a href={`t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
-          <a href={`t${thread.thread_id}#qp${post.post_id}`}>{thread.thread_id}</a>{' '}
-          {!isThread && <a href={`t${thread.thread_id}`}>[reply]</a>}
-          {logged && (
-            <span className='small muted'>
-              {'  '}
-              <i>{post.user}</i>
-            </span>
-          )}
-        </div>
+        {postInfo}
         <div className='op-post-text'>{text}</div>
       </div>
 
       {hiddenPosts && <span className='small'>{hiddenPosts} respuestas ocultas</span>}
+    </Fragment>
+  );
+
+  return (
+    <div className='op' id={'p' + post.post_id}>
+      <hr className='separator' />
+
+      {hideButton && (
+        <ButtonLink text={`[${isHidden ? '+' : '-'}]`} extraClass='hide' onClick={onClick} />
+      )}
+
+      {!isHidden ? opPost : hiddenContent}
     </div>
   );
 };
@@ -134,6 +161,8 @@ OpPost.propTypes = {
   isThread: PropTypes.bool,
   hiddenPosts: PropTypes.number,
   auth: PropTypes.object.isRequired,
+  onClick: PropTypes.func,
+  isHidden: PropTypes.bool,
 };
 
 const mapStateToProps = (state) => ({

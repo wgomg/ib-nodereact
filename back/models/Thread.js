@@ -141,11 +141,10 @@ function Thread() {
   this.getBoardId = async (thread_id) => {
     logger.debug({ name: `${this.name}.getBoardId()`, data: thread_id }, this.procId, 'method');
 
-    const cachedId = cache.getKeyInObject(this.table, thread_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { thread: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { thread: 'Invalid ID' } };
 
     const thread = await db.select(
-      { table: this.table, filters: [{ field: this.idField, value: cachedId }] },
+      { table: this.table, filters: [{ field: this.idField, value: thread_id }] },
       this.procId
     );
 

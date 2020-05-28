@@ -8,3 +8,5 @@ config/cache.json
 config/server.json
 
 logs
+
+.sync-exclude.lst

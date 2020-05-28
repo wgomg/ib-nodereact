@@ -13,7 +13,7 @@ import QuotePost from './QuotePost';
 
 const striptags = require('striptags');
 
-const Post = ({ thread, board, post, onClick, auth: { logged } }) => {
+const Post = ({ thread, board, post, onClick, auth: { logged }, onHiddenClick, isHidden }) => {
   const [hide, setHide] = useState(true);
 
   const textArray = post.text;
@@ -27,6 +27,34 @@ const Post = ({ thread, board, post, onClick, auth: { logged } }) => {
 
     return { left, top: newTop || top };
   };
+
+  const postInfo = (
+    <div className='post-info'>
+      <strong>{post.name || 'Anon'}</strong> {prettyDate(post.created_on).toLocaleString()}{' '}
+      <span className='small'>({timeSince(post.created_on)}) </span>{' '}
+      <a href={`/${board.uri}/t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
+      <a
+        href={`/${board.uri}/t${thread.thread_id}#qp${post.post_id}`}
+        onClick={() => onClick('qp', post.post_id)}
+      >
+        {post.post_id}
+      </a>{' '}
+      <a
+        href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
+        onClick={() => onClick('rp', post.post_id)}
+      >
+        [!!!]
+      </a>
+      {logged && (
+        <span className='small muted'>
+          {'  '}
+          <i>{post.user}</i>
+        </span>
+      )}
+    </div>
+  );
+
+  const hiddenContent = <span className='small muted'>{postInfo}</span>;
 
   const text = textArray.map((elem, index) => {
     if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem)) {
@@ -69,67 +97,50 @@ const Post = ({ thread, board, post, onClick, auth: { logged } }) => {
     return elem;
   });
 
+  const postContent = (
+    <Fragment>
+      {postInfo}
+      <p className='file-info-post'>
+        <span className='small'>
+          {' '}
+          {post.file && (
+            <Fragment>
+              File: {post.file.name + '.' + post.file.extension} ({prettyBytes(post.file.size)})
+            </Fragment>
+          )}
+        </span>
+      </p>
+
+      <div className='post-file'>
+        {post.file && (
+          <Fragment>
+            <Image
+              className='post-image'
+              src={'/' + post.file.thumb + '/' + post.file.name + '.' + post.file.extension}
+              hide={!hide}
+              setHide={() => setHide(!hide)}
+            />
+
+            <Image
+              className='post-image'
+              src={'/' + post.file.folder + '/' + post.file.name + '.' + post.file.extension}
+              hide={hide}
+              setHide={() => setHide(!hide)}
+            />
+          </Fragment>
+        )}
+      </div>
+
+      <div className='post-text'>{text}</div>
+    </Fragment>
+  );
+
   const postComponent = (
     <div className='container post-container' key={post.post_id}>
       <div className='post card card-post'>
-        <ButtonLink text='[-]' altText='[+]' extraClass='hide-thread' />
+        <ButtonLink text={`[${isHidden ? '+' : '-'}]`} extraClass='hide' onClick={onHiddenClick} />
 
-        <div className='post-info'>
-          <strong>{post.name || 'Anon'}</strong> {prettyDate(post.created_on).toLocaleString()}{' '}
-          <span className='small'>({timeSince(post.created_on)}) </span>{' '}
-          <a href={`/${board.uri}/t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
-          <a
-            href={`/${board.uri}/t${thread.thread_id}#qp${post.post_id}`}
-            onClick={() => onClick('qp', post.post_id)}
-          >
-            {post.post_id}
-          </a>{' '}
-          <a
-            href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
-            onClick={() => onClick('rp', post.post_id)}
-          >
-            [!!!]
-          </a>
-          {logged && (
-            <span className='small muted'>
-              {'  '}
-              <i>{post.user}</i>
-            </span>
-          )}
-        </div>
-
-        <p className='file-info-post'>
-          <span className='small'>
-            {' '}
-            {post.file && (
-              <Fragment>
-                File: {post.file.name + '.' + post.file.extension} ({prettyBytes(post.file.size)})
-              </Fragment>
-            )}
-          </span>
-        </p>
-
-        <div className='post-file'>
-          {post.file && (
-            <Fragment>
-              <Image
-                className='post-image'
-                src={'/' + post.file.thumb + '/' + post.file.name + '.' + post.file.extension}
-                hide={!hide}
-                setHide={() => setHide(!hide)}
-              />
-
-              <Image
-                className='post-image'
-                src={'/' + post.file.folder + '/' + post.file.name + '.' + post.file.extension}
-                hide={hide}
-                setHide={() => setHide(!hide)}
-              />
-            </Fragment>
-          )}
-        </div>
-
-        <div className='post-text'>{text}</div>
+        {!isHidden ? postContent : hiddenContent}
       </div>
     </div>
   );
@@ -143,6 +154,8 @@ Post.propTypes = {
   post: PropTypes.object.isRequired,
   onClick: PropTypes.func,
   auth: PropTypes.object.isRequired,
+  onHiddenClick: PropTypes.func,
+  isHidden: PropTypes.bool,
 };
 
 const mapStateToProps = (state) => ({

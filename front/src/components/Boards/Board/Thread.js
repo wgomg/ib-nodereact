@@ -16,6 +16,8 @@ import { createReport } from '../../../actions/reports';
 import ReactTooltip from 'react-tooltip';
 
 const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
+  const [hidden, setHidden] = useState(localStorage.getItem('hidden').split(',') || [0]);
+
   const hash = window.location.hash;
 
   const [newPostData, setNewPostData] = useState({
@@ -180,6 +182,15 @@ const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
     }
   };
 
+  const onHiddenClick = (id) => {
+    if (hidden.includes(id)) setHidden(hidden.filter((hide) => hide !== id));
+    else setHidden([...hidden, id]);
+  };
+
+  useEffect(() => {
+    localStorage.setItem('hidden', hidden);
+  }, [hidden]);
+
   let posts = [...thread.posts];
 
   const currRef = useRef(null);
@@ -197,7 +208,14 @@ const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
 
     return (
       <div {...props}>
-        <Post thread={thread} board={board} post={post} onClick={onToolTipClick} />
+        <Post
+          thread={thread}
+          board={board}
+          post={post}
+          onClick={onToolTipClick}
+          onHiddenClick={() => onHiddenClick('p' + post.post_id)}
+          isHidden={hidden.includes('p' + post.post_id)}
+        />
       </div>
     );
   });
