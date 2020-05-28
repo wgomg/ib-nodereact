@@ -48,7 +48,7 @@ function Rule() {
     if (errors) return { errors };
 
     const cachedId = cache.getKeyInObject(this.table, idValue);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { rule: 'Invalid ID' } };
 
     return db.update(
       { body, table: this.table, id: { field: this.idField, value: cachedId } },
@@ -97,7 +97,7 @@ function Rule() {
     logger.debug({ name: `${this.name}.delete()`, data: rule_id }, this.procId, 'method');
 
     const cachedId = cache.getKeyInObject(this.table, rule_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { rule: 'Invalid ID' } };
 
     return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
   };

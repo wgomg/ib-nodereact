@@ -94,7 +94,7 @@ function Post() {
   this.getByThread = async (thread_id) => {
     logger.debug({ name: `${this.name}.getByThread()`, data: thread_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { post: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { thread: 'Invalid ID' } };
 
     let posts = await db.select(
       {
@@ -136,6 +136,8 @@ function Post() {
 
   this.delete = (post_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: post_id }, this.procId, 'method');
+
+    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { post: 'Invalid ID' } };
 
     return db.remove({ id: { field: this.idField, value: post_id }, table: this.table }, this.procId);
   };

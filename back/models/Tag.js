@@ -58,7 +58,7 @@ function Tag() {
     logger.debug({ name: `${this.name}.delete()`, data: tag_id }, this.procId, 'method');
 
     const cachedId = cache.getKeyInObject(this.table, tag_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { tag: 'Invalid ID' } };
 
     return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
   };

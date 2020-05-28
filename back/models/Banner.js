@@ -74,7 +74,7 @@ function Banner() {
     logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
 
     const cachedId = cache.getKeyInObject('Boards', board_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { banner: 'Invalid ID' } };
 
     let banners = await db.select(
       { table: this.table, filters: [{ field: 'board_id', value: cachedId }] },
@@ -143,7 +143,7 @@ function Banner() {
     logger.debug({ name: `${this.name}.delete()`, data: banner_id }, this.procId, 'method');
 
     const cachedId = cache.getKeyInObject(this.table, banner_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { banner: 'Invalid ID' } };
 
     return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
   };
@@ -152,7 +152,7 @@ function Banner() {
     logger.debug({ name: `${this.name}.getBoard()`, data: banner_id }, this.procId, 'method');
 
     const cachedId = cache.getKeyInObject(this.table, banner_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { banner: 'Invalid ID' } };
 
     const banner = await db.select(
       { table: this.table, filters: [{ [this.idField]: cachedId }] },

@@ -42,7 +42,8 @@ function Theme() {
     if (errors) return { errors };
 
     const cachedId = cache.getKeyInObject(this.table, idValue);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { theme: 'Invalid ID' } };
 
     let res = await db.update(
       { body, table: this.table, id: { field: this.idField, value: cachedId } },
@@ -50,7 +51,7 @@ function Theme() {
     );
 
     if (res.affectedRows > 0) {
-      res = await db.select({ table: this.table, filters: [{ field: this.idField, value: idValue }] });
+      res = await db.select({ table: this.table, filters: [{ field: this.idField, value: cachedId }] });
 
       res[0].theme_id = cache.setHashId(this.table, res[0].theme_id, 'dbData');
     }
@@ -90,7 +91,7 @@ function Theme() {
     logger.debug({ name: `${this.name}.delete()`, data: theme_id }, this.procId, 'method');
 
     const cachedId = cache.getKeyInObject(this.table, theme_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { theme: 'Invalid ID' } };
 
     return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
   };

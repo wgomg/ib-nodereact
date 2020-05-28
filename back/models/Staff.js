@@ -70,8 +70,8 @@ function Staff() {
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    const cachedId = cache.getKeyInObject('Banners', idValue);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
 
     return db.update(
       { body, table: this.table, id: { field: this.idField, value: cachedId } },
@@ -89,8 +89,8 @@ function Staff() {
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    const cachedId = cache.getKeyInObject('Banners', idValue);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
 
     body.password = bcrypt.hashSync(body.password, 10);
 
@@ -105,7 +105,7 @@ function Staff() {
       logger.debug({ name: `${this.name}.getAuth()`, data: staff }, this.procId, 'method');
 
       const cachedId = cache.getKeyInObject(this.table, staff.staff_id);
-      if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+      if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
 
       let res = await this.get(staff.staff_id);
 
@@ -131,7 +131,7 @@ function Staff() {
     logger.debug({ name: `${this.name}.get()`, data: staff_id }, this.procId, 'method');
 
     const cachedId = cache.getKeyInObject(this.table, staff_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
 
     const staff = await db.select(
       {
@@ -208,7 +208,7 @@ function Staff() {
     logger.debug({ name: `${this.name}.delete()`, data: staff_id }, this.procId, 'method');
 
     const cachedId = cache.getKeyInObject(this.table, staff_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
 
     return db.remove({ table: this.table, id: { field: this.idField, value: cachedId } });
   };

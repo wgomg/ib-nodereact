@@ -73,7 +73,7 @@ function Thread() {
   this.getByBoard = async (board_id) => {
     logger.debug({ name: `${this.name}.getByBoard()`, data: board_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { errors: { thread: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(board_id)) return { errors: { board: 'Invalid ID' } };
 
     let threads = await db.select(
       {
@@ -100,11 +100,12 @@ function Thread() {
   };
 
   this.delete = (thread_id) => {
-    logger.debug({ name: `${this.name}.delete()`, data: thread_id });
+    logger.debug({ name: `${this.name}.delete()`, data: thread_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { thread: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, thread_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { thread: 'Invalid ID' } };
 
-    return db.remove({ table: this.table, id: { field: this.idField, value: thread_id } }, this.procId);
+    return db.remove({ table: this.table, id: { field: this.idField, value: cachedId } }, this.procId);
   };
 
   this.getLatests = async () => {
@@ -140,10 +141,11 @@ function Thread() {
   this.getBoardId = async (thread_id) => {
     logger.debug({ name: `${this.name}.getBoardId()`, data: thread_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { thread: 'Invalid ID' } };
+    const cachedId = cache.getKeyInObject(this.table, thread_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { thread: 'Invalid ID' } };
 
     const thread = await db.select(
-      { table: this.table, filters: [{ field: this.idField, value: thread_id }] },
+      { table: this.table, filters: [{ field: this.idField, value: cachedId }] },
       this.procId
     );
 

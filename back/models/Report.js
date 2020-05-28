@@ -34,7 +34,7 @@ function Report() {
     logger.debug({ name: `{this.name}.setAsSolved()`, data: report_id }, this.procId, 'method');
 
     const cachedId = cache.getKeyInObject(this.table, report_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { report: 'Invalid ID' } };
 
     return db.update(
       {
