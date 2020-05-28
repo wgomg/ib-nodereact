@@ -10,6 +10,7 @@ import BoardTitle from './BoardTitle';
 import NewThreadForm from './NewThreadForm';
 import ThreadsList from './ThreadsList';
 import Thread from './Thread';
+import NotFound from '../../NotFound';
 
 import { getBoard } from '../../../actions/boards';
 import { getGlobalAndBoard } from '../../../actions/rules';
@@ -33,22 +34,6 @@ const Board = ({
     if (!window.location.hash) window.scrollTo(0, 0);
   });
 
-  const newThreadRoute = (
-    <Route
-      exact
-      path={'/' + uri}
-      render={(props) => <NewThreadForm {...props} board={board} error={error} />}
-    />
-  );
-
-  const threadsListRoute = (
-    <Route
-      exact
-      path={'/' + uri}
-      render={(props) => <ThreadsList {...props} threads={board.threads} board={board} />}
-    />
-  );
-
   const threadViewRoutes = (
     <Fragment>
       {board.threads && (
@@ -63,6 +48,7 @@ const Board = ({
               key={thread.thread_id}
             />
           ))}
+          <Route path='/*' component={NotFound} />
         </Fragment>
       )}
     </Fragment>
@@ -76,10 +62,14 @@ const Board = ({
         <Banner board={board} />
         <BoardTitle board={board} />
 
-        <Switch>{newThreadRoute}</Switch>
+        <NewThreadForm board={board} error={error} />
 
         <Switch>
-          {threadsListRoute}
+          <Route
+            exact
+            path={'/' + uri}
+            render={(props) => <ThreadsList {...props} threads={board.threads} board={board} />}
+          />
           {threadViewRoutes}
         </Switch>
       </Fragment>

@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import Board from './Board';
 import BoardsNavbar from './BoardsNavbar';
 import { Loading, Footer } from '../common';
+import NotFound from '../NotFound';
 
 import { getBoardsList } from '../../actions/boards';
 
@@ -28,6 +29,7 @@ const Boards = ({ getBoardsList, boards: { boards, loading }, auth: { staff, log
             />
           );
         })}
+      <Route path='/*' component={NotFound} />
     </Switch>
   );
 
