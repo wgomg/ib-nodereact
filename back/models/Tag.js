@@ -27,13 +27,17 @@ function Tag() {
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    const tag = await db.insert({ body, table: this.table }, this.procId);
+    let tag = await db.insert({ body, table: this.table }, this.procId);
 
     if (tag.insertId) {
-      return db.select(
-        { table: this.table, filters: [{ field: this.idField, value: tag.insertId }] },
-        this.procId
-      );
+      tag = await db.select({
+        table: this.table,
+        filters: [{ field: this.idField, value: tag.insertId }],
+      });
+
+      if (tag.length > 0) cache.addTableData(this.table, tag[0]);
+
+      tag = cache.getTableData(this.table, { field: this.idField, value: tag[0].tag_id });
     }
 
     return tag;
@@ -42,25 +46,26 @@ function Tag() {
   this.getAll = async () => {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
-    let tags = await db.select({ table: this.table }, this.procId);
+    const cachedTags = cache.getTable(this.table);
+    if (cachedTags.length > 0) return cachedTags;
 
-    if (tags.length > 0)
-      tags = tags.map((tag) => {
-        tag.tag_id = cache.setHashId(this.table, tag.tag_id, 'dbData');
+    let tags = await db.select({ table: this.table });
+    cache.setTable(this.table, tags);
 
-        return tag;
-      });
-
-    return tags;
+    return cache.getTable(this.table);
   };
 
-  this.delete = (tag_id) => {
+  this.delete = async (tag_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: tag_id }, this.procId, 'method');
 
-    const cachedId = cache.getKeyInObject(this.table, tag_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { tag: 'Invalid ID' } };
+    const cachedId = cache.getIdFromHash(this.table, tag_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { rule: 'Invalid ID' } };
 
-    return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
+    const res = await db.remove({ id: { field: this.idField, value: cachedId }, table: this.table });
+
+    if (res.affectedRows > 0) cache.removeFromTable(this.table, tag_id);
+
+    return res;
   };
 
   this.getFunctions = () => {

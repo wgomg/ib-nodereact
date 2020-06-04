@@ -3,18 +3,17 @@
 const bcrypt = require('bcrypt');
 
 const db = require('../db');
+
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 const jwt = require('../libraries/jwt');
 
 const cache = require('../libraries/cache');
 
-const Board = require('./Board');
-
 function Staff() {
   this.name = this.constructor.name;
   this.table = this.name + 's';
-  this.idField = this.table.toLowerCase().slice(0, -1) + '_id';
+  this.idField = this.name.toLowerCase() + '_id';
 
   this.procId = null;
 
@@ -30,194 +29,164 @@ function Staff() {
   this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
+    body = {
+      ...body,
+      password: bcrypt.hashSync(body.name, 10),
+      board_id: cache.getIdFromHash('Boards', body.board_id),
+    };
+
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    body.password = bcrypt.hashSync(body.name, 10);
-
-    let staff = await db.insert({ body, table: this.table }, this.procId);
+    let staff = await db.insert({ body, table: this.table });
 
     if (staff.insertId) {
-      staff = await db.select(
-        { table: this.table, filters: [{ field: this.idField, value: staff.insertId }] },
-        this.procId
-      );
+      staff = await db.select({
+        table: this.table,
+        filters: [{ field: this.idField, value: staff.insertId }],
+      });
 
-      let board = [];
-      if (staff.board_id) {
-        Board.procId = this.procId;
-        board = await Board.getByID(staff.board_id);
+      if (staff.length > 0) {
+        staff[0].board_id = staff[0].board_id ? cache.getHash('Boards', staff[0].board_id) : null;
 
-        delete staff.board_id;
+        cache.addTableData(this.table, staff[0]);
+
+        staff = cache.getTableData(this.table, { field: 'staff_id', value: staff[0].staff_id });
+        delete staff[0].password;
       }
-
-      staff.board = board.length > 0 ? board[0] : null;
-      delete staff.password;
     }
 
     return staff;
   };
 
-  // TODO: chequear solo un staff pueda actualizar su propios datos, y admins
-  this.update = (body) => {
-    logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
+  this.sLogin = async (body) => {
+    logger.debug({ name: `${this.name}.sLogin()`, data: body }, this.procId, 'method');
 
-    if (body.password) delete body.password;
+    let staff = cache.getTableData(this.table, { field: 'name', value: body.name });
 
-    const idValue = body[this.idField];
-    delete body[this.idField];
+    if (staff.length === 0)
+      staff = await db.select({ table: this.table, filters: [{ field: 'name', value: body.name }] });
 
-    const errors = validate(body, this.schema);
-    if (errors) return { errors };
+    if (res.length === 0) return { errors: { user: 'Not Found' } };
 
-    const cachedId = cache.getKeyInObject(this.table, idValue);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
+    const passwordMatch = bcrypt.compareSync(body.password, staff[0].password);
+    if (!passwordMatch) return { errors: { password: 'Invalid password' } };
 
-    return db.update(
-      { body, table: this.table, id: { field: this.idField, value: cachedId } },
-      this.procId
-    );
-  };
+    const tzoffset = new Date().getTimezoneOffset() * 60000;
+    const now = (tzoffset) => new Date(Date.now() - tzoffset).toISOString();
 
-  // TODO: chequear solo un staff pueda actualizar su propios datos, y admins
-  this.updatePassword = (body) => {
-    logger.debug({ name: `${this.name}.updatePassword()`, data: body }, this.procId, 'method');
+    const updateStaff = {
+      staff_id: staff[0].staff_id,
+      name: staff[0].name,
+      last_login: now(tzoffset).slice(0, 19).replace('T', ' '),
+    };
 
-    const idValue = body[this.idField];
-    delete body[this.idField];
+    await db.update({
+      body: updateStaff,
+      table: this.table,
+      id: { field: this.idField, value: updateStaff.staff_id },
+    });
 
-    const errors = validate(body, this.schema);
-    if (errors) return { errors };
+    staff = await db.select({ table: this.table, filters: [{ field: 'name', value: body.name }] });
 
-    const cachedId = cache.getKeyInObject(this.table, idValue);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
+    if (staff[0].board_id) staff[0].board_id = cache.getHash('Boards', staff[0].board_id);
 
-    body.password = bcrypt.hashSync(body.password, 10);
+    if (!/^[0-9]+$/i.test(staff[0].staff_id)) cache.removeFromTable(this.table, staff[0].staff_id);
 
-    return db.update(
-      { body, table: this.table, id: { field: this.idField, value: cachedId } },
-      this.procId
-    );
+    cache.addTableData(this.table, staff[0]);
+
+    return [{ token: jwt.set(staff[0]) }];
   };
 
   this.getAuth = async (staff) => {
     if (staff) {
       logger.debug({ name: `${this.name}.getAuth()`, data: staff }, this.procId, 'method');
 
-      const cachedId = cache.getKeyInObject(this.table, staff.staff_id);
+      const cachedId = cache.getIdFromHash(this.table, staff.staff_id);
       if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
 
-      let res = await this.get(staff.staff_id);
+      staff = cache.getTableData(this.table, { field: this.idField, value: cachedId });
 
-      if (res.length > 0) {
-        res = {
-          staff_id: staff.staff_id,
-          name: res[0].name,
-          admin: res[0].admin,
-          board_id: res[0].board_id,
-          disabled: res[0].disabled,
+      if (staff.length === 0)
+        staff = await db.select({
+          table: this.table,
+          filters: [{ field: this.idField, value: cachedId }],
+        });
+
+      if (staff.length > 0) {
+        if (/^[0-9]+$/i.test(staff[0].staff_id)) {
+          staff[0].board_id = staff[0].board_id ? cache.getHash('Boards', staff[0].board_id) : null;
+          cache.addTableData(this.table, staff[0]);
+        }
+
+        staff = cache.getTableData(this.table, { field: this.idField, value: cachedId });
+
+        staff = {
+          staff_id: staff[0].staff_id,
+          name: staff[0].name,
+          admin: staff[0].admin,
+          board_id: staff[0].board_id,
+          disabled: staff[0].disabled,
         };
-
-        res.board_id = cache.setHashId('Boards', res.board_id, 'dbData');
       }
 
-      return res;
+      return staff;
     }
 
     return { errors: { auth: 'Authorization denied' } };
   };
 
-  this.get = async (staff_id) => {
-    logger.debug({ name: `${this.name}.get()`, data: staff_id }, this.procId, 'method');
-
-    const cachedId = cache.getKeyInObject(this.table, staff_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
-
-    const staff = await db.select(
-      {
-        table: this.table,
-        filters: [{ field: this.idField, value: cachedId }],
-      },
-      this.procId
-    );
-
-    if (staff.length > 0) delete staff[0].password;
-
-    return staff;
-  };
-
   this.getAll = async () => {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
-    let staffs = await db.select({ table: this.table }, this.procId);
+    let cachedStaffs = cache.getTable(this.table);
+    if (cachedStaffs.length > 0) {
+      cachedStaffs = cachedStaffs.map((staff) => {
+        delete staff.password;
+        return staff;
+      });
 
-    if (staffs.length > 0)
-      return Promise.all(
-        staffs.map(async (staff) => {
-          let board = [];
-          if (staff.board_id) {
-            Board.procId = this.procId;
-            board = await Board.getByID(staff.board_id);
+      return cachedStaffs;
+    }
 
-            delete staff.board_id;
-          }
+    let staffs = await db.select({ table: this.table });
+    if (staffs.length > 0) {
+      staffs = staffs.map((staff) => {
+        staff.board_id = staff.board_id ? cache.getHash('Boards', staff.board_id) : null;
 
-          staff.staff_id = cache.setHashId(this.table, staff.staff_id, 'dbData');
+        return staff;
+      });
+    }
+    cache.setTable(this.table, staffs);
 
-          return staff;
-        })
-      );
+    staffs = cache.getTable(this.table);
+    staffs = staffs.map((staff) => {
+      delete staff.password;
+      return staff;
+    });
 
     return staffs;
   };
 
-  this.sLogin = async (body) => {
-    logger.debug({ name: `${this.name}.sLogin()`, data: body }, this.procId, 'method');
-
-    const res = await db.select(
-      { table: this.table, filters: [{ field: 'name', value: body.name }] },
-      this.procId
-    );
-
-    if (res.length === 0) return { errors: { user: 'Not Found' } };
-
-    const passwordMatch = bcrypt.compareSync(body.password, res[0].password);
-    if (!passwordMatch) return { errors: { password: 'Invalid password' } };
-
-    const tzoffset = new Date().getTimezoneOffset() * 60000;
-    const now = (tzoffset) => new Date(Date.now() - tzoffset).toISOString();
-
-    let staff = {
-      staff_id: res[0].staff_id,
-      name: res[0].name,
-      last_login: now(tzoffset).slice(0, 19).replace('T', ' '),
-    };
-
-    await this.update(staff);
-
-    staff = { ...staff, ...res[0] };
-
-    staff.staff_id = cache.setHashId(this.table, staff.staff_id, 'dbData');
-
-    if (staff.board_id) staff.board_id = cache.getValueInObject('Boards', res[0].board_id);
-
-    return [{ token: jwt.set(staff) }];
-  };
-
-  this.delete = (staff_id) => {
+  this.delete = async (staff_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: staff_id }, this.procId, 'method');
 
-    const cachedId = cache.getKeyInObject(this.table, staff_id);
+    const cachedId = cache.getIdFromHash(this.table, staff_id);
     if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
 
-    return db.remove({ table: this.table, id: { field: this.idField, value: cachedId } });
+    const res = await db.remove({ id: { field: this.idField, value: cachedId }, table: this.table });
+
+    if (res.affectedRows > 0) cache.removeFromTable(this.table, staff_id);
+
+    return res;
   };
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
+    const excluded = ['getFunctions'];
 
     const functions = Object.entries(this)
-      .filter(([key, val]) => typeof val === 'function' && key !== 'getFunctions')
+      .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))
       .map(([fnName, fnDef]) => {
         const fnStr = fnDef.toString();
         const fnArgs = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(FN_ARGS);

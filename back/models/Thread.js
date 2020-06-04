@@ -11,7 +11,7 @@ const tagger = require('../libraries/tagger');
 function Thread() {
   this.name = this.constructor.name;
   this.table = this.name + 's';
-  this.idField = this.table.toLowerCase().slice(0, -1) + '_id';
+  this.idField = this.name.toLowerCase() + '_id';
 
   this.procId = null;
 
@@ -24,88 +24,49 @@ function Thread() {
   this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
-    const newThread = { board_id: body.board_id, subject: body.subject };
+    const newThread = { board_id: cache.getIdFromHash('Boards', body.board_id), subject: body.subject };
 
     const errors = validate(newThread, this.schema);
     if (errors) return { errors };
 
-    const res = await db.insert({ body: newThread, table: this.table }, this.procId);
+    let thread = await db.insert({ body: newThread, table: this.table });
 
-    const threadOP = {
-      text: body.text,
-      name: body.name,
-      files: body.files,
-      user: body.user,
-      [this.idField]: res.insertId,
-    };
+    if (thread.insertId) {
+      const threadOP = {
+        text: body.text,
+        name: body.name,
+        files: body.files,
+        user: body.user,
+        [this.idField]: thread.insertId,
+      };
 
-    const Post = require('./Post');
-    Post.procId = this.procId;
-    Post.schema.file_id.required = true;
+      const Post = require('./Post');
+      Post.procId = this.procId;
+      Post.schema.file_id.required = true;
 
-    const post = await Post.save(threadOP);
+      const post = await Post.save(threadOP);
 
-    if (post.errors) {
-      db.remove({ table: this.table, id: { field: this.idField, value: res.insertId } }, this.procId);
+      if (post.errors) {
+        await db.remove({ table: this.table, id: { field: this.idField, value: thread.insertId } });
 
-      delete post.errors[this.idField];
-      return { errors: post.errors };
+        delete post.errors[this.idField];
+        return { errors: post.errors };
+      }
+
+      thread = await db.select({
+        table: this.table,
+        filters: [{ field: this.idField, value: thread.insertId }],
+      });
+
+      if (thread.length > 0) {
+        thread[0] = { ...thread[0], board_id: cache.getHash('Boards', thread[0].board_id) };
+        cache.addTableData(this.table, thread[0], false);
+
+        thread = cache.getTableData(this.table, { field: this.idField, value: thread[0].thread_id });
+      }
     }
 
-    const thread = await db.select(
-      {
-        table: this.table,
-        filters: [{ field: this.idField, value: res.insertId }],
-      },
-      this.procId
-    );
-
-    if (thread.length === 0) return thread;
-    else
-      return [
-        {
-          ...thread[0],
-          posts: await Post.getByThread(thread[0].thread_id),
-        },
-      ];
-  };
-
-  this.getByBoard = async (board_id) => {
-    logger.debug({ name: `${this.name}.getByBoard()`, data: board_id }, this.procId, 'method');
-
-    if (!/^[0-9]+$/i.test(board_id)) return { errors: { board: 'Invalid ID' } };
-
-    let threads = await db.select(
-      {
-        table: this.table,
-        filters: [{ field: 'board_id', value: board_id }],
-        orderBy: { field: 'created_on', direction: 'DESC' },
-      },
-      this.procId
-    );
-
-    const Post = require('./Post');
-    Post.procId = this.procId;
-
-    if (threads.length > 0)
-      threads = await Promise.all(
-        threads.map(async (thread) => {
-          thread.posts = await Post.getByThread(thread.thread_id);
-
-          return thread;
-        })
-      );
-
-    return threads;
-  };
-
-  this.delete = (thread_id) => {
-    logger.debug({ name: `${this.name}.delete()`, data: thread_id }, this.procId, 'method');
-
-    const cachedId = cache.getKeyInObject(this.table, thread_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { thread: 'Invalid ID' } };
-
-    return db.remove({ table: this.table, id: { field: this.idField, value: cachedId } }, this.procId);
+    return thread;
   };
 
   this.getLatests = async () => {
@@ -127,7 +88,7 @@ function Thread() {
             this.procId
           );
 
-          thread[0].board_id = cache.setHashId('Boards', thread[0].board_id, 'dbData');
+          thread[0].board_id = cache.getHash('Boards', thread[0].board_id);
 
           post.text = await tagger.apply(post.text, this.procId);
 
@@ -138,24 +99,50 @@ function Thread() {
     return posts;
   };
 
-  this.getBoardId = async (thread_id) => {
-    logger.debug({ name: `${this.name}.getBoardId()`, data: thread_id }, this.procId, 'method');
+  this.getPosts = (thread_id) => {
+    logger.debug({ name: `${this.name}.getPosts()`, data: thread_id }, this.procId, 'method');
 
     if (!/^[0-9]+$/i.test(thread_id)) return { errors: { thread: 'Invalid ID' } };
 
-    const thread = await db.select(
-      { table: this.table, filters: [{ field: this.idField, value: thread_id }] },
-      this.procId
-    );
+    const Post = require('./Post');
+    Post.procId = this.procId;
+    return Post.find({ field: this.idField, value: thread_id });
+  };
 
-    if (thread.length === 0) return null;
+  this.find = async (filters) => {
+    const cachedThreads = cache.getTableData(this.table, { ...filters });
+    if (cachedThreads.length > 0) return cachedThreads;
 
-    return thread[0].board_id;
+    let threads = await db.select({ table: this.table, filters: [{ ...filters }] });
+
+    if (threads.length > 0)
+      threads.forEach((thread) => {
+        thread = { ...thread, board_id: cache.getHash('Boards', thread.board_id) };
+        cache.addTableData(this.table, thread);
+      });
+
+    return cache.getTableData(this.table, { ...filters });
+  };
+
+  this.getAll = async () => {
+    const cachedThreads = cache.getTable(this.table);
+    if (cachedThreads.length > 0) return cachedThreads;
+
+    let threads = await db.select({ table: this.table });
+
+    threads = threads.map((thread) => ({
+      ...thread,
+      board_id: cache.getHash('Boards', thread.board_id),
+    }));
+
+    cache.setTable(this.table, threads, false);
+
+    return cache.getTable(this.table);
   };
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getByBoard', 'getBoardId'];
+    const excluded = ['getFunctions', 'find', 'getAll'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

@@ -26,6 +26,11 @@ function Rule() {
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
+    body = {
+      ...body,
+      board_id: body.board_id ? cache.getIdFromHash('Boards', body.board_id) : null,
+    };
+
     let rule = await db.insert({ body, table: this.table }, this.procId);
 
     if (rule.insertId) {
@@ -33,93 +38,70 @@ function Rule() {
         table: this.table,
         filters: [{ field: this.idField, value: rule.insertId }],
       });
+
+      if (rule.length > 0) {
+        cache.addTableData(this.table, {
+          ...rule[0],
+          board_id: rule[0].board_id ? cache.getIdFromHash('Boards', rule[0].board_id) : null,
+        });
+
+        rule = cache.getTableData(this.table, { field: this.idField, value: rule.insertId });
+      }
     }
 
     return rule;
   };
 
-  this.update = (body) => {
-    logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
+  this.getAll = async () => {
+    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
-    const idValue = body[this.idField];
-    delete body[this.idField];
+    const cachedRules = cache.getTable(this.table);
+    if (cachedRules.length > 0) return cachedRules;
 
-    const errors = validate(body, this.schema);
-    if (errors) return { errors };
-
-    const cachedId = cache.getKeyInObject(this.table, idValue);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { rule: 'Invalid ID' } };
-
-    return db.update(
-      { body, table: this.table, id: { field: this.idField, value: cachedId } },
-      this.procId
-    );
-  };
-
-  this.gBoard = async (board_id) => {
-    logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
-
-    const cachedId = cache.getKeyInObject('Boards', board_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
-
-    let rules = await db.select(
-      { table: this.table, filters: [{ field: 'board_id', value: cachedId }] },
-      this.procId
-    );
+    let rules = await db.select({ table: this.table });
 
     if (rules.length > 0)
-      rules = rules.map((rule) => {
-        rule.rule_id = cache.setHashId(this.table, rule.rule_id, 'dbData');
-        return rule;
-      });
+      rules = rules.map((rule) => ({
+        ...rule,
+        board_id: rule.board_id ? cache.getHash('Boards', rule.board_id) : null,
+      }));
 
-    return rules;
+    cache.setTable(this.table, rules);
+
+    return cache.getTable(this.table);
   };
 
-  this.getGlobal = async () => {
-    logger.debug({ name: `${this.name}.getGlobal()` }, this.procId, 'method');
-
-    let rules = await db.select(
-      { table: this.table, filters: [{ field: 'board_id', value: null }] },
-      this.procId
-    );
-
-    if (rules.length > 0)
-      rules = rules.map((rule) => {
-        rule.rule_id = cache.setHashId(this.table, rule.rule_id, 'dbData');
-        return rule;
-      });
-
-    return rules;
-  };
-
-  this.delete = (rule_id) => {
+  this.delete = async (rule_id) => {
     logger.debug({ name: `${this.name}.delete()`, data: rule_id }, this.procId, 'method');
 
-    const cachedId = cache.getKeyInObject(this.table, rule_id);
+    const cachedId = cache.getIdFromHash(this.table, rule_id);
     if (!/^[0-9]+$/i.test(cachedId)) return { errors: { rule: 'Invalid ID' } };
 
-    return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
+    const res = await db.remove({ id: { field: this.idField, value: cachedId }, table: this.table });
+
+    if (res.affectedRows > 0) cache.removeFromTable(this.table, rule_id);
+
+    return res;
   };
 
-  this.getBoardId = async (rule_id) => {
-    logger.debug({ name: `${this.name}.getBoardId()`, data: rule_id }, this.procId, 'method');
+  this.find = async (filters) => {
+    const cachedReports = cache.getTableData(this.table, { ...filters });
+    if (cachedReports.length > 0) return cachedReports;
 
-    if (!/^[0-9]+$/i.test(rule_id)) return { errors: { rule: 'Invalid ID' } };
+    let rules = await db.select({ table: this.table, filters: [{ ...filters }] });
 
-    const rule = await db.select(
-      { table: this.table, filters: [{ field: this.idField, value: rule_id }] },
-      this.procId
-    );
+    if (rules.length > 0)
+      rules.forEach((rule) => {
+        rule = { ...rule, board_id: cache.getHash('Boards', rule.board_id) };
+        cache.addTableData(this.table, rule);
+      });
 
-    if (rule.length === 0) return null;
-
-    return rule[0].board_id;
+    return cache.getTableData(this.table, { ...filters });
   };
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getBoardId'];
+    const excluded = ['getFunctions', 'find'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

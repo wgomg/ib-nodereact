@@ -1,15 +1,15 @@
 'use strict';
 
 const db = require('../db');
-const logger = require('../libraries/logger');
-const validate = require('../libraries/validate');
 
-const Post = require('./Post');
+const logger = require('../libraries/logger');
+const cache = require('../libraries/cache');
+const validate = require('../libraries/validate');
 
 function Ban() {
   this.name = this.constructor.name;
   this.table = this.name + 's';
-  this.idField = this.table.toLowerCase().slice(0, -1) + '_id';
+  this.idField = this.name.toLowerCase() + '_id';
 
   this.procId = null;
 
@@ -21,51 +21,54 @@ function Ban() {
     comment: { type: 'alphanum', length: 45, required: true },
   };
 
-  this.save = (body) => {
+  this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
+
+    body = {
+      ...body,
+      staff_id: cache.getIdFromHash('Staffs', body.staff_id),
+      rule_id: cache.getIdFromHash('Rules', body.rule_id),
+    };
 
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    return db.insert({ body, table: this.table, ipField: 'user' }, this.procId);
-  };
+    const rule = cache.getTableData('Rules', { field: 'rule_id', value: body.rule_id });
+    if (rule.errors) return { errors: rule.errors };
 
-  this.getBoardId = async (ban_id) => {
-    logger.debug({ name: `${this.name}.getBoard()`, data: ban_id }, this.procId, 'method');
+    const banDuration = rule[0].duration;
 
-    if (!/^[0-9]+$/i.test(ban_id)) return { errors: { ban: 'Invalid ID' } };
+    if (banDuration === 0) await db.insert({ body, table: this.table, ipField: 'user' });
 
-    const ban = await db.select(
-      {
-        table: this.table,
-        filters: [{ field: this.idField, value: ban_id }],
-      },
-      this.procId
-    );
+    cache.setBannedAddress(body.user, banDuration);
 
-    if (ban.length === 0) return null;
-
-    return Post.getBoardId(ban.post_id);
+    return true;
   };
 
   this.isUserBanned = async (user) => {
     logger.debug({ name: `${this.name}.isUserBanned()`, data: user }, this.procId, 'method');
 
-    const ban = await db.select(
-      {
-        table: this.table,
-        filters: [{ field: 'user', value: user }],
-        ipField: 'user',
-      },
-      this.procId
-    );
+    return cache.findBannedAddress(user);
+  };
 
-    return ban.length > 0;
+  this.getAll = async () => {
+    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
+
+    const cachedBans = cache.getBannedList();
+    if (cachedBans.length > 0) return cachedBans;
+
+    let bans = await db.select({ table: this.table, ipField: 'user' });
+    if (bans.length > 0)
+      bans.forEach((ban) => {
+        cache.setBannedAddress(ban.user);
+      });
+
+    return cache.getBannedList();
   };
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getBoardId', 'isUserBanned'];
+    const excluded = ['getFunctions', 'isUserBanned', 'getAll'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

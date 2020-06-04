@@ -1,15 +1,14 @@
 'use strict';
 
-const cache = require('../libraries/cache');
-
 const db = require('../db');
+
 const logger = require('../libraries/logger');
 const tagger = require('../libraries/tagger');
 const validate = require('../libraries/validate');
 const ip = require('../libraries/ip');
+const cache = require('../libraries/cache');
 
 const File = require('./File');
-const Thread = require('./Thread');
 
 function Post() {
   this.name = this.constructor.name;
@@ -46,175 +45,107 @@ function Post() {
       file = await File.save(files[0]);
     }
 
-    delete body.files;
-
-    let newPost = { ...body };
     if (file && file.errors) return { errors: file.errors };
 
-    if (file) newPost.file_id = file.insertId;
+    delete body.files;
 
-    const errors = validate(newPost, this.schema);
-    if (errors) return { errors };
-
-    newPost = await db.insert({ body: newPost, table: this.table }, this.procId);
-
-    if (newPost.insertId) {
-      cache.setValueInObject('users', { key: newPost.insertId, value: user }, 'userAddress');
-
-      let post = await db.select(
-        {
-          table: this.table,
-          filters: [{ field: this.idField, value: newPost.insertId }],
-        },
-        this.procId
-      );
-
-      if (post.length > 0) {
-        if (post[0].file_id) {
-          const file = await File.getByID(post[0].file_id);
-          post[0].file = file.length > 0 ? file[0] : null;
-          delete post[0].file_id;
-        }
-
-        const tagged = await tagger.apply(post[0].text, this.procId);
-        post[0].text = tagged.text;
-
-        if (tagged.quoted && tagged.quoted.length > 0)
-          post[0].quoted = await Promise.all(
-            tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
-          );
-      }
-
-      return post;
-    }
-
-    return newPost;
-  };
-
-  this.getByThread = async (thread_id) => {
-    logger.debug({ name: `${this.name}.getByThread()`, data: thread_id }, this.procId, 'method');
-
-    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { thread: 'Invalid ID' } };
-
-    let posts = await db.select(
-      {
-        table: this.table,
-        filters: [{ field: 'thread_id', value: thread_id }],
-      },
-      this.procId
-    );
-
-    if (posts.length === 0) return posts;
-
-    File.procId = this.procId;
-
-    return Promise.all(
-      posts.map(async (post) => {
-        if (post.file_id) {
-          const file = await File.getByID(post.file_id);
-          post.file = file.length === 0 ? null : file[0];
-          delete post.file_id;
-        }
-
-        const cachedUser = cache.getValueInObject('Users', post.post_id);
-
-        if (ip.isV4(cachedUser)) post.user = ip.hashV4(cachedUser);
-        else if (ip.isV6(cachedUser)) post.user = ip.hashV6(cachedUser);
-
-        const tagged = await tagger.apply(post.text, this.procId);
-        post.text = tagged.text;
-
-        if (tagged.quoted && tagged.quoted.length > 0)
-          post.quoted = await Promise.all(
-            tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
-          );
-
-        return post;
-      })
-    );
-  };
-
-  this.delete = (post_id) => {
-    logger.debug({ name: `${this.name}.delete()`, data: post_id }, this.procId, 'method');
-
-    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { post: 'Invalid ID' } };
-
-    return db.remove({ id: { field: this.idField, value: post_id }, table: this.table }, this.procId);
-  };
-
-  this.update = (body) => {
-    logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
-
-    const idValue = body[this.idField];
-    delete body[this.idField];
+    if (file) body.file_id = file.insertId;
 
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    return db.update(
-      { body, table: this.table, id: { field: this.idField, value: idValue } },
-      this.procId
-    );
-  };
+    let post = await db.insert({ body: body, table: this.table }, this.procId);
 
-  this.get = async (post_id) => {
-    logger.debug({ name: `${this.name}.get()`, data: post_id }, this.procId, 'method');
-
-    if (!/^[0-9]+$/i.test(post_id)) return { errors: { post: 'Invalid ID' } };
-
-    let post = await db.select(
-      {
-        table: this.table,
-        filters: [{ field: this.idField, value: post_id }],
-      },
-      this.procId
-    );
-
-    if (post.length > 0) {
-      post = post[0];
-
-      if (post.file_id) {
-        const file = await File.getByID(post.file_id);
-        post.file = file.length === 0 ? null : file[0];
-        delete post.file_id;
-      }
-
-      const board_id = await this.getBoardId(post_id);
-      const Board = require('./Board');
-      Board.procId = this.procId;
-      post.board = await Board.getByID(board_id);
-
-      const tagged = await tagger.apply(post.text, this.procId);
-      post.text = tagged.text;
-
-      if (tagged.quoted && tagged.quoted.length > 0)
-        post.quoted = await Promise.all(
-          tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
-        );
+    if (post.insertId) {
+      cache.setPostAddress(post.insertId, user);
+      post = await this.get(post.insertId);
     }
 
     return post;
   };
 
-  this.getBoardId = async (post_id) => {
-    logger.debug({ name: `${this.name}.getBoardId()`, data: post_id }, this.procId, 'method');
-
+  this.get = async (post_id) => {
     if (!/^[0-9]+$/i.test(post_id)) return { errors: { post: 'Invalid ID' } };
 
-    const post = await db.select(
-      { table: this.table, filters: [{ field: this.idField, value: post_id }] },
-      this.procId
-    );
+    let cachedPost = cache.getTableData(this.table, { field: this.idField, value: post_id });
 
-    if (post.length === 0) return null;
+    if (cachedPost.length > 0) {
+      cachedPost[0].user = cache.getPostAddress(cachedPost[0].post_id);
 
-    Thread.procId = this.procId;
-    return Thread.getBoardId(post[0].thread_id);
+      if (ip.isV4(cachedPost[0].user)) cachedPost[0].user = ip.hashV4(cachedPost[0].user);
+      else if (ip.isV6(cachedPost[0].user)) cachedPost[0].user = ip.hashV6(cachedPost[0].user);
+
+      return cachedPost;
+    }
+
+    let post = await db.select({
+      table: this.table,
+      filters: [{ field: this.idField, value: post_id }],
+    });
+
+    if (post.length > 0) {
+      post[0].file = post[0].file_id ? await this.getFile(post[0].file_id) : null;
+      delete post[0].file_id;
+
+      const Thread = require('./Thread');
+      Thread.procId = this.procId;
+      const thread = await Thread.find({ field: 'thread_id', value: post[0].thread_id });
+
+      const Board = require('./Board');
+      Board.procId = this.procId;
+      post[0].board = await Board.get(cache.getIdFromHash('Boards', thread[0].board_id));
+
+      const tagged = await tagger.apply(post[0].text, this.procId);
+      post[0].text = tagged.text;
+
+      if (tagged.quoted && tagged.quoted.length > 0)
+        post[0].quoted = await Promise.all(
+          tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
+        );
+
+      cache.addTableData(this.table, post[0], false);
+
+      const postUser = cache.getPostAddress(post[0].post_id);
+
+      if (ip.isV4(postUser)) post[0].user = ip.hashV4(postUser);
+      else if (ip.isV6(postUser)) post[0].user = ip.hashV6(postUser);
+    }
+
+    return post;
+  };
+
+  this.getFile = async (file_id) => {
+    if (!/^[0-9]+$/i.test(file_id)) return { errors: { post: 'Invalid ID' } };
+
+    File.procId = this.procId;
+    return await File.get(file_id);
+  };
+
+  this.getAll = async () => {
+    const cachedPosts = cache.getTable(this.table);
+    if (cachedPosts.length > 0) return cachedPosts;
+
+    let posts = await db.select({ table: this.table });
+
+    posts = await Promise.all(posts.map(async (post) => await this.get(post.post_id)));
+
+    return cache.getTable(this.table);
+  };
+
+  this.find = async (filters) => {
+    const cachedPosts = cache.getTableData(this.table, { ...filters });
+    if (cachedPosts.length > 0) return cachedPosts;
+
+    let posts = await db.select({ table: this.table, filters: [{ ...filters }] });
+
+    posts = await Promise.all(posts.map(async (post) => await this.get(post.post_id)));
+
+    return cache.getTable(this.table);
   };
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getByThread', 'getBoardId', 'get', 'update'];
+    const excluded = ['getFunctions', 'get', 'getFile', 'getAll', 'find'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

@@ -6,8 +6,6 @@ const validate = require('../libraries/validate');
 
 const cache = require('../libraries/cache');
 
-const Rule = require('./Rule');
-
 function Report() {
   this.name = this.constructor.name;
   this.table = this.name + 's';
@@ -21,119 +19,96 @@ function Report() {
     solved: { type: 'bool' },
   };
 
-  this.save = (body) => {
+  this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
+
+    body = { ...body, rule_id: cache.getIdFromHash('Rules', body.rule_id) };
 
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    return db.insert({ body, table: this.table }, this.procId);
-  };
+    let report = await db.insert({ body, table: this.table });
 
-  this.updateSolved = (report_id) => {
-    logger.debug({ name: `{this.name}.setAsSolved()`, data: report_id }, this.procId, 'method');
-
-    const cachedId = cache.getKeyInObject(this.table, report_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { report: 'Invalid ID' } };
-
-    return db.update(
-      {
-        body: { solved: true },
+    if (report.insertId) {
+      report = await db.select({
         table: this.table,
-        id: { field: this.idField, value: cachedId },
-      },
-      this.procId
-    );
-  };
+        filters: [{ field: this.idField, value: report.insertId }],
+      });
 
-  this.gBoard = async (board_id) => {
-    logger.debug({ name: `${this.name}.gBoard()` }, this.procId, 'method');
-
-    const cachedId = cache.getKeyInObject('Boards', board_id);
-    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
-
-    const sql =
-      'SELECT ' +
-      'report_id, Reports.post_id, Boards.uri, Reports.rule_id, Rules.text, duration, solved, Reports.created_on ' +
-      ' FROM Reports' +
-      ' INNER JOIN Rules ON Reports.rule_id = Rules.rule_id' +
-      ' INNER JOIN Boards ON Rules.board_id = Boards.board_id' +
-      ' WHERE Rules.board_id = ' +
-      cachedId;
-
-    const reports = await db.rawQuery(sql, this.procId);
-
-    if (reports.length > 0) {
-      const Post = require('./Post');
-      Post.procId = this.procId;
-
-      return await Promise.all(
-        reports.map(async (report) => {
-          report.post = await Post.get(report.post_id);
-          delete report.post_id;
-
-          report.report_id = cache.setHashId(this.table, report.report_id, 'dbData');
-
-          return report;
-        })
-      );
+      if (report.length > 0) {
+        cache.addTableData(this.table, {
+          ...report,
+          rule_id: cache.getHash('Rules', report[0].rule_id),
+        });
+        report = cache.getTableData(this.table, { field: this.idField, value: report.insertId });
+      }
     }
 
-    return reports;
+    return report;
   };
 
-  this.getGlobal = async () => {
-    logger.debug({ name: `${this.name}.getGlobal()` }, this.procId, 'method');
+  this.getAll = async () => {
+    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
-    const sql =
+    const cachedReports = cache.getTable(this.table);
+    if (cachedReports.length > 0) return cachedReports;
+
+    let reports = await db.rawQuery(
       'SELECT ' +
-      'report_id, Reports.post_id, Boards.uri, Reports.rule_id, Rules.text, duration, solved, Reports.created_on ' +
-      ' FROM Reports' +
-      ' INNER JOIN Rules ON Reports.rule_id = Rules.rule_id' +
-      ' INNER JOIN Posts ON Reports.post_id = Posts.post_id' +
-      ' INNER JOIN Threads ON Posts.thread_id = Threads.thread_id' +
-      ' INNER JOIN Boards ON Threads.board_id = Boards.board_id' +
-      ' WHERE Rules.board_id IS NULL';
-
-    const reports = await db.rawQuery(sql, this.procId);
-
-    if (reports.length > 0) {
-      const Post = require('./Post');
-      Post.procId = this.procId;
-
-      return await Promise.all(
-        reports.map(async (report) => {
-          report.post = await Post.get(report.post_id);
-          delete report.post_id;
-
-          report.report_id = cache.setHashId(this.table, report.report_id, 'dbData');
-
-          return report;
-        })
-      );
-    }
-
-    return reports;
-  };
-
-  this.getBoardId = async (report_id) => {
-    logger.debug({ name: `${this.name}.getBoard()`, data: report_id }, this.procId, 'method');
-
-    if (!/^[0-9]+$/i.test(report_id)) return { errors: { report: 'Invalid ID' } };
-
-    const report = await db.select(
-      { table: this.table, filters: [{ [this.idField]: report_id }] },
-      this.procId
+        'report_id, Reports.post_id, Boards.board_id, Reports.rule_id, solved, Reports.created_on ' +
+        ' FROM Reports' +
+        ' INNER JOIN Posts ON Posts.post_id = Reports.post_id' +
+        ' INNER JOIN Threads ON Threads.thread_id = Posts.thread_id' +
+        ' INNER JOIN Boards ON Boards.board_id = Threads.board_id'
     );
 
-    if (report.length === 0) return null;
+    if (reports.length > 0)
+      reports = reports.map((report) => {
+        report = {
+          ...report,
+          rule_id: cache.getHash('Rules', report.rule_id),
+          board_id: cache.getHash('Boards', report.board_id),
+        };
 
-    return Rule.getBoardId(report.rule_id);
+        return report;
+      });
+    cache.setTable(this.table, reports);
+
+    return cache.getTable(this.table);
+  };
+
+  this.find = async (board_id) => {
+    const cachedReports = cache.getTableData(this.table, { field: 'board_id', value: board_id });
+    if (cachedReports.length > 0) return cachedReports;
+
+    let reports = await db.rawQuery(
+      'SELECT ' +
+        'report_id, Reports.post_id, Boards.boards_id, Reports.rule_id, Rules.text, duration, solved, Reports.created_on ' +
+        ' FROM Reports' +
+        ' INNER JOIN Posts ON Posts.post_id = Reports.report_id' +
+        ' INNER JOIN Threads ON Threads.thread_od = Posts.thread_od' +
+        ' INNER JOIN Boards ON Boards.board_id = Threads.board_id' +
+        ' WHERE Boards.board_id = ' +
+        board_id
+    );
+
+    if (reports.length > 0)
+      reports.forEach((report) => {
+        report = {
+          ...report,
+          rule_id: cache.getHash('Rules', report.rule_id),
+          board_id: cache.getHash('Boards', report.board_id),
+        };
+
+        cache.addTableData(this.table, report);
+      });
+
+    return cache.getTableData(this.table, { field: 'board_id', value: board_id });
   };
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getBoardId'];
+    const excluded = ['getFunctions', 'getAll', 'find'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

@@ -1,7 +1,5 @@
 'use strict';
 
-const cache = require('./cache');
-
 const striptags = require('striptags');
 
 const apply = async (text, procId) => {
@@ -61,17 +59,10 @@ const applyTags = async (text, splitMarker, procId) => {
 };
 
 const getTags = async (procId) => {
-  let cachedTags = cache.getSingleValue('tagger');
+  const Tag = require('../models/Tag');
+  Tag.procId = procId;
 
-  if (!cachedTags) {
-    const Tag = require('../models/Tag');
-    Tag.procId = procId;
-    const tags = await Tag.getAll();
-
-    cachedTags = cache.setSingleValue('tagger', tags, 'dbData');
-  }
-
-  return cachedTags;
+  return await Tag.getAll();
 };
 
 const setQuotes = async (replacedText, splitMarker, procId) => {
@@ -92,7 +83,7 @@ const setQuotes = async (replacedText, splitMarker, procId) => {
 
       quotes.set(
         qp,
-        `${splitMarker}<a href='/${post.board[0].uri}/t${post.thread_id}#p${post_id}'>${qp}</a>${splitMarker}`
+        `${splitMarker}<a href='/${post[0].board[0].uri}/t${post[0].thread_id}#p${post_id}'>${qp}</a>${splitMarker}`
       );
     }
 

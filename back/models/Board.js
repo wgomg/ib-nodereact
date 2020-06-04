@@ -1,17 +1,15 @@
 'use strict';
 
 const db = require('../db');
+
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
-
 const cache = require('../libraries/cache');
-
-const Thread = require('./Thread');
 
 function Board() {
   this.name = this.constructor.name;
   this.table = this.name + 's';
-  this.idField = this.table.toLowerCase().slice(0, -1) + '_id';
+  this.idField = this.name.toLowerCase() + '_id';
 
   this.procId = null;
 
@@ -21,58 +19,20 @@ function Board() {
     description: { type: 'alphanum', length: 250 },
   };
 
-  this.save = (body) => {
+  this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    return db.insert({ body, table: this.table }, this.procId);
-  };
+    let board = await db.insert({ body, table: this.table });
 
-  this.get = async (uri) => {
-    logger.debug({ name: `${this.name}.get()`, data: uri }, this.procId, 'method');
-
-    let board = await db.select(
-      { table: this.table, filters: [{ field: 'uri', value: uri }] },
-      this.procId
-    );
-
-    if (board.length > 0) {
-      Thread.procId = this.procId;
-      board[0].threads = await Thread.getByBoard(board[0].board_id);
-
-      if (board[0].threads.length > 0)
-        board[0].threads.sort((t1, t2) => {
-          if (t1.posts.length > 0 && t2.posts.length > 0)
-            return (
-              new Date(t2.posts[t2.posts.length - 1].created_on) -
-              new Date(t1.posts[t1.posts.length - 1].created_on)
-            );
-        });
-
-      board[0].board_id = cache.setHashId(this.table, board[0].board_id, 'dbData');
-    }
+    if (board.insertId) board = await this.get(board.insertId);
 
     return board;
   };
 
-  this.getAll = async () => {
-    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
-
-    let boards = await db.select({ table: this.table }, this.procId);
-
-    if (boards.length > 0)
-      boards = boards.map((board) => {
-        board.board_id = cache.setHashId(this.table, board.board_id, 'dbData');
-
-        return board;
-      });
-
-    return boards;
-  };
-
-  this.update = (body) => {
+  this.update = async (body) => {
     logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
 
     const idValue = body[this.idField];
@@ -81,41 +41,107 @@ function Board() {
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    const cachedId = cache.getKeyInObject(this.table, idValue);
+    const cachedId = cache.getIdFromHash(this.table, idValue);
     if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
-    return db.update(
-      { body, table: this.table, id: { field: this.idField, value: cachedId } },
-      this.procId
-    );
+    let board = await db.update({
+      body,
+      table: this.table,
+      id: { field: this.idField, value: cachedId },
+    });
+
+    if (board.changedRows > 0) board = await this.get(cachedId);
+
+    return board;
   };
 
-  this.delete = (board_id) => {
-    logger.debug({ name: `${this.name}.delete()`, data: board_id }, this.procId, 'method');
+  this.getReports = (board_id) => {
+    logger.debug({ name: `${this.name}.getReports()`, data: board_id }, this.procId, 'method');
 
-    const cachedId = cache.getKeyInObject(this.table, idValue);
+    const cachedId = cache.getIdFromHash(this.table, board_id);
     if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
-    return db.remove({ id: { field: this.idField, value: cachedId }, table: this.table }, this.procId);
+    const Report = require('./Report');
+    return Report.find({ field: this.idField, value: cachedId });
   };
 
-  this.getByID = (board_id) => {
-    logger.debug({ name: `${this.name}.getByID()`, data: board_id }, this.procId, 'method');
+  this.getThreads = (board_id) => {
+    logger.debug({ name: `${this.name}.getThreads()`, data: board_id }, this.procId, 'method');
 
     if (!/^[0-9]+$/i.test(board_id)) return { errors: { board: 'Invalid ID' } };
 
-    return db.select(
-      {
-        table: this.table,
-        filters: [{ field: this.idField, value: board_id }],
-      },
-      this.procId
-    );
+    const Thread = require('./Thread');
+    return Thread.find({ field: this.idField, value: board_id });
+  };
+
+  this.getRules = (board_id) => {
+    logger.debug({ name: `${this.name}.getRules()`, data: board_id }, this.procId, 'method');
+
+    const cachedId = cache.getIdFromHash(this.table, board_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+
+    const Rule = require('./Rule');
+    return Rule.find({ field: this.idField, value: cachedId });
+  };
+
+  this.getAll = async () => {
+    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
+
+    const cachedBoards = cache.getTable(this.table);
+    if (cachedBoards.length > 0) return cachedBoards;
+
+    let boards = await db.select({ table: this.table });
+
+    if (boards.length > 0)
+      boards = await Promise.all(
+        boards.map(async (board) => ({
+          ...board,
+          threadsIds: (
+            await db.select({
+              table: 'Threads',
+              fields: ['thread_id'],
+              filters: [{ field: 'board_id', value: board.board_id }],
+            })
+          ).map((thread) => thread.thread_id),
+        }))
+      );
+    cache.setTable(this.table, boards);
+
+    return cache.getTable(this.table);
+  };
+
+  this.delete = async (board_id) => {
+    logger.debug({ name: `${this.name}.delete()`, data: board_id }, this.procId, 'method');
+
+    const cachedId = cache.getIdFromHash(this.table, board_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+
+    const res = await db.remove({ id: { field: this.idField, value: cachedId }, table: this.table });
+
+    if (res.affectedRows > 0) cache.removeFromTable(this.table, banner_id);
+
+    return res;
+  };
+
+  this.get = async (board_id) => {
+    if (!/^[0-9]+$/i.test(board_id)) return { errors: { board: 'Invalid ID' } };
+
+    const cachedBoard = cache.getTableData(this.table, { field: this.idField, value: board_id });
+    if (cachedBoard.length > 0) return cachedBoard;
+
+    let board = await db.select({
+      table: this.table,
+      filters: [{ field: this.idField, value: board_id }],
+    });
+
+    if (board.length > 0) cache.addTableData(this.table, board[0]);
+
+    return cache.getTableData(this.table, { field: this.idField, value: board_id });
   };
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getByID'];
+    const excluded = ['getFunctions', 'get'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

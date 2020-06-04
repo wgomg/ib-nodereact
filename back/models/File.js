@@ -1,9 +1,11 @@
 'use strict';
 
 const db = require('../db');
+
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 const thumb = require('../libraries/thumb');
+const cache = require('../libraries/cache');
 
 const AllowedFile = require('../libraries/AllowedFile');
 
@@ -37,28 +39,58 @@ function File() {
 
     if (allowed.errors) return { errors: { file: allowed.error } };
 
-    return db.insert({ body: allowed.schemaData, table: this.table }, this.procId);
-  };
+    file = await db.insert({ body: allowed.schemaData, table: this.table });
 
-  this.getByID = async (file_id) => {
-    logger.debug({ name: `${this.name}.getByID()`, data: file_id }, this.procId, 'method');
-
-    if (!/^[0-9]+$/i.test(file_id)) return { errors: { file: 'Invalid ID' } };
-
-    let file = await db.select(
-      {
+    if (file.insertId) {
+      file = await db.select({
         table: this.table,
-        filters: [{ field: this.idField, value: file_id }],
-      },
-      this.procId
-    );
+        filters: [{ field: this.idField, value: file.insertId }],
+      });
 
-    if (file.length > 0) {
-      file[0].thumb = await thumb.get(file[0].name, file[0].extension);
-      delete file[0].file_id;
+      if (file.length > 0) file = this.get(file.insertId);
     }
 
     return file;
+  };
+
+  this.get = async (file_id) => {
+    if (!/^[0-9]+$/i.test(file_id)) return { errors: { post: 'Invalid ID' } };
+
+    const cachedFile = cache.getTableData(this.table, { field: this.idField, value: file_id });
+
+    if (cachedFile.length > 0) return cachedFile;
+
+    let file = await db.select({
+      table: this.table,
+      filters: [{ field: this.idField, value: file_id }],
+    });
+
+    if (file.length > 0) {
+      file[0].thumb = await thumb.get(file[0].name, file[0].extension);
+      cache.addTableData(this.table, file[0]);
+      file = cache.getTableData(this.table, { field: this.idField, value: file_id });
+    }
+
+    return file;
+  };
+
+  this.getAll = async () => {
+    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
+
+    const cachedFiles = cache.getTable(this.table);
+    if (cachedFiles.length > 0) return cachedFiles;
+
+    let files = await db.select({ table: this.table });
+    if (files.length > 0)
+      files = await Promise.all(
+        files.map(async (file) => {
+          file.thumb = await thumb.get(file.name, file.extension);
+          return file;
+        })
+      );
+    cache.setTable(this.table, files);
+
+    return cache.getTable(this.table);
   };
 }
 

@@ -11,6 +11,7 @@ const signaturesMap = new Map([
   ['ffd8ffe2', { mimetype: 'image/jpeg', extensions: ['jpeg'] }],
   ['ffd8ffe3', { mimetype: 'image/jpeg', extensions: ['jpeg'] }],
   ['ffd8ffe8', { mimetype: 'image/jpeg', extensions: ['jpg'] }],
+  ['25504446', { mimetype: 'application/pdf', extensions: ['pdf'] }],
 ]);
 
 const rootDir = __dirname.split('/').slice(0, -1).join('/');
@@ -61,7 +62,7 @@ function AllowedFile(file) {
 
   this.generateThumb = async () => {
     const fileThumb = await thumb.make({ name: this.schemaData.name, ext: this.schemaData.extension });
-    this.error = fileThumb ? null : 'Could generate thumb';
+    this.error = fileThumb ? null : 'Could not generate thumb';
   };
 }
 

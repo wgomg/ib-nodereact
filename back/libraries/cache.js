@@ -1,7 +1,8 @@
 'use strict';
 
-const config = require('../config').cache;
 const shortid = require('shortid');
+
+const config = require('../config').cache;
 
 const NodeCache = require('node-cache');
 
@@ -12,93 +13,150 @@ const ttl = {
   dbData: config.dbDataTTL * 24 * 60 * 60,
 };
 
-const setSingleValue = (name, value, ttlValue) => {
-  if (value.constructor.name === 'Object') throw new Error('Value is an object');
+const addTableData = (table, value, hashId = true) => {
+  const cachedTable = getTable(table);
 
-  cache.set(name, value, ttl[ttlValue]);
+  if (hashId) value = { ...value, hash: shortid() };
 
-  return value;
+  cache.set(table, [...cachedTable, value], ttl.dbData);
 };
 
-const getSingleValue = (name) => {
-  const value = cache.get(name);
+const getIdFromHash = (table, hash) => {
+  const cachedTable = cache.get(table) || [];
 
-  if (value && value.constructor.name === 'Object') throw new Error('Value is an object');
+  const entry = cachedTable.filter((entry) => entry.hash === hash);
 
-  return value;
+  if (entry.length > 0) return entry[0][table.toLowerCase().slice(0, -1) + '_id'];
+
+  return null;
 };
 
-const setHashId = (table, id, ttlValue) => {
-  let cachedId = getValueInObject(table, id);
+const getHash = (table, id) => {
+  const cachedTable = cache.get(table) || [];
 
-  if (!cachedId) {
-    const hash = shortid.generate();
-    const cachedTable = getObject(table);
-    cache.set(table, { ...cachedTable, [id]: hash }, ttl[ttlValue]);
-    cachedId = hash;
+  const entry = cachedTable.filter((entry) => entry[table.toLowerCase().slice(0, -1) + '_id'] === id);
+
+  if (entry.length > 0) return entry[0].hash;
+
+  return null;
+};
+
+const getTableData = (table, { field, value }) => {
+  const cachedTable = cache.get(table) || [];
+
+  return cachedTable
+    .filter((entry) => entry[field] === value)
+    .map((entry) => {
+      if (entry.hash) {
+        entry = { ...entry, [table.toLowerCase().slice(0, -1) + '_id']: entry.hash };
+        delete entry.hash;
+      }
+
+      return entry;
+    });
+};
+
+const getTable = (table) => {
+  let cachedTable = cache.get(table) || [];
+
+  if (cachedTable.length > 0)
+    cachedTable = cachedTable.map((entry) => {
+      if (entry.hash) {
+        entry = { ...entry, [table.toLowerCase().slice(0, -1) + '_id']: entry.hash };
+        delete entry.hash;
+      }
+
+      return entry;
+    });
+
+  return cachedTable;
+};
+
+const setTable = (table, values, hashId = true) => {
+  cache.set(
+    table,
+    values.map((value) => {
+      if (hashId) value = { ...value, hash: shortid() };
+
+      return value;
+    }),
+    ttl.dbData
+  );
+};
+
+const removeFromTable = (table, hash) => {
+  let cachedTable = cache.get(table) || [];
+
+  if (cachedTable.length > 0) cachedTable = cachedTable.filter((entry) => entry.hash !== hash);
+
+  cache.setTable(table, cachedTable);
+};
+
+const setBannedAddress = (address, banTTL = 0) => {
+  cache.set(address, Date.now(), banTTL);
+
+  let bannedList = getBannedList();
+
+  if (!bannedList.includes(address)) {
+    bannedList.push(address);
+    cache.set('banned', bannedList, 0);
   }
-
-  return cachedId;
 };
 
-const getObject = (object) => {
-  let cachedObject = cache.get(object);
+const findBannedAddress = (address) => {
+  const bannedList = getBannedList();
 
-  if (cachedObject && cachedObject.constructor.name !== 'Object')
-    throw new Error('There is a non-object value named `' + object + '` already stored in cache');
-
-  if (!cachedObject) {
-    cache.set(object, {}, 'dbData');
-    cachedObject = {};
-  }
-
-  return cachedObject;
+  return bannedList.includes(address);
 };
 
-const setObject = (object, value) => {
-  let cachedObject = getObject(object);
+const getBannedList = () => {
+  let bannedList = cache.get('banned');
 
-  if (cachedObject && cachedObject.constructor.name !== 'Object')
-    throw new Error('There is a non-object value named `' + object + '` already stored in cache');
+  bannedList = bannedList ? bannedList.filter((address) => cache.get(address)) : [];
+  cache.set('banned', bannedList, 0);
 
-  if (!cachedObject) {
-    cache.set(object, value, 'dbData');
-    cachedObject = value;
-  }
-
-  return cachedObject;
+  return bannedList;
 };
 
-const setValueInObject = (object, { key, value }, ttlValue) => {
-  let cachedValue = getValueInObject(object, key);
-
-  if (!cachedValue) {
-    const cachedObject = getObject(object);
-    cache.set(object, { ...cachedObject, [key]: value }, ttl[ttlValue]);
-    cachedValue = value;
-  }
-
-  return cachedValue;
+const setPostAddress = (post, address) => {
+  cache.set(post, address, ttl.userAdress);
 };
 
-const getValueInObject = (object, key) => {
-  const cachedObject = cache.get(object) || {};
-  return cachedObject[key];
-};
+const getPostAddress = (post_id) => cache.get(post_id);
 
-const getKeyInObject = (object, value) => {
-  const cachedObject = cache.get(object) || {};
-  return Object.keys(cachedObject).find((key) => cachedObject[key] === value);
-};
-
-const stats = (stat) => cache.getStats()[stat];
-
-const init = () => {
+const init = async () => {
   const Board = require('../models/Board');
-  const Staff = require('../models/Staff');
+  await Board.getAll();
 
-  Board.getAll();
-  Staff.getAll();
+  const Staff = require('../models/Staff');
+  await Staff.getAll();
+
+  const Rule = require('../models/Rule');
+  await Rule.getAll();
+
+  const File = require('../models/File');
+  await File.getAll();
+
+  const Ban = require('../models/Ban');
+  Ban.getAll();
+
+  const Banner = require('../models/Banner');
+  Banner.getAll();
+
+  const Report = require('../models/Report');
+  Report.getAll();
+
+  const Tag = require('../models/Tag');
+  Tag.getAll();
+
+  const Theme = require('../models/Theme');
+  Theme.getAll();
+
+  const Thread = require('../models/Thread');
+  Thread.getAll();
+
+  const Post = require('../models/Post');
+  Post.getAll();
 };
 
 const close = () => {
@@ -106,17 +164,22 @@ const close = () => {
   cache.close();
 };
 
+const stats = (stat) => cache.getStats()[stat];
+
 module.exports = {
-  setSingleValue,
-  getSingleValue,
-  setHashId,
-  setObject,
-  getObject,
-  getKeyInObject,
-  getKeyInObject,
-  getValueInObject,
-  setValueInObject,
-  stats,
+  addTableData,
+  getIdFromHash,
+  getHash,
+  getTableData,
+  getTable,
+  setTable,
+  removeFromTable,
+  setBannedAddress,
+  findBannedAddress,
+  getBannedList,
+  setPostAddress,
+  getPostAddress,
   init,
   close,
+  stats,
 };
