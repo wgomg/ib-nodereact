@@ -14,7 +14,7 @@ const BoardsList = ({ getBoardsList, deleteBoard, boards: { boards, loading } })
   }, [getBoardsList]);
 
   const boardsList =
-    !loading && boards ? (
+    boards.length > 0 ? (
       boards.map((board) => {
         const delBoard = (
           <Link to='/staff/dash' onClick={(e) => deleteBoard(board.board_id)}>
