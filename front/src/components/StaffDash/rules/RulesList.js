@@ -4,15 +4,15 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { Card, Loading } from '../../common';
-import { getGlobal, deleteRule, getBoardRules } from '../../../actions/rules';
+import { deleteRule, getAllRules, getRules } from '../../../actions/rules';
 
 import ReactTooltip from 'react-tooltip';
 
-const RulesList = ({ getGlobal, getBoardRules, deleteRule, rules: { rules, loading }, board_id }) => {
+const RulesList = ({ getAllRules, getRules, deleteRule, rules: { rules, loading }, board_id }) => {
   useEffect(() => {
-    if (board_id) getBoardRules(board_id);
-    else getGlobal();
-  }, [getGlobal, getBoardRules, board_id]);
+    if (board_id) getRules(board_id);
+    else getAllRules();
+  }, [getAllRules, getRules, board_id]);
 
   const rulesList =
     rules.length > 0 ? (
@@ -62,8 +62,8 @@ const RulesList = ({ getGlobal, getBoardRules, deleteRule, rules: { rules, loadi
 };
 
 RulesList.propTypes = {
-  getGlobal: PropTypes.func.isRequired,
-  getBoardRules: PropTypes.func.isRequired,
+  getAllRules: PropTypes.func.isRequired,
+  getRules: PropTypes.func.isRequired,
   deleteRule: PropTypes.func.isRequired,
   rules: PropTypes.object.isRequired,
   board_id: PropTypes.number,
@@ -73,4 +73,4 @@ const mapStateToProps = (state) => ({
   rules: state.rules,
 });
 
-export default connect(mapStateToProps, { getGlobal, getBoardRules, deleteRule })(RulesList);
+export default connect(mapStateToProps, { getAllRules, getRules, deleteRule })(RulesList);

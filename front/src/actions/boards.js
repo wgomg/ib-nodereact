@@ -1,15 +1,6 @@
 import axios from 'axios';
 
-import {
-  GET_BOARDS_LIST,
-  GET_BOARD,
-  DELETE_BOARD,
-  BOARDS_ERROR,
-  CREATE_THREAD,
-  THREAD_ERROR,
-  CREATE_POST,
-  POST_ERROR,
-} from './types';
+import { GET_BOARDS_LIST, GET_BOARD, DELETE_BOARD, BOARDS_ERROR } from './types';
 
 export const getBoardsList = () => async (dispatch) => {
   try {
@@ -94,46 +85,6 @@ export const deleteBoard = (board_id) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: BOARDS_ERROR,
-      payload: error.response,
-    });
-  }
-};
-
-export const createThread = (newThread) => async (dispatch) => {
-  try {
-    const config = { headers: { 'Content-Type': 'multipart/form-data' } };
-
-    const res = await axios.post('/_back/api/threads', newThread, config);
-
-    dispatch({
-      type: CREATE_THREAD,
-      payload: res.data.length > 0 ? res.data[0] : {},
-    });
-
-    if (res.data[0]) return true;
-  } catch (error) {
-    dispatch({
-      type: THREAD_ERROR,
-      payload: error.response,
-    });
-  }
-};
-
-export const createPost = (newPost) => async (dispatch) => {
-  try {
-    const config = { headers: { 'Content-Type': 'multipart/form-data' } };
-
-    const res = await axios.post('/_back/api/posts', newPost, config);
-
-    dispatch({
-      type: CREATE_POST,
-      payload: res.data[0],
-    });
-
-    if (res.data[0]) return true;
-  } catch (error) {
-    dispatch({
-      type: POST_ERROR,
       payload: error.response,
     });
   }

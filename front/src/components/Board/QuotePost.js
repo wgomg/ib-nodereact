@@ -1,11 +1,11 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 
-import { Image } from '../../common';
+import { Image } from '../common';
 
-import timeSince from '../../../utils/timeSince';
-import prettyBytes from '../../../utils/prettyBytes';
-import prettyDate from '../../../utils/prettyDate';
+import timeSince from '../../utils/timeSince';
+import prettyBytes from '../../utils/prettyBytes';
+import prettyDate from '../../utils/prettyDate';
 
 const QuotePost = ({ post }) => {
   const textArray = post.text;

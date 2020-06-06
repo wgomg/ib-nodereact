@@ -18,7 +18,13 @@ const addTableData = (table, value, hashId = true) => {
 
   if (hashId) value = { ...value, hash: shortid() };
 
-  cache.set(table, [...cachedTable, value], ttl.dbData);
+  const cachedValue = cachedTable.filter(
+    (cached) =>
+      cached[table.toLowerCase().slice(0, -1) + '_id'] ===
+      value[table.toLowerCase().slice(0, -1) + '_id']
+  );
+
+  if (cachedValue.length === 0) cache.set(table, [...cachedTable, value], ttl.dbData);
 };
 
 const getIdFromHash = (table, hash) => {
@@ -124,6 +130,7 @@ const setPostAddress = (post, address) => {
 
 const getPostAddress = (post_id) => cache.get(post_id);
 
+// TODO: simplificar esto
 const init = async () => {
   const Board = require('../models/Board');
   await Board.getAll();

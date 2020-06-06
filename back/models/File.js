@@ -47,7 +47,7 @@ function File() {
         filters: [{ field: this.idField, value: file.insertId }],
       });
 
-      if (file.length > 0) file = this.get(file.insertId);
+      if (file.length > 0) file = this.get(file[0].file_id);
     }
 
     return file;
@@ -58,7 +58,7 @@ function File() {
 
     const cachedFile = cache.getTableData(this.table, { field: this.idField, value: file_id });
 
-    if (cachedFile.length > 0) return cachedFile;
+    if (cachedFile.length > 0) return cachedFile[0];
 
     let file = await db.select({
       table: this.table,
@@ -66,9 +66,12 @@ function File() {
     });
 
     if (file.length > 0) {
-      file[0].thumb = await thumb.get(file[0].name, file[0].extension);
-      cache.addTableData(this.table, file[0]);
+      file = file[0];
+      file.thumb = await thumb.get(file.name, file.extension);
+      cache.addTableData(this.table, file);
       file = cache.getTableData(this.table, { field: this.idField, value: file_id });
+
+      if (file.length > 0) file = file[0];
     }
 
     return file;

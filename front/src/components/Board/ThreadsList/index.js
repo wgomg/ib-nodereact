@@ -1,43 +1,66 @@
 import React, { Fragment, useState, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
+
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-import Post from './Post';
-import OpPost from './OpPost';
+import Post from '../Post';
+import OpPost from '../OpPost';
+import NewThread from './NewThread';
+import { Empty, Loading } from '../../common';
 
-export default ({ threads, board }) => {
+import { getThreads } from '../../../actions/threads';
+
+const ThreadList = ({ boards: { boards }, threads: { threads, loading, error }, getThreads }) => {
+  const [board, setBoard] = useState({});
   const [page, setPage] = useState(0);
   const [btnVisited, setBtnVisited] = useState([]);
   const [hidden, setHidden] = useState(localStorage.getItem('hidden').split(',') || [0]);
 
   const topThread = useRef(null);
 
-  let threadsList = (
-    <Fragment>
-      <hr className='separator' />
-      <h2 className='centered warning'>No hay Hilos para mostrar</h2>
-      <hr className='separator' />
-    </Fragment>
-  );
+  const boardUri = window.location.pathname.replace(/\//g, '');
 
-  let pages = [];
-  let pagesNum = 0;
+  useEffect(() => {
+    setBoard({ ...boards.filter((board) => board.uri === boardUri)[0] });
+  }, [boards, boardUri]);
+
+  useEffect(() => {
+    if (board.board_id) getThreads(board.board_id);
+  }, [board, getThreads]);
+
+  useEffect(() => {
+    localStorage.setItem('hidden', hidden);
+  }, [hidden]);
+
+  const onClick = (page, topThread) => {
+    setBtnVisited(btnVisited.map((btn, index) => index === page));
+    setPage(page);
+
+    window.scrollTo(0, topThread.current.offsetTop);
+  };
 
   const onHiddenClick = (id) => {
     if (hidden.includes(id)) setHidden(hidden.filter((hide) => hide !== id));
     else setHidden([...hidden, id]);
   };
 
-  useEffect(() => {
-    localStorage.setItem('hidden', hidden);
-  }, [hidden]);
+  let pages = [];
+  let pagesNum = 0;
 
-  if (threads && threads.length > 0) {
-    let hilos = [...threads];
+  useEffect(() => {
+    setBtnVisited(new Array(pagesNum).fill(false));
+  }, [pagesNum]);
+
+  let threadsList = <Empty element='Hilos' />;
+
+  if (threads.length > 0) {
+    let threadsCopy = [...threads];
     let threadsPages = [];
 
-    while (hilos.length > 0)
+    while (threadsCopy.length > 0)
       threadsPages.push(
-        hilos.splice(0, 10).map((thread, index) => {
+        threadsCopy.splice(0, 10).map((thread, index) => {
           let postsList =
             thread.posts.length > 1
               ? thread.posts.slice(Math.max(thread.posts.length - 5, 1)).map((post) => (
@@ -53,11 +76,12 @@ export default ({ threads, board }) => {
                 ))
               : '';
 
-          const hiddenPosts = thread.posts.length - 6;
+          const hiddenPosts = thread.hiddenPosts;
           let isHidden = hidden.includes('t' + thread.thread_id);
 
           let props = {
-            thread: thread,
+            thread,
+            board,
             post: thread.posts[0],
             isThread: false,
             hideButton: true,
@@ -102,19 +126,11 @@ export default ({ threads, board }) => {
     threadsList = threadsPages[page];
   }
 
-  useEffect(() => {
-    setBtnVisited(new Array(pagesNum).fill(false));
-  }, [pagesNum]);
-
-  const onClick = (page, topThread) => {
-    setBtnVisited(btnVisited.map((btn, index) => index === page));
-    setPage(page);
-
-    window.scrollTo(0, topThread.current.offsetTop);
-  };
-
-  return (
+  return loading ? (
+    <Loading />
+  ) : (
     <Fragment>
+      <NewThread board={board} error={error} />
       {threadsList}
       {pages.length > 0 && (
         <div className='container centered pages'>
@@ -127,3 +143,17 @@ export default ({ threads, board }) => {
     </Fragment>
   );
 };
+
+ThreadList.propTypes = {
+  boards: PropTypes.object.isRequired,
+  threads: PropTypes.object.isRequired,
+  getThreads: PropTypes.func.isRequired,
+};
+
+const mapStateToProps = (state) => ({
+  boards: state.boards,
+  threads: state.threads,
+  rules: state.rules,
+});
+
+export default connect(mapStateToProps, { getThreads })(ThreadList);

@@ -16,22 +16,25 @@ export const createReport = (newReport) => async (dispatch) => {
   }
 };
 
-export const getBoardReports = (board_id) => async (dispatch) => {
+export const getReports = (board_id) => async (dispatch) => {
   try {
-    const res = await axios.get(`/_back/api/reports/board/${board_id}`);
+    const res = await axios.get(`/_back/api/boards/reports/${board_id}`);
 
     dispatch({
       type: GET_REPORTS,
       payload: res.data,
     });
   } catch (error) {
-    dispatch({ type: REPORT_ERROR, payload: error.response });
+    dispatch({
+      type: REPORT_ERROR,
+      payload: error.response,
+    });
   }
 };
 
-export const getGlobal = () => async (dispatch) => {
+export const getAllReports = () => async (dispatch) => {
   try {
-    const res = await axios.get('/_back/api/reports/global');
+    const res = await axios.get('/_back/api/reports');
 
     dispatch({
       type: GET_REPORTS,

@@ -40,6 +40,18 @@ function Theme() {
     return tag;
   };
 
+  this.get = async (name) => {
+    logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
+
+    const cachedTheme = cache.getTableData(this.table, { field: 'name', value: name });
+    if (cachedTheme.length > 0) return cachedTheme;
+
+    const theme = await db.select({ table: this.table, filters: [{ field: 'name', value: name }] });
+    if (theme.length > 0) cache.addTableData(this.table, theme[0]);
+
+    return cache.getTableData(this.table, { field: 'name', value: name });
+  };
+
   this.getAll = async () => {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 

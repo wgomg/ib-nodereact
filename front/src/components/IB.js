@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 
 import Home from './Home';
 import StaffDash from './StaffDash';
-import Boards from './Boards';
+import Board from './Board';
 import { ViewImage } from './common';
 
 import { getTheme } from '../actions/themes';
@@ -45,7 +45,7 @@ const IB = ({
             <Route exact path='/data/:img' component={ViewImage} />
             <Route exact path='/' component={Home} />
             <Route path='/staff' component={StaffDash} />
-            <Route path='/' component={Boards} />
+            <Route path='/' component={Board} />
           </Switch>
         </Fragment>
       </Router>

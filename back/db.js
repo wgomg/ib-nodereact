@@ -74,7 +74,7 @@ const select = (queryData) => {
 
         return ff;
       })
-      .join(' AND ');
+      .join(' OR ');
 
     filters = filters.filter((filter) => filter.value !== null);
 

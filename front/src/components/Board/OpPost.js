@@ -2,18 +2,28 @@ import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { ButtonLink, Image } from '../../common';
+import timeSince from '../../utils/timeSince';
+import prettyBytes from '../../utils/prettyBytes';
+import prettyDate from '../../utils/prettyDate';
 
-import timeSince from '../../../utils/timeSince';
-import prettyBytes from '../../../utils/prettyBytes';
-import prettyDate from '../../../utils/prettyDate';
+import { ButtonLink, Image } from '../common';
 
 import ReactTooltip from 'react-tooltip';
 import QuotePost from './QuotePost';
 
 const striptags = require('striptags');
 
-const Post = ({ thread, board, post, onClick, auth: { logged }, onHiddenClick, isHidden }) => {
+const OpPost = ({
+  thread,
+  board,
+  post,
+  isThread,
+  hiddenPosts,
+  auth: { logged },
+  hideButton,
+  onClick,
+  isHidden,
+}) => {
   const [hide, setHide] = useState(true);
 
   const textArray = post.text;
@@ -27,34 +37,6 @@ const Post = ({ thread, board, post, onClick, auth: { logged }, onHiddenClick, i
 
     return { left, top: newTop || top };
   };
-
-  const postInfo = (
-    <div className='post-info'>
-      <strong>{post.name || 'Anon'}</strong> {prettyDate(post.created_on).toLocaleString()}{' '}
-      <span className='small'>({timeSince(post.created_on)}) </span>{' '}
-      <a href={`/${board.uri}/t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
-      <a
-        href={`/${board.uri}/t${thread.thread_id}#qp${post.post_id}`}
-        onClick={() => onClick('qp', post.post_id)}
-      >
-        {post.post_id}
-      </a>{' '}
-      <a
-        href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
-        onClick={() => onClick('rp', post.post_id)}
-      >
-        [!!!]
-      </a>
-      {logged && (
-        <span className='small muted'>
-          {'  '}
-          <i>{post.user}</i>
-        </span>
-      )}
-    </div>
-  );
-
-  const hiddenContent = <span className='small muted'>{postInfo}</span>;
 
   const text = textArray.map((elem, index) => {
     if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem)) {
@@ -97,21 +79,42 @@ const Post = ({ thread, board, post, onClick, auth: { logged }, onHiddenClick, i
     return elem;
   });
 
-  const postContent = (
-    <Fragment>
-      {postInfo}
-      <p className='file-info-post'>
-        <span className='small'>
-          {' '}
-          {post.file && (
-            <Fragment>
-              File: {post.file.name + '.' + post.file.extension} ({prettyBytes(post.file.size)})
-            </Fragment>
-          )}
+  const postInfo = (
+    <div className='post-info'>
+      <span className='thread-title'>{thread.subject}</span> <strong>{post.name || 'Anon'}</strong>{' '}
+      {prettyDate(post.created_on).toLocaleString()}{' '}
+      <span className='small'>({timeSince(post.created_on)}) </span>
+      {!isHidden && (
+        <Fragment>
+          <a href={`/${board.uri}/t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
+          <a href={`/${board.uri}/t${thread.thread_id}#qp${post.post_id}`}>{thread.thread_id}</a>{' '}
+        </Fragment>
+      )}
+      {!isThread && !isHidden && <a href={`/${board.uri}/t${thread.thread_id}`}>[reply]</a>}
+      {logged && (
+        <span className='small muted'>
+          {'  '}
+          <i>{post.user}</i>
         </span>
-      </p>
+      )}
+    </div>
+  );
 
+  const hiddenContent = <span className='small muted'>{postInfo}</span>;
+
+  const opPost = (
+    <Fragment>
       <div className='post-file'>
+        <p className='file-info'>
+          <span className='small'>
+            {' '}
+            {post.file && (
+              <Fragment>
+                File: {post.file.name + '.' + post.file.extension} ({prettyBytes(post.file.size)})
+              </Fragment>
+            )}
+          </span>
+        </p>
         {post.file && (
           <Fragment>
             <Image
@@ -131,30 +134,36 @@ const Post = ({ thread, board, post, onClick, auth: { logged }, onHiddenClick, i
         )}
       </div>
 
-      <div className='post-text'>{text}</div>
+      <div className='post-body op'>
+        {postInfo}
+        <div className='op-post-text'>{text}</div>
+      </div>
+
+      {hiddenPosts && <span className='small'>{hiddenPosts} respuestas ocultas</span>}
     </Fragment>
   );
 
-  const postComponent = (
-    <div className='container post-container' key={post.post_id}>
-      <div className='post card card-post'>
-        <ButtonLink text={`[${isHidden ? '+' : '-'}]`} extraClass='hide' onClick={onHiddenClick} />
+  return (
+    <div className='op' id={'p' + post.post_id}>
+      <hr className='separator' />
 
-        {!isHidden ? postContent : hiddenContent}
-      </div>
+      {hideButton && (
+        <ButtonLink text={`[${isHidden ? '+' : '-'}]`} extraClass='hide' onClick={onClick} />
+      )}
+
+      {!isHidden ? opPost : hiddenContent}
     </div>
   );
-
-  return postComponent;
 };
 
-Post.propTypes = {
+OpPost.propTypes = {
   thread: PropTypes.object.isRequired,
   board: PropTypes.object.isRequired,
   post: PropTypes.object.isRequired,
-  onClick: PropTypes.func,
+  isThread: PropTypes.bool,
+  hiddenPosts: PropTypes.number,
   auth: PropTypes.object.isRequired,
-  onHiddenClick: PropTypes.func,
+  onClick: PropTypes.func,
   isHidden: PropTypes.bool,
 };
 
@@ -162,4 +171,4 @@ const mapStateToProps = (state) => ({
   auth: state.auth,
 });
 
-export default connect(mapStateToProps)(Post);
+export default connect(mapStateToProps)(OpPost);

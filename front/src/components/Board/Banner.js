@@ -2,17 +2,26 @@ import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Loading, Image } from '../../common';
-import { getBanners } from '../../../actions/banners';
+import { Loading, Image } from '../common';
+import { getAllBanners } from '../../actions/banners';
 
-const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
+const Banner = ({ board, getAllBanners, banners: { banners, loading } }) => {
+  const thisBoard = board && board.length > 0 ? board[0] : {};
+
+  const [boardBanners, setBoardBanners] = useState(null);
+
   const [hide, setHide] = useState(true);
 
   useEffect(() => {
-    getBanners();
-  }, [getBanners, board]);
+    getAllBanners();
+  }, [getAllBanners]);
 
-  const bannerImg = banners ? banners[Math.floor(Math.random() * banners.length)] : null;
+  useEffect(() => {
+    setBoardBanners(
+      banners.filter((banner) => banner.board_id === thisBoard.board_id || banner.board_id === null)
+    );
+  }, [banners, thisBoard]);
+  const bannerImg = boardBanners ? boardBanners[Math.floor(Math.random() * boardBanners.length)] : null;
 
   let imgSrc = null;
   let thumbSrc = null;
@@ -34,8 +43,8 @@ const Banner = ({ board, getBanners, banners: { banners, loading } }) => {
 };
 
 Banner.propTypes = {
-  board: PropTypes.object.isRequired,
-  getBanners: PropTypes.func.isRequired,
+  board: PropTypes.array,
+  getAllBanners: PropTypes.func.isRequired,
   banners: PropTypes.object.isRequired,
 };
 
@@ -43,4 +52,4 @@ const mapStateToProps = (state) => ({
   banners: state.banners,
 });
 
-export default connect(mapStateToProps, { getBanners })(Banner);
+export default connect(mapStateToProps, { getAllBanners })(Banner);

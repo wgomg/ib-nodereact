@@ -49,12 +49,12 @@ function Post() {
 
     delete body.files;
 
-    if (file) body.file_id = file.insertId;
+    if (file) body.file_id = cache.getIdFromHash('Files', file.file_id);
 
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    let post = await db.insert({ body: body, table: this.table }, this.procId);
+    let post = await db.insert({ body: body, table: this.table });
 
     if (post.insertId) {
       cache.setPostAddress(post.insertId, user);
@@ -95,12 +95,13 @@ function Post() {
       Board.procId = this.procId;
       post[0].board = await Board.get(cache.getIdFromHash('Boards', thread[0].board_id));
 
-      const tagged = await tagger.apply(post[0].text, this.procId);
+      const tagged = await tagger.apply(post[0], this.procId);
+
       post[0].text = tagged.text;
 
       if (tagged.quoted && tagged.quoted.length > 0)
         post[0].quoted = await Promise.all(
-          tagged.quoted.map(async (quoted_id) => await this.get(quoted_id))
+          tagged.quoted.map(async (quoted_id) => (await this.get(quoted_id))[0])
         );
 
       cache.addTableData(this.table, post[0], false);
@@ -125,9 +126,14 @@ function Post() {
     const cachedPosts = cache.getTable(this.table);
     if (cachedPosts.length > 0) return cachedPosts;
 
-    let posts = await db.select({ table: this.table });
+    let posts = await db.select({
+      table: this.table,
+      orderBy: { field: 'created_on', direction: 'ASC' },
+    });
 
-    posts = await Promise.all(posts.map(async (post) => await this.get(post.post_id)));
+    await posts.forEach(async (post) => {
+      await this.get(post.post_id);
+    });
 
     return cache.getTable(this.table);
   };
@@ -136,7 +142,11 @@ function Post() {
     const cachedPosts = cache.getTableData(this.table, { ...filters });
     if (cachedPosts.length > 0) return cachedPosts;
 
-    let posts = await db.select({ table: this.table, filters: [{ ...filters }] });
+    let posts = await db.select({
+      table: this.table,
+      filters: [{ ...filters }],
+      orderBy: { field: 'created_on', direction: 'ASC' },
+    });
 
     posts = await Promise.all(posts.map(async (post) => await this.get(post.post_id)));
 

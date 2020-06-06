@@ -62,16 +62,47 @@ function Board() {
     if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
     const Report = require('./Report');
-    return Report.find({ field: this.idField, value: cachedId });
+    return Report.find([
+      { field: this.idField, value: board_id },
+      { field: this.idField, value: null },
+    ]);
   };
 
-  this.getThreads = (board_id) => {
+  this.getThreads = async (board_id) => {
     logger.debug({ name: `${this.name}.getThreads()`, data: board_id }, this.procId, 'method');
 
-    if (!/^[0-9]+$/i.test(board_id)) return { errors: { board: 'Invalid ID' } };
+    const cachedId = await cache.getIdFromHash(this.table, board_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
     const Thread = require('./Thread');
-    return Thread.find({ field: this.idField, value: board_id });
+    let threads = await Thread.find({ field: this.idField, value: board_id });
+
+    const Post = require('./Post');
+    threads = await Promise.all(
+      threads.map(async (thread) => {
+        const posts = (await Post.find({ field: 'thread_id', value: thread.thread_id })).sort(
+          (p1, p2) => p1.created_on - p2.created_on
+        );
+        const postsCount = posts.length;
+
+        thread.posts = posts.slice(Math.max(posts.length - 5, 1));
+        thread.posts.unshift(posts[0]);
+
+        thread.hiddenPosts = postsCount - 6;
+
+        return thread;
+      })
+    );
+
+    threads.sort((t1, t2) => {
+      if (t1.posts.length > 0 && t2.posts.length > 0)
+        return (
+          new Date(t2.posts[t2.posts.length - 1].created_on) -
+          new Date(t1.posts[t1.posts.length - 1].created_on)
+        );
+    });
+
+    return threads;
   };
 
   this.getRules = (board_id) => {
@@ -81,7 +112,23 @@ function Board() {
     if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
     const Rule = require('./Rule');
-    return Rule.find({ field: this.idField, value: cachedId });
+    return Rule.find([
+      { field: this.idField, value: board_id },
+      { field: this.idField, value: null },
+    ]);
+  };
+
+  this.getBanners = (board_id) => {
+    logger.debug({ name: `${this.name}.getBanners()`, data: board_id }, this.procId, 'method');
+
+    const cachedId = cache.getIdFromHash(this.table, board_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
+
+    const Banner = require('./Banner');
+    return Banner.find([
+      { field: this.idField, value: board_id },
+      { field: this.idField, value: null },
+    ]);
   };
 
   this.getAll = async () => {

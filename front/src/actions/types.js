@@ -13,16 +13,16 @@ export const CREATE_POST = 'CREATE_POST';
 export const GET_POST = 'GET_POST';
 export const POST_ERROR = 'POST_ERROR';
 
+export const CREATE_THREAD = 'CREATE_THREAD';
+export const GET_THREADS = 'GET_THREADS';
 export const GET_LATEST_THREADS = 'GET_LATEST_THREADS';
-export const LATEST_THREADS_ERROR = 'LATEST_THREADS_ERROR';
+export const GET_THREAD = 'GET_THREAD';
+export const THREAD_ERROR = 'THREAD_ERROR';
 
 export const GET_BANNERS = 'GET_BANNERS';
 export const GET_BANNER = 'GET_BANNER';
 export const DELETE_BANNER = 'DELETE_BANNER';
 export const BANNERS_ERROR = 'BANNERS_ERROR';
-
-export const CREATE_THREAD = 'CREATE_THREAD';
-export const THREAD_ERROR = 'THREAD_ERROR';
 
 export const GET_STAFFS = 'GET_STAFFS';
 export const GET_STAFF = 'GET_STAFF';

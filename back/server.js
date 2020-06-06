@@ -21,7 +21,7 @@ setInterval(
 setInterval(
   () =>
     server.getConnections((err, connections) =>
-      logger.info(`Cache size (bytes): ${cache.stats('ksize')}`, 'CACHE')
+      logger.info(`Cache size (kb): ${cache.stats('vsize') / 1024}`, 'CACHE')
     ),
   1000 * 60
 );

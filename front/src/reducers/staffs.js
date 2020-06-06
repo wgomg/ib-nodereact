@@ -2,7 +2,7 @@ import { GET_STAFFS, GET_STAFF, STAFF_ERROR, DELETE_STAFF } from '../actions/typ
 
 const initState = {
   staffs: [],
-  staff: {},
+  staff: null,
   loading: true,
   error: null,
 };

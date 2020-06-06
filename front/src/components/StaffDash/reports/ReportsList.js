@@ -4,15 +4,15 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { Card, Loading } from '../../common';
-import { getGlobal, getBoardReports } from '../../../actions/reports';
+import { getAllReports, getReports } from '../../../actions/reports';
 
 import ReactTooltip from 'react-tooltip';
 
-const ReportsList = ({ getGlobal, getBoardReports, reports: { reports, loading }, board_id }) => {
+const ReportsList = ({ getAllReports, getReports, reports: { reports, loading }, board_id }) => {
   useEffect(() => {
-    if (board_id) getBoardReports(board_id);
-    else getGlobal();
-  }, [getGlobal, getBoardReports, board_id]);
+    if (board_id) getReports(board_id);
+    else getAllReports();
+  }, [getAllReports, getReports, board_id]);
 
   const reportsList =
     reports.length > 0 ? (
@@ -40,7 +40,7 @@ const ReportsList = ({ getGlobal, getBoardReports, reports: { reports, loading }
 
         const post = (
           <div className='col-1' data-tip data-for={'rt' + report.report_id}>
-            <Link to={`/${report.uri}/t${report.post.thread_id}#p${report.post.post_id}`}>
+            <Link to={`/${report.post.board[0].uri}/t${report.post.thread_id}#p${report.post.post_id}`}>
               {report.post.post_id}
             </Link>
           </div>
@@ -75,8 +75,8 @@ const ReportsList = ({ getGlobal, getBoardReports, reports: { reports, loading }
 };
 
 ReportsList.propTypes = {
-  getGlobal: PropTypes.func.isRequired,
-  getBoardReports: PropTypes.func.isRequired,
+  getAllReports: PropTypes.func.isRequired,
+  getReports: PropTypes.func.isRequired,
   reports: PropTypes.object.isRequired,
   board_id: PropTypes.number,
 };
@@ -85,4 +85,4 @@ const mapStateToProps = (state) => ({
   reports: state.reports,
 });
 
-export default connect(mapStateToProps, { getGlobal, getBoardReports })(ReportsList);
+export default connect(mapStateToProps, { getAllReports, getReports })(ReportsList);

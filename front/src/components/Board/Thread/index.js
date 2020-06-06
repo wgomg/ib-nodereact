@@ -1,22 +1,43 @@
-import React, { Fragment, useRef, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { Link } from 'react-router-dom';
 
-import Post from './Post';
-import OpPost from './OpPost';
+import Post from '../Post';
+import OpPost from '../OpPost';
 
-import NewPostForm from './NewPostForm';
+import NewPost from './NewPost';
 import ReportForm from './ReportForm';
 
-import { createPost } from '../../../actions/boards';
+import { getThread } from '../../../actions/threads';
+import { createPost } from '../../../actions/threads';
 import { createReport } from '../../../actions/reports';
 
 import ReactTooltip from 'react-tooltip';
 
-const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
+const Thread = ({
+  boards: { boards },
+  threads: { thread, loading, error },
+  rules: { rules },
+  getThread,
+  createPost,
+  createReport,
+  history,
+}) => {
+  const thread_id = parseInt(window.location.pathname.split('/')[2].replace(/\w/, ''));
+  const boardUri = window.location.pathname.split('/')[1];
+
+  useEffect(() => {
+    getThread(thread_id);
+  }, [thread_id, getThread]);
+
+  const [board, setBoard] = useState({});
   const [hidden, setHidden] = useState(localStorage.getItem('hidden').split(',') || [0]);
+
+  useEffect(() => {
+    setBoard({ ...boards.filter((board) => board.uri === boardUri)[0] });
+  }, [boards, boardUri]);
 
   const hash = window.location.hash;
 
@@ -156,10 +177,12 @@ const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
 
       if (res) {
         setNewPostData({
-          thread_id: 0,
+          ...newPostData,
           text: '',
           name: 'Anon',
         });
+
+        history.push(`/${boardUri}/t${thread_id}`);
 
         setTimeout(() => {
           window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -191,11 +214,13 @@ const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
     localStorage.setItem('hidden', hidden);
   }, [hidden]);
 
-  let posts = [...thread.posts];
+  let posts = loading ? [] : [...thread.posts];
 
   const currRef = useRef(null);
 
-  const opPost = <OpPost thread={thread} post={posts[0]} isThread={true} />;
+  const opPost = posts.length > 0 && (
+    <OpPost thread={thread} board={board} post={posts[0]} isThread={true} />
+  );
 
   const postsList = posts.splice(1).map((post, index) => {
     let props = { id: 'p' + post.post_id, key: index };
@@ -246,7 +271,7 @@ const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
       isCapture={true}
       overridePosition={tooltipOverridePosition}
     >
-      <NewPostForm
+      <NewPost
         formData={newPostData}
         onChange={onPostChange}
         onFileSelected={onFileSelected}
@@ -287,7 +312,7 @@ const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
 
   return (
     <Fragment>
-      <NewPostForm
+      <NewPost
         formData={newPostData}
         onChange={onPostChange}
         onFileSelected={onFileSelected}
@@ -309,11 +334,18 @@ const Thread = ({ thread, board, error, createPost, createReport, rules }) => {
 };
 
 Thread.propTypes = {
-  thread: PropTypes.object.isRequired,
-  board: PropTypes.object.isRequired,
+  threads: PropTypes.object.isRequired,
+  getThread: PropTypes.func.isRequired,
+  boards: PropTypes.object.isRequired,
   createPost: PropTypes.func.isRequired,
   createReport: PropTypes.func.isRequired,
-  rules: PropTypes.array.isRequired,
+  rules: PropTypes.object.isRequired,
 };
 
-export default connect(null, { createPost, createReport })(Thread);
+const mapStateToProps = (state) => ({
+  threads: state.threads,
+  boards: state.boards,
+  rules: state.rules,
+});
+
+export default connect(mapStateToProps, { getThread, createPost, createReport })(Thread);

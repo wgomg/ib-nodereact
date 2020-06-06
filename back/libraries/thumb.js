@@ -34,7 +34,7 @@ const make = async ({ name, ext }) => {
         '-unsharp 0x.5',
       ];
 
-      if (ext === pdf)
+      if (ext === 'pdf')
         args = [...args, '-background white +smush 20', '-bordercolor white', '-border 10'];
 
       args.push(thumbPath);

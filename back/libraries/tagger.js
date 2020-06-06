@@ -2,8 +2,14 @@
 
 const striptags = require('striptags');
 
-const apply = async (text, procId) => {
+let post = null;
+let text = null;
+
+const apply = async (tagPost, procId) => {
   const splitMarker = genSplitMarker();
+
+  post = tagPost;
+  text = tagPost.text;
 
   let replacedText = await applyTags(text, splitMarker, procId);
 
@@ -76,14 +82,9 @@ const setQuotes = async (replacedText, splitMarker, procId) => {
       const post_id = qp.replace('>>', '');
       quotedIds.push(post_id);
 
-      const Post = require('../models/Post');
-      Post.procId = procId;
-
-      const post = await Post.get(post_id);
-
       quotes.set(
         qp,
-        `${splitMarker}<a href='/${post[0].board[0].uri}/t${post[0].thread_id}#p${post_id}'>${qp}</a>${splitMarker}`
+        `${splitMarker}<a href='/${post.board[0].uri}/t${post.thread_id}#p${post_id}'>${qp}</a>${splitMarker}`
       );
     }
 

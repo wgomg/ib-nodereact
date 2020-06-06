@@ -4,21 +4,21 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { Card, Loading } from '../../common';
-import { getBanners, deleteBanner, getBoardBanners } from '../../../actions/banners';
+import { getAllBanners, deleteBanner, getBanners } from '../../../actions/banners';
 
 import prettyBytes from '../../../utils/prettyBytes';
 
 const BannersList = ({
+  getAllBanners,
   getBanners,
-  getBoardBanners,
   deleteBanner,
   banners: { banners, loading },
   board_id,
 }) => {
   useEffect(() => {
-    if (board_id) getBoardBanners(board_id);
-    else getBanners();
-  }, [getBanners, getBoardBanners, board_id]);
+    if (board_id) getBanners(board_id);
+    else getAllBanners();
+  }, [getAllBanners, getBanners, board_id]);
 
   const bannersList =
     banners.length > 0 ? (
@@ -81,8 +81,8 @@ const BannersList = ({
 };
 
 BannersList.propTypes = {
+  getAllBanners: PropTypes.func.isRequired,
   getBanners: PropTypes.func.isRequired,
-  getBoardBanners: PropTypes.func.isRequired,
   deleteBanner: PropTypes.func.isRequired,
   banners: PropTypes.object.isRequired,
   board_id: PropTypes.number,
@@ -92,4 +92,4 @@ const mapStateToProps = (state) => ({
   banners: state.banners,
 });
 
-export default connect(mapStateToProps, { getBanners, getBoardBanners, deleteBanner })(BannersList);
+export default connect(mapStateToProps, { getAllBanners, getBanners, deleteBanner })(BannersList);

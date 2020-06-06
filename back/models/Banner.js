@@ -55,15 +55,19 @@ function Banner() {
 
     let banners = await db.select({ table: this.table });
     if (banners.length > 0)
-      banners = banners.map((banner) => {
-        banner = {
-          ...banner,
-          board_id: banner.board_id ? cache.getHash('Boards', banner.board_id) : null,
-          file_id: cache.getHash('Files', banner.file_id),
-        };
+      banners = await Promise.all(
+        banners.map(async (banner) => {
+          banner = {
+            ...banner,
+            board_id: banner.board_id ? cache.getHash('Boards', banner.board_id) : null,
+            image: await File.get(banner.file_id),
+          };
 
-        return banner;
-      });
+          delete banner.file_id;
+
+          return banner;
+        })
+      );
     cache.setTable(this.table, banners);
 
     return cache.getTable(this.table);
@@ -83,10 +87,19 @@ function Banner() {
   };
 
   this.find = async (filters) => {
-    const cachedThreads = cache.getTableData(this.table, { ...filters });
-    if (cachedThreads.length > 0) return cachedThreads;
+    let cachedBanners = [];
 
-    let banners = await db.select({ table: this.table, filters: [{ ...filters }] });
+    filters.forEach((filter) => {
+      const cached = cache.getTableData(this.table, { ...filter });
+
+      cached.forEach((banner) => {
+        cachedBanners.push(banner);
+      });
+    });
+
+    if (cachedBanners.length > 0) return cachedBanners;
+
+    let banners = await db.select({ table: this.table, filters });
 
     if (banners.length > 0)
       banners.forEach((banner) => {

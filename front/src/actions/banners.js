@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { GET_BANNERS, GET_BANNER, DELETE_BANNER, BANNERS_ERROR } from './types';
 
-export const getBanners = () => async (dispatch) => {
+export const getAllBanners = () => async (dispatch) => {
   try {
     const res = await axios.get('/_back/api/banners');
 
@@ -18,9 +18,9 @@ export const getBanners = () => async (dispatch) => {
   }
 };
 
-export const getBoardBanners = (board_id) => async (dispatch) => {
+export const getBanners = (board_id) => async (dispatch) => {
   try {
-    const res = await axios.get(`/_back/api/banners/${board_id}`);
+    const res = await axios.get(`/_back/api/boardss/banners/${board_id}`);
 
     dispatch({
       type: GET_BANNERS,

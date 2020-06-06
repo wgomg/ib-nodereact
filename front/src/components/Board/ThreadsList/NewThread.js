@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { createThread } from '../../../actions/boards';
+import { createThread } from '../../../actions/threads';
 
 import { Form } from '../../common';
 

@@ -50,8 +50,27 @@ function Report() {
   this.getAll = async () => {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
-    const cachedReports = cache.getTable(this.table);
-    if (cachedReports.length > 0) return cachedReports;
+    const Post = require('./Post');
+    Post.procId = this.procId;
+
+    let cachedReports = cache.getTable(this.table);
+
+    if (cachedReports.length > 0) {
+      cachedReports = await Promise.all(
+        cachedReports.map(async (report) => {
+          report = {
+            ...report,
+            post: (await Post.get(report.post_id))[0],
+          };
+
+          delete report.post_id;
+
+          return report;
+        })
+      );
+
+      return cachedReports;
+    }
 
     let reports = await db.rawQuery(
       'SELECT ' +
@@ -73,24 +92,49 @@ function Report() {
         return report;
       });
     cache.setTable(this.table, reports);
+    reports = cache.getTable(this.table);
 
-    return cache.getTable(this.table);
+    reports = await Promise.all(
+      reports.map(async (report) => {
+        report = {
+          ...report,
+          post: (await Post.get(report.post_id))[0],
+        };
+
+        delete report.post_id;
+
+        return report;
+      })
+    );
+
+    return reports;
   };
 
-  this.find = async (board_id) => {
-    const cachedReports = cache.getTableData(this.table, { field: 'board_id', value: board_id });
+  this.find = async (filters) => {
+    let cachedReports = [];
+
+    filters.forEach((filter) => {
+      const cached = cache.getTableData(this.table, { ...filter });
+
+      cached.forEach((report) => {
+        cachedReports.push(report);
+      });
+    });
+
     if (cachedReports.length > 0) return cachedReports;
 
-    let reports = await db.rawQuery(
+    let sql =
       'SELECT ' +
-        'report_id, Reports.post_id, Boards.boards_id, Reports.rule_id, Rules.text, duration, solved, Reports.created_on ' +
-        ' FROM Reports' +
-        ' INNER JOIN Posts ON Posts.post_id = Reports.report_id' +
-        ' INNER JOIN Threads ON Threads.thread_od = Posts.thread_od' +
-        ' INNER JOIN Boards ON Boards.board_id = Threads.board_id' +
-        ' WHERE Boards.board_id = ' +
-        board_id
-    );
+      'report_id, Reports.post_id, Boards.boards_id, Reports.rule_id, Rules.text, duration, solved, Reports.created_on ' +
+      ' FROM Reports' +
+      ' INNER JOIN Posts ON Posts.post_id = Reports.report_id' +
+      ' INNER JOIN Threads ON Threads.thread_od = Posts.thread_od' +
+      ' INNER JOIN Boards ON Boards.board_id = Threads.board_id' +
+      ' WHERE ';
+
+    sql += filters.map((filter) => `Boards.${filter.field} = ${filter.value}`).join(' OR ');
+
+    let reports = await db.rawQuery(sql);
 
     if (reports.length > 0)
       reports.forEach((report) => {
@@ -108,7 +152,7 @@ function Report() {
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getAll', 'find'];
+    const excluded = ['getFunctions', 'find'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

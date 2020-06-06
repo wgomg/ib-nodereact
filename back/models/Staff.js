@@ -66,8 +66,9 @@ function Staff() {
 
     if (staff.length === 0)
       staff = await db.select({ table: this.table, filters: [{ field: 'name', value: body.name }] });
+    else staff[0].staff_id = cache.getIdFromHash(this.table, staff[0].staff_id);
 
-    if (res.length === 0) return { errors: { user: 'Not Found' } };
+    if (staff.length === 0) return { errors: { user: 'Not Found' } };
 
     const passwordMatch = bcrypt.compareSync(body.password, staff[0].password);
     if (!passwordMatch) return { errors: { password: 'Invalid password' } };
@@ -76,15 +77,13 @@ function Staff() {
     const now = (tzoffset) => new Date(Date.now() - tzoffset).toISOString();
 
     const updateStaff = {
-      staff_id: staff[0].staff_id,
-      name: staff[0].name,
       last_login: now(tzoffset).slice(0, 19).replace('T', ' '),
     };
 
     await db.update({
       body: updateStaff,
       table: this.table,
-      id: { field: this.idField, value: updateStaff.staff_id },
+      id: { field: this.idField, value: staff[0].staff_id },
     });
 
     staff = await db.select({ table: this.table, filters: [{ field: 'name', value: body.name }] });
@@ -94,6 +93,8 @@ function Staff() {
     if (!/^[0-9]+$/i.test(staff[0].staff_id)) cache.removeFromTable(this.table, staff[0].staff_id);
 
     cache.addTableData(this.table, staff[0]);
+
+    staff = cache.getTableData(this.table, { field: this.idField, value: staff[0].staff_id });
 
     return [{ token: jwt.set(staff[0]) }];
   };

@@ -62,7 +62,9 @@ function Thread() {
         thread[0] = { ...thread[0], board_id: cache.getHash('Boards', thread[0].board_id) };
         cache.addTableData(this.table, thread[0], false);
 
+        const posts = await this.getPosts(thread[0].thread_id);
         thread = cache.getTableData(this.table, { field: this.idField, value: thread[0].thread_id });
+        thread[0].posts = posts;
       }
     }
 
@@ -90,7 +92,11 @@ function Thread() {
 
           thread[0].board_id = cache.getHash('Boards', thread[0].board_id);
 
-          post.text = await tagger.apply(post.text, this.procId);
+          const Board = require('./Board');
+          Board.procId = this.procId;
+          post.board = await Board.get(cache.getIdFromHash('Boards', thread[0].board_id));
+
+          post.text = await tagger.apply(post, this.procId);
 
           return { ...thread[0], post };
         })
@@ -109,6 +115,31 @@ function Thread() {
     return Post.find({ field: this.idField, value: thread_id });
   };
 
+  this.get = async (thread_id) => {
+    logger.debug({ name: `${this.name}.get()`, data: thread_id }, this.procId, 'method');
+
+    if (!/^[0-9]+$/i.test(thread_id)) return { errors: { thread: 'Invalid ID' } };
+
+    thread_id = parseInt(thread_id);
+
+    const cachedThread = cache.getTableData(this.table, { field: this.idField, value: thread_id });
+
+    if (cachedThread.length > 0) {
+      cachedThread[0].posts = await this.getPosts(thread_id);
+
+      return cachedThread;
+    }
+
+    let threads = await this.find({ field: this.idField, value: thread_id });
+
+    if (threads.length > 0) {
+      threads[0].posts = await this.getPosts(threads[0].thread_id);
+      cache.addTableData(this.table, threads[0]);
+    }
+
+    return cache.getTableData(this.table, { field: this.idField, value: thread_id });
+  };
+
   this.find = async (filters) => {
     const cachedThreads = cache.getTableData(this.table, { ...filters });
     if (cachedThreads.length > 0) return cachedThreads;
@@ -118,7 +149,8 @@ function Thread() {
     if (threads.length > 0)
       threads.forEach((thread) => {
         thread = { ...thread, board_id: cache.getHash('Boards', thread.board_id) };
-        cache.addTableData(this.table, thread);
+
+        cache.addTableData(this.table, thread, false);
       });
 
     return cache.getTableData(this.table, { ...filters });

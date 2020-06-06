@@ -85,10 +85,19 @@ function Rule() {
   };
 
   this.find = async (filters) => {
-    const cachedReports = cache.getTableData(this.table, { ...filters });
-    if (cachedReports.length > 0) return cachedReports;
+    let cachedRules = [];
 
-    let rules = await db.select({ table: this.table, filters: [{ ...filters }] });
+    filters.forEach((filter) => {
+      const cached = cache.getTableData(this.table, { ...filter });
+
+      cached.forEach((rule) => {
+        cachedRules.push(rule);
+      });
+    });
+
+    if (cachedRules.length > 0) return cachedRules;
+
+    let rules = await db.select({ table: this.table, filters });
 
     if (rules.length > 0)
       rules.forEach((rule) => {
