@@ -14,7 +14,7 @@ export default function (state = initState, action) {
   switch (type) {
     case LOGIN_SUCCESS:
       localStorage.setItem('token', payload.token);
-      return { ...state, ...payload, logged: true, loading: false, error: null };
+      return { ...state, ...payload, logged: true, staff: {}, loading: false, error: null };
 
     case STAFF_LOADED:
       return { ...state, logged: true, loading: false, staff: payload, error: null };

@@ -90,9 +90,7 @@ function Staff() {
 
     if (staff[0].board_id) staff[0].board_id = cache.getHash('Boards', staff[0].board_id);
 
-    if (!/^[0-9]+$/i.test(staff[0].staff_id)) cache.removeFromTable(this.table, staff[0].staff_id);
-
-    cache.addTableData(this.table, staff[0]);
+    cache.upateTableData(this.table, staff[0]);
 
     staff = cache.getTableData(this.table, { field: this.idField, value: staff[0].staff_id });
 
@@ -141,6 +139,7 @@ function Staff() {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
     let cachedStaffs = cache.getTable(this.table);
+
     if (cachedStaffs.length > 0) {
       cachedStaffs = cachedStaffs.map((staff) => {
         delete staff.password;

@@ -90,12 +90,26 @@ const setTable = (table, values, hashId = true) => {
   );
 };
 
+const upateTableData = (table, value) => {
+  let cachedTable = cache.get(table) || [];
+
+  if (cachedTable.length > 0)
+    cachedTable = cachedTable.map((entry) => {
+      const idField = table.toLowerCase().slice(0, -1) + '_id';
+      if (entry[idField] === value[idField]) entry = { ...value };
+
+      return entry;
+    });
+
+  setTable(table, cachedTable);
+};
+
 const removeFromTable = (table, hash) => {
   let cachedTable = cache.get(table) || [];
 
   if (cachedTable.length > 0) cachedTable = cachedTable.filter((entry) => entry.hash !== hash);
 
-  cache.setTable(table, cachedTable);
+  setTable(table, cachedTable);
 };
 
 const setBannedAddress = (address, banTTL = 0) => {
@@ -180,6 +194,7 @@ module.exports = {
   getTableData,
   getTable,
   setTable,
+  upateTableData,
   removeFromTable,
   setBannedAddress,
   findBannedAddress,
