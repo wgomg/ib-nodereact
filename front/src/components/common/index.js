@@ -7,3 +7,4 @@ export { default as Footer } from './Footer';
 export { default as ViewImage } from './ViewImage';
 export { default as Empty } from './Empty';
 export { default as Navbar } from './Navbar';
+export { default as PostFile } from './PostFile';

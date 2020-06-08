@@ -7,6 +7,8 @@ export const getFileBlob = (file_id) => async (dispatch) => {
     const res = await axios.get(`/_back/api/files/blob/${file_id}`);
 
     dispatch({ type: GET_FILE, payload: res.data[0] });
+
+    return res.data.length > 0;
   } catch (error) {
     dispatch({
       type: FILE_ERROR,

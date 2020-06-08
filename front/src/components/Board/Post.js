@@ -2,7 +2,7 @@ import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { ButtonLink, Image } from '../common';
+import { ButtonLink, PostFile } from '../common';
 
 import timeSince from '../../utils/timeSince';
 import prettyBytes from '../../utils/prettyBytes';
@@ -24,10 +24,10 @@ const Post = ({
   onHiddenClick,
   isHidden,
   getFileBlob,
-  files: { file, blob, loading },
+  files,
 }) => {
-  const [hide, setHide] = useState(true);
-  const [getFile, setGetFile] = useState(false);
+  const [blobFile, setBlobFile] = useState(null);
+  const [fileName, setFileName] = useState('');
 
   const textArray = post.text;
 
@@ -111,23 +111,38 @@ const Post = ({
   });
 
   useEffect(() => {
-    if (getFile) getFileBlob(getFile);
-  }, [getFile, getFileBlob]);
+    const { loading, blob, file } = files;
+
+    if (!loading && blob && file && file.name === fileName) setBlobFile({ blob, file });
+  }, [files, setBlobFile, fileName]);
 
   useEffect(() => {
-    if (!loading && file && blob) {
-      const pdf = new Blob([new Uint8Array(blob.data)], { type: file.mimetype });
+    if (blobFile) {
+      const { file, blob } = blobFile;
 
-      const pdfUrl = URL.createObjectURL(pdf);
+      if (file && blob) {
+        const postFile = new Blob([new Uint8Array(blob.data)], { type: file.mimetype });
+        const postFileUrl = URL.createObjectURL(postFile);
 
-      window.open(pdfUrl);
+        const link = document.createElement('a');
+        link.href = postFileUrl;
+        link.download = file.name + '.' + file.extension;
 
-      setGetFile(false);
+        document.body.appendChild(link);
+
+        link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+
+        setFileName('');
+        setBlobFile(null);
+
+        document.body.removeChild(link);
+      }
     }
-  }, [file, blob, loading]);
+  }, [blobFile]);
 
-  const openTab = async (fileName) => {
-    setGetFile(fileName);
+  const downloadFile = (postFileName) => {
+    getFileBlob(postFileName);
+    setFileName(postFileName);
   };
 
   const postContent = (
@@ -138,34 +153,17 @@ const Post = ({
           {' '}
           {post.file && (
             <Fragment>
-              File: {post.file.name + '.' + post.file.extension} ({prettyBytes(post.file.size)})
+              <ButtonLink
+                text={`File: ${post.file.name}.${post.file.extension} (${prettyBytes(post.file.size)})`}
+                onClick={() => downloadFile(post.file.name)}
+              />
             </Fragment>
           )}
         </span>
       </p>
 
       <div className='post-file'>
-        {post.file && (
-          <Fragment>
-            <Image
-              className='post-image'
-              src={'/' + post.file.thumb}
-              hide={!hide}
-              onClick={
-                post.file.extension !== 'pdf' ? () => setHide(!hide) : () => openTab(post.file.name)
-              }
-            />
-
-            {post.file.extension !== 'pdf' && (
-              <Image
-                className='post-image'
-                src={'/' + post.file.folder + '/' + post.file.name + '.' + post.file.extension}
-                hide={hide}
-                onClick={() => setHide(!hide)}
-              />
-            )}
-          </Fragment>
-        )}
+        <PostFile post={post} />
       </div>
 
       <div className='post-text'>{text}</div>
