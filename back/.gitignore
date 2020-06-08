@@ -10,3 +10,6 @@ config/server.json
 logs
 
 .sync-exclude.lst
+
+
+.eslintrc.json

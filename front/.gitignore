@@ -25,3 +25,5 @@ yarn-error.log*
 src/test.css
 
 .sync-exclude.lst
+
+.eslintrc.json
