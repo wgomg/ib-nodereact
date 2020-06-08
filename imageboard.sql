@@ -1,8 +1,8 @@
--- MariaDB dump 10.17  Distrib 10.4.12-MariaDB, for Linux (x86_64)
+-- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: imageboard
 -- ------------------------------------------------------
--- Server version	10.4.12-MariaDB
+-- Server version	10.4.13-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `Boards` (
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE IF NOT EXISTS `Files` (
   `file_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `mimetype` varchar(12) NOT NULL,
+  `mimetype` varchar(45) NOT NULL,
   `name` varchar(50) NOT NULL,
   `extension` varchar(4) NOT NULL,
   `size` int(10) unsigned NOT NULL,
@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS `Rules` (
   `rule_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `board_id` bigint(20) unsigned DEFAULT NULL,
   `text` varchar(45) NOT NULL,
-  `duration` int(10) unsigned NOT NULL,
+  `duration` int(10) unsigned DEFAULT 0,
   `details` varchar(250) DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`rule_id`),
@@ -259,4 +259,4 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-05-28 13:37:38
+-- Dump completed on 2020-06-08 18:00:17
