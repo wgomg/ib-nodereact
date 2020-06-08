@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -10,6 +10,8 @@ import { ButtonLink, Image } from '../common';
 
 import ReactTooltip from 'react-tooltip';
 import QuotePost from './QuotePost';
+
+import { getFileBlob } from '../../actions/files';
 
 const striptags = require('striptags');
 
@@ -23,8 +25,11 @@ const OpPost = ({
   hideButton,
   onClick,
   isHidden,
+  getFileBlob,
+  files: { file, blob, loading },
 }) => {
   const [hide, setHide] = useState(true);
+  const [getFile, setGetFile] = useState(false);
 
   const textArray = post.text;
 
@@ -37,6 +42,29 @@ const OpPost = ({
 
     return { left, top: newTop || top };
   };
+
+  const postInfo = (
+    <div className='post-info'>
+      <span className='thread-title'>{thread.subject}</span> <strong>{post.name || 'Anon'}</strong>{' '}
+      {prettyDate(post.created_on).toLocaleString()}{' '}
+      <span className='small'>({timeSince(post.created_on)}) </span>
+      {!isHidden && (
+        <Fragment>
+          <a href={`/${board.uri}/t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
+          <a href={`/${board.uri}/t${thread.thread_id}#qp${post.post_id}`}>{thread.thread_id}</a>{' '}
+        </Fragment>
+      )}
+      {!isThread && !isHidden && <a href={`/${board.uri}/t${thread.thread_id}`}>[reply]</a>}
+      {logged && (
+        <span className='small muted'>
+          {'  '}
+          <i>{post.user}</i>
+        </span>
+      )}
+    </div>
+  );
+
+  const hiddenContent = <span className='small muted'>{postInfo}</span>;
 
   const text = textArray.map((elem, index) => {
     if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem)) {
@@ -79,28 +107,25 @@ const OpPost = ({
     return elem;
   });
 
-  const postInfo = (
-    <div className='post-info'>
-      <span className='thread-title'>{thread.subject}</span> <strong>{post.name || 'Anon'}</strong>{' '}
-      {prettyDate(post.created_on).toLocaleString()}{' '}
-      <span className='small'>({timeSince(post.created_on)}) </span>
-      {!isHidden && (
-        <Fragment>
-          <a href={`/${board.uri}/t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
-          <a href={`/${board.uri}/t${thread.thread_id}#qp${post.post_id}`}>{thread.thread_id}</a>{' '}
-        </Fragment>
-      )}
-      {!isThread && !isHidden && <a href={`/${board.uri}/t${thread.thread_id}`}>[reply]</a>}
-      {logged && (
-        <span className='small muted'>
-          {'  '}
-          <i>{post.user}</i>
-        </span>
-      )}
-    </div>
-  );
+  useEffect(() => {
+    if (getFile) getFileBlob(getFile);
+  }, [getFile, getFileBlob]);
 
-  const hiddenContent = <span className='small muted'>{postInfo}</span>;
+  useEffect(() => {
+    if (!loading && file && blob) {
+      const pdf = new Blob([new Uint8Array(blob.data)], { type: file.mimetype });
+
+      const pdfUrl = URL.createObjectURL(pdf);
+
+      window.open(pdfUrl);
+
+      setGetFile(false);
+    }
+  }, [file, blob, loading]);
+
+  const openTab = async (fileName) => {
+    setGetFile(fileName);
+  };
 
   const opPost = (
     <Fragment>
@@ -119,17 +144,21 @@ const OpPost = ({
           <Fragment>
             <Image
               className='post-image'
-              src={'/' + post.file.thumb + '/' + post.file.name + '.' + post.file.extension}
+              src={'/' + post.file.thumb}
               hide={!hide}
-              setHide={() => setHide(!hide)}
+              onClick={
+                post.file.extension !== 'pdf' ? () => setHide(!hide) : () => openTab(post.file.name)
+              }
             />
 
-            <Image
-              className='post-image'
-              src={'/' + post.file.folder + '/' + post.file.name + '.' + post.file.extension}
-              hide={hide}
-              setHide={() => setHide(!hide)}
-            />
+            {post.file.extension !== 'pdf' && (
+              <Image
+                className='post-image'
+                src={'/' + post.file.folder + '/' + post.file.name + '.' + post.file.extension}
+                hide={hide}
+                onClick={() => setHide(!hide)}
+              />
+            )}
           </Fragment>
         )}
       </div>
@@ -165,10 +194,13 @@ OpPost.propTypes = {
   auth: PropTypes.object.isRequired,
   onClick: PropTypes.func,
   isHidden: PropTypes.bool,
+  getFileBlob: PropTypes.func.isRequired,
+  files: PropTypes.object,
 };
 
 const mapStateToProps = (state) => ({
   auth: state.auth,
+  files: state.files,
 });
 
-export default connect(mapStateToProps)(OpPost);
+export default connect(mapStateToProps, { getFileBlob })(OpPost);

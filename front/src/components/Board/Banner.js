@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -27,19 +27,19 @@ const Banner = ({ board, getAllBanners, banners: { banners, loading } }) => {
   let thumbSrc = null;
   if (bannerImg) {
     imgSrc = `/${bannerImg.image.folder}/${bannerImg.image.name}.${bannerImg.image.extension}`;
-    thumbSrc = `/${bannerImg.image.thumb}/${bannerImg.image.name}.${bannerImg.image.extension}`;
+    thumbSrc = `/${bannerImg.image.thumb}`;
   }
 
-  const bannerView = loading ? (
-    <Loading />
+  const bannerView = bannerImg ? (
+    <div className='container centered'>
+      <Image className='banner centered' src={thumbSrc} hide={!hide} onClick={() => setHide(!hide)} />
+      <Image className='banner centered' src={imgSrc} hide={hide} onClick={() => setHide(!hide)} />
+    </div>
   ) : (
-    <Fragment>
-      <Image className='banner centered' src={thumbSrc} hide={!hide} setHide={() => setHide(!hide)} />
-      <Image className='banner centered' src={imgSrc} hide={hide} setHide={() => setHide(!hide)} />
-    </Fragment>
+    <h4 className='centered'>No hay banners</h4>
   );
 
-  return <div className='container centered'>{bannerView}</div>;
+  return loading ? <Loading /> : bannerView;
 };
 
 Banner.propTypes = {

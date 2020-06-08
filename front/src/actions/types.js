@@ -47,3 +47,6 @@ export const DELETE_TAG = 'DELETE_TAG';
 export const CREATE_REPORT = 'CREATE_REPORT';
 export const REPORT_ERROR = 'REPORT_ERROR';
 export const GET_REPORTS = 'GET_REPORTS';
+
+export const GET_FILE = 'GET_FILE';
+export const FILE_ERROR = 'FILE_ERROR';

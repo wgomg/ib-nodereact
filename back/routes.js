@@ -18,6 +18,7 @@ const privateMethods = new Map([
   ['Tag', ['save', 'delete']],
   ['Theme', ['save', 'update', 'delete']],
   ['Thread', ['delete']],
+  ['File', []],
 ]);
 
 let privateRoutes = new Map([]);

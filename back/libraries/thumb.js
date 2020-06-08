@@ -27,7 +27,6 @@ const make = async ({ name, ext }) => {
 
     if (!fs.existsSync(thumbPath)) {
       let args = [
-        '-define jpeg:size=500x500',
         filePath + (ext === 'pdf' ? '[0]' : ''),
         '-auto-orient',
         `-thumbnail ${thumbsize}`,
@@ -36,6 +35,7 @@ const make = async ({ name, ext }) => {
 
       if (ext === 'pdf')
         args = [...args, '-background white +smush 20', '-bordercolor white', '-border 10'];
+      else args = ['-define jpeg:size=500x500', ...args];
 
       args.push(thumbPath);
 
@@ -51,7 +51,7 @@ const make = async ({ name, ext }) => {
 
 const get = async (name, ext) =>
   fs.existsSync(`${thumbDir}/${name}.${ext === 'pdf' ? 'png' : ext}`)
-    ? `${config.dir}/thumbs`
+    ? `${config.dir}/thumbs/${name}.${ext === 'pdf' ? 'png' : ext}`
     : 'not-found';
 
 module.exports = { make, get };

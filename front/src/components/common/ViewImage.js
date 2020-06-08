@@ -2,6 +2,4 @@ import React from 'react';
 
 import Image from './Image';
 
-export default ({ match }) => {
-  return <Image className='viewimage' src={'/data/' + match.params.img} />;
-};
+export default ({ match }) => <Image className='viewimage' src={match.url} />;

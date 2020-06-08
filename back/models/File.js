@@ -9,6 +9,10 @@ const cache = require('../libraries/cache');
 
 const AllowedFile = require('../libraries/AllowedFile');
 
+const config = require('../config').files;
+
+const fs = require('fs');
+
 function File() {
   this.name = this.constructor.name;
   this.table = this.name + 's';
@@ -17,7 +21,7 @@ function File() {
   this.procId = null;
 
   this.schema = {
-    mimetype: { type: 'string', length: 12, required: true },
+    mimetype: { type: 'string', length: 45, required: true },
     name: { type: 'alphanum', length: 50, required: true },
     extension: { type: 'ext', length: 4, required: true },
     size: { type: 'num', required: true },
@@ -77,6 +81,24 @@ function File() {
     return file;
   };
 
+  this.getBlob = async (name) => {
+    logger.debug({ name: `${this.name}.getBlob()`, data: name }, this.procId, 'method');
+
+    const cachedFile = cache.getTableData(this.table, { field: 'name', value: name });
+
+    if (cachedFile.length === 0) return [];
+
+    const rootDir = __dirname.split('/').slice(0, -1).join('/');
+    const dataDir = `${rootDir}/public/${config.data.dir}/`;
+    const fileAbsolutePath = `${dataDir}/${cachedFile[0].name}.${cachedFile[0].extension}`;
+
+    if (!fs.existsSync(fileAbsolutePath)) return { error: 'No File found' };
+
+    const buffer = fs.readFileSync(fileAbsolutePath);
+
+    return [{ file: cachedFile[0], blob: buffer }];
+  };
+
   this.getAll = async () => {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 
@@ -94,6 +116,22 @@ function File() {
     cache.setTable(this.table, files);
 
     return cache.getTable(this.table);
+  };
+
+  this.getFunctions = () => {
+    const FN_ARGS = /([^\s,]+)/g;
+    const excluded = ['getFunctions', 'getAll', 'get', 'save'];
+
+    const functions = Object.entries(this)
+      .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))
+      .map(([fnName, fnDef]) => {
+        const fnStr = fnDef.toString();
+        const fnArgs = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(FN_ARGS);
+
+        return { name: fnName, args: fnArgs };
+      });
+
+    return functions;
   };
 }
 

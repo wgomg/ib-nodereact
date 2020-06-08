@@ -26,11 +26,12 @@ const Board = ({ getBoardsList, getRules, boards: { boards, loading }, auth: { s
   boards.forEach((board) => {
     routes.push(<Route exact path={'/' + board.uri} component={ThreadsList} key={board.board_id} />);
 
-    board.threadsIds.forEach((thread_id) => {
-      routes.push(
-        <Route exact path={'/' + board.uri + '/t' + thread_id} component={Thread} key={thread_id} />
-      );
-    });
+    if (board.threadsIds)
+      board.threadsIds.forEach((thread_id) => {
+        routes.push(
+          <Route exact path={'/' + board.uri + '/t' + thread_id} component={Thread} key={thread_id} />
+        );
+      });
   });
 
   routes.push(<NotFound key='notfound' />);

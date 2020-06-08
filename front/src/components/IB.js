@@ -42,6 +42,7 @@ const IB = ({
       <Router>
         <Fragment>
           <Switch>
+            <Route exact path='/data/thumbs/:img' component={ViewImage} />
             <Route exact path='/data/:img' component={ViewImage} />
             <Route exact path='/' component={Home} />
             <Route path='/staff' component={StaffDash} />
