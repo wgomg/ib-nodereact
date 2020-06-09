@@ -125,7 +125,10 @@ function Thread() {
     const cachedThread = cache.getTableData(this.table, { field: this.idField, value: thread_id });
 
     if (cachedThread.length > 0) {
-      cachedThread[0].posts = await this.getPosts(thread_id);
+      let posts = await this.getPosts(thread_id);
+      posts = posts.sort((p1, p2) => p1.post_id - p2.post_id);
+
+      cachedThread[0].posts = posts;
 
       return cachedThread;
     }

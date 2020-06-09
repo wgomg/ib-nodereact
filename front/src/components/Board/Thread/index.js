@@ -45,6 +45,7 @@ const Thread = ({
     thread_id: 0,
     text: '',
     name: 'Anon',
+    file_url: '',
   });
   const [file, setFile] = useState(null);
 
@@ -162,7 +163,7 @@ const Thread = ({
   const onPostSubmit = async (e) => {
     e.preventDefault();
 
-    const { thread_id, text, name } = newPostData;
+    const { thread_id, text, name, file_url } = newPostData;
 
     if (text === '') alert('El campo "Texto" es obligatorio');
     else {
@@ -172,6 +173,7 @@ const Thread = ({
       newPost.set('text', text);
       newPost.set('name', name);
       if (file) newPost.append('image', file);
+      newPost.set('file_url', file_url);
 
       const res = await createPost(newPost);
 
@@ -180,6 +182,7 @@ const Thread = ({
           ...newPostData,
           text: '',
           name: 'Anon',
+          file_url: '',
         });
 
         history.push(`/${boardUri}/t${thread_id}`);

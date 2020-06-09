@@ -13,6 +13,8 @@ import QuotePost from './QuotePost';
 
 import { getFileBlob } from '../../actions/files';
 
+import ReactPlayer from 'react-player/lazy';
+
 const striptags = require('striptags');
 
 const Post = ({
@@ -167,6 +169,19 @@ const Post = ({
       </div>
 
       <div className='post-text'>{text}</div>
+
+      {post.file_url && (
+        <div style={{ display: 'inline-block' }}>
+          <ReactPlayer
+            url={post.file_url}
+            playing={false}
+            loop={false}
+            controls={true}
+            width={426}
+            height={240}
+          />
+        </div>
+      )}
     </Fragment>
   );
 

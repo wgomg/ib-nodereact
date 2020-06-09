@@ -13,6 +13,8 @@ import QuotePost from './QuotePost';
 
 import { getFileBlob } from '../../actions/files';
 
+import ReactPlayer from 'react-player/lazy';
+
 const striptags = require('striptags');
 
 const OpPost = ({
@@ -162,6 +164,19 @@ const OpPost = ({
         </p>
 
         <PostFile post={post} />
+
+        {post.file_url && (
+          <div style={{ display: 'inline-block' }}>
+            <ReactPlayer
+              url={post.file_url}
+              playing={false}
+              loop={false}
+              controls={true}
+              width={426}
+              height={240}
+            />
+          </div>
+        )}
       </div>
 
       <div className='post-body op'>

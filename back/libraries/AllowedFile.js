@@ -12,6 +12,10 @@ const signaturesMap = new Map([
   ['ffd8ffe3', { mimetype: 'image/jpeg', extensions: ['jpeg'] }],
   ['ffd8ffe8', { mimetype: 'image/jpeg', extensions: ['jpg'] }],
   ['25504446', { mimetype: 'application/pdf', extensions: ['pdf'] }],
+  ['667479704d534e56', { mimetype: 'video/mp4', extensions: ['mp4'] }],
+  ['6674797069736f6d', { mimetype: 'video/mp4', extensions: ['mp4'] }],
+  ['667479706d703432', { mimetype: 'video/mp4', extensions: ['m4v,mp4'] }],
+  ['1a45dfa3', { mimetype: 'video/webm', extensions: ['webm'] }],
 ]);
 
 const rootDir = __dirname.split('/').slice(0, -1).join('/');
@@ -20,7 +24,11 @@ const dataDir = `${rootDir}/public/${config.data.dir}/`;
 function AllowedFile(file) {
   this.file = file;
 
-  const fileHeader = this.file.data.subarray(0, 4).toString('hex');
+  let fileExtension = this.file.name.split('.').pop().toLowerCase();
+  let fileHeader = this.file.data.subarray(0, 4).toString('hex');
+
+  if (fileExtension === 'mp4' || fileExtension === 'm4v')
+    fileHeader = this.file.data.subarray(4, 12).toString('hex');
 
   this.schemaData = {
     mimetype: null,
@@ -34,7 +42,6 @@ function AllowedFile(file) {
 
   if (this.file.truncated || signaturesMap.get(fileHeader) === undefined) this.error = 'Invalid File';
   else {
-    let fileExtension = this.file.name.split('.').pop().toLowerCase();
     const extensions = signaturesMap.get(fileHeader).extensions;
     if (!extensions.includes(fileExtension)) fileExtension = extensions[0];
 

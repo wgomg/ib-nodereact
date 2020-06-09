@@ -22,6 +22,7 @@ function Post() {
     text: { type: 'string', length: 3000, required: true },
     name: { type: 'alphanum', length: 10 },
     file_id: { type: 'table' },
+    file_url: { type: 'fileurl', length: 500 },
   };
 
   this.save = async (body) => {
@@ -148,7 +149,9 @@ function Post() {
       orderBy: { field: 'created_on', direction: 'ASC' },
     });
 
-    posts = await Promise.all(posts.map(async (post) => await this.get(post.post_id)));
+    await posts.forEach(async (post) => {
+      await this.get(post.post_id);
+    });
 
     return cache.getTable(this.table);
   };

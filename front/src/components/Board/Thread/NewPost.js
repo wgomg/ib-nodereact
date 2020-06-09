@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Form } from '../../common';
 
 const NewPostForm = ({ formData, onChange, onFileSelected, onSubmit, isFloatin }) => {
-  const { text, name } = formData;
+  const { text, name, file_url } = formData;
 
   const elements = [
     {
@@ -26,6 +26,13 @@ const NewPostForm = ({ formData, onChange, onFileSelected, onSubmit, isFloatin }
       name: 'image',
       label: 'Archivo',
       onChange: (e) => onFileSelected(e),
+    },
+    {
+      component: 'text',
+      name: 'file_url',
+      value: file_url,
+      label: 'URL',
+      onChange: (e) => onChange(e),
     },
     {
       component: 'btn',

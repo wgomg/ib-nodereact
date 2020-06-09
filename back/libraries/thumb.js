@@ -16,6 +16,8 @@ const dataDir = `${rootDir}/public/${config.dir}`;
 const thumbDir = `${dataDir}/thumbs`;
 
 const make = async ({ name, ext }) => {
+  if (ext === 'mp4' || ext === 'm4v' || ext === 'webm') return null;
+
   if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir);
 
   let thumbsize = '280x280';

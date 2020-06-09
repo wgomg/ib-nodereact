@@ -2,6 +2,8 @@
 
 const css = require('css');
 
+const ip = require('./ip');
+
 const validate = (entry, schema) => {
   if (Object.keys(entry).length === 0) return { msg: 'Invalid' };
 
@@ -50,10 +52,10 @@ const isValidType = (value, type) => {
       return /^$|^[a-zA-Z0-9 ]+$/i.test(value);
 
     case 'dir':
-      return /^$|^[a-zA-Z0-9-_\\\/]+$/i.test(value);
+      return /^$|^[a-zA-Z0-9-_\\/]+$/i.test(value);
 
     case 'ext':
-      return /^[a-z]{3,4}$/.test(value);
+      return /^[a-z4]{3,4}$/.test(value);
 
     case 'table':
     case 'num':
@@ -75,15 +77,19 @@ const isValidType = (value, type) => {
     case 'timestamp':
       return true;
 
-    case 'css':
+    case 'css': {
       const cssObj = css.parse(value, { silent: true });
       return cssObj.stylesheet.parsingErrors.length === 0;
+    }
+
+    case 'fileurl':
+      return /^(http(s)?:\/\/)?((w){3}.)?(streamable|dai(.ly|lymotion)|vimeo|youtu(be|.be))?(\.com)?\/.+/gm.test(
+        value
+      );
 
     default:
       return false;
   }
 };
-
-const objectsAreNotEqual = (obj1, obj2) => JSON.stringify(obj1) !== JSON.stringify(obj2);
 
 module.exports = validate;
