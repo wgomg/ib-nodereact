@@ -49,24 +49,21 @@ const LatestThreads = ({
                   pathname: `/${board[0].uri}/t${thread.thread_id}`,
                   hash: `#p${thread.post.post_id}`,
                 }}
-              >
+                data-tip
+                data-for={'bmp' + thread.post.post_id}>
                 {`>>/${board[0].uri}/${thread.post.post_id}`}
               </Link>
             </div>
-            <div className='col' data-tip data-for={'bmp' + thread.post.post_id}>
-              {' '}
-              {thread.subject}
-            </div>
+            <div className='col'> {thread.subject}</div>
             <div className='col-2'>{timeSince(thread.post.created_on)}</div>
             <ReactTooltip
               className='tooltip'
               id={'bmp' + thread.post.post_id}
-              place='left'
+              place='right'
               type='dark'
               effect='solid'
               border={true}
-              borderColor='#7da3b3'
-            >
+              borderColor='#7da3b3'>
               <div className='post-text'>{postText}</div>
             </ReactTooltip>
           </div>
