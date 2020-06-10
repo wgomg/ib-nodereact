@@ -25,6 +25,7 @@ function Banner() {
 
     const images = Object.values(body.files).filter((file) => file.size > 0);
     File.procId = this.procId;
+    File.genThumb = false;
     const image = await File.save(images[0]);
 
     if (image.errors) return { errors: image.errors };
@@ -33,7 +34,7 @@ function Banner() {
 
     body = {
       ...body,
-      file_id: image.insertId,
+      file_id: cache.getIdFromHash('Files', image.file_id),
       board_id: cache.getIdFromHash('Boards', body.board_id),
     };
 
@@ -42,7 +43,24 @@ function Banner() {
 
     let banner = await db.insert({ body, table: this.table });
 
-    if (banner.insertId) banner = await this.find({ field: this.idField, value: banner.insertId });
+    if (banner.insertId) {
+      banner = await db.select({
+        table: this.table,
+        filters: [{ field: this.idField, value: banner.insertId }],
+      });
+
+      if (banner.length > 0) {
+        let toCacheBanner = {
+          ...banner[0],
+          board_id: banner[0].board_id ? cache.getHash('Boards', banner[0].board_id) : null,
+          image: await File.get(banner[0].file_id),
+        };
+        delete toCacheBanner.file_id;
+        cache.addTableData(this.table, toCacheBanner);
+
+        banner = cache.getTableData(this.table, { field: this.idField, value: banner[0].banner_id });
+      }
+    }
 
     return banner;
   };
@@ -113,9 +131,14 @@ function Banner() {
     return cache.getTableData(this.table, { ...filters });
   };
 
+  this.get = async (banner_id) => {
+    const cachedBanners = cache.getTableData(this.table, { field: this.idField, value: banner_id });
+    if (cachedBanners.length > 0) return;
+  };
+
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'find'];
+    const excluded = ['getFunctions', 'find', 'get'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

@@ -57,7 +57,7 @@ export const createBanner = (newBanner, history) => async (dispatch) => {
     const res = await axios.post('/_back/api/banners', newBanner, config);
 
     dispatch({
-      type: GET_BANNER,
+      type: GET_BANNERS,
       payload: res.data,
     });
 
