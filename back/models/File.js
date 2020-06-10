@@ -20,6 +20,8 @@ function File() {
 
   this.procId = null;
 
+  this.genThumb = true;
+
   this.schema = {
     mimetype: { type: 'string', length: 45, required: true },
     name: { type: 'alphanum', length: 50, required: true },
@@ -39,7 +41,7 @@ function File() {
     if (errors) return { errors };
 
     await allowed.saveToDisk();
-    await allowed.generateThumb();
+    if (this.genThumb) await allowed.generateThumb();
 
     if (allowed.errors) return { errors: { file: allowed.error } };
 
@@ -58,7 +60,7 @@ function File() {
   };
 
   this.get = async (file_id) => {
-    if (!/^[0-9]+$/i.test(file_id)) return { errors: { post: 'Invalid ID' } };
+    if (!/^[0-9]+$/i.test(file_id)) return { errors: { file: 'Invalid ID' } };
 
     const cachedFile = cache.getTableData(this.table, { field: this.idField, value: file_id });
 
@@ -81,12 +83,14 @@ function File() {
     return file;
   };
 
-  this.getBlob = async (name) => {
-    logger.debug({ name: `${this.name}.getBlob()`, data: name }, this.procId, 'method');
+  this.getBlob = async (file_id) => {
+    logger.debug({ name: `${this.name}.getBlob()`, data: file_id }, this.procId, 'method');
 
-    const cachedFile = cache.getTableData(this.table, { field: 'name', value: name });
+    const cachedFile = cache.getTableData(this.table, { field: 'hash', value: file_id });
 
     if (cachedFile.length === 0) return [];
+
+    cachedFile[0].thumb = await thumb.get(cachedFile[0].name, cachedFile[0].extension);
 
     const rootDir = __dirname.split('/').slice(0, -1).join('/');
     const dataDir = `${rootDir}/public/${config.data.dir}/`;

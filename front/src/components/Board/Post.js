@@ -2,7 +2,7 @@ import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { ButtonLink, PostFile } from '../common';
+import { ButtonLink, PostFile, Player } from '../common';
 
 import timeSince from '../../utils/timeSince';
 import prettyBytes from '../../utils/prettyBytes';
@@ -12,8 +12,6 @@ import ReactTooltip from 'react-tooltip';
 import QuotePost from './QuotePost';
 
 import { getFileBlob } from '../../actions/files';
-
-import ReactPlayer from 'react-player/lazy';
 
 const striptags = require('striptags');
 
@@ -29,7 +27,7 @@ const Post = ({
   files,
 }) => {
   const [blobFile, setBlobFile] = useState(null);
-  const [fileName, setFileName] = useState('');
+  const [fileId, setFileId] = useState('');
 
   const textArray = post.text;
 
@@ -50,14 +48,12 @@ const Post = ({
       <a href={`/${board.uri}/t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
       <a
         href={`/${board.uri}/t${thread.thread_id}#qp${post.post_id}`}
-        onClick={() => onClick('qp', post.post_id)}
-      >
+        onClick={() => onClick('qp', post.post_id)}>
         {post.post_id}
       </a>{' '}
       <a
         href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
-        onClick={() => onClick('rp', post.post_id)}
-      >
+        onClick={() => onClick('rp', post.post_id)}>
         [!!!]
       </a>
       {logged && (
@@ -93,8 +89,7 @@ const Post = ({
               place='right'
               type='dark'
               effect='solid'
-              overridePosition={tooltipOverridePosition}
-            >
+              overridePosition={tooltipOverridePosition}>
               <QuotePost post={quoted} />
             </ReactTooltip>
           </Fragment>
@@ -115,8 +110,8 @@ const Post = ({
   useEffect(() => {
     const { loading, blob, file } = files;
 
-    if (!loading && blob && file && file.name === fileName) setBlobFile({ blob, file });
-  }, [files, setBlobFile, fileName]);
+    if (!loading && blob && file && file.file_id === fileId) setBlobFile({ blob, file });
+  }, [files, setBlobFile, fileId]);
 
   useEffect(() => {
     if (blobFile) {
@@ -134,7 +129,7 @@ const Post = ({
 
         link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
 
-        setFileName('');
+        setFileId('');
         setBlobFile(null);
 
         document.body.removeChild(link);
@@ -142,9 +137,9 @@ const Post = ({
     }
   }, [blobFile]);
 
-  const downloadFile = (postFileName) => {
-    getFileBlob(postFileName);
-    setFileName(postFileName);
+  const downloadFile = (postFileId) => {
+    getFileBlob(postFileId);
+    setFileId(postFileId);
   };
 
   const postContent = (
@@ -157,7 +152,7 @@ const Post = ({
             <Fragment>
               <ButtonLink
                 text={`File: ${post.file.name}.${post.file.extension} (${prettyBytes(post.file.size)})`}
-                onClick={() => downloadFile(post.file.name)}
+                onClick={() => downloadFile(post.file.file_id)}
               />
             </Fragment>
           )}
@@ -172,14 +167,7 @@ const Post = ({
 
       {post.file_url && (
         <div style={{ display: 'inline-block' }}>
-          <ReactPlayer
-            url={post.file_url}
-            playing={false}
-            loop={false}
-            controls={true}
-            width={426}
-            height={240}
-          />
+          <Player post={post} />
         </div>
       )}
     </Fragment>

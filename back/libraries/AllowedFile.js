@@ -14,7 +14,7 @@ const signaturesMap = new Map([
   ['25504446', { mimetype: 'application/pdf', extensions: ['pdf'] }],
   ['667479704d534e56', { mimetype: 'video/mp4', extensions: ['mp4'] }],
   ['6674797069736f6d', { mimetype: 'video/mp4', extensions: ['mp4'] }],
-  ['667479706d703432', { mimetype: 'video/mp4', extensions: ['m4v,mp4'] }],
+  ['667479706d703432', { mimetype: 'video/mp4', extensions: ['m4v', 'mp4'] }],
   ['1a45dfa3', { mimetype: 'video/webm', extensions: ['webm'] }],
 ]);
 

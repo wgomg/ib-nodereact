@@ -1,33 +1,10 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
-import { Image } from '.';
+import { Image, Player } from '.';
 
-import { getFileBlob } from '../../actions/files';
-
-import ReactPlayer from 'react-player/lazy';
-
-const PostFile = ({ post, files: { file, blob, loading }, getFileBlob }) => {
+const PostFile = ({ post }) => {
   const [hide, setHide] = useState(true);
-  const [isVideoFile, setIsVideoFile] = useState(post.file ? isVideo(post.file.mimetype) : false);
-  const [blobUrl, setBlobUrl] = useState(null);
-
-  useEffect(() => {
-    if (isVideoFile) {
-      getFileBlob(post.file.name);
-      setIsVideoFile(false);
-    }
-  }, [isVideoFile, getFileBlob, post]);
-
-  useEffect(() => {
-    if (!loading && blob && file && post.file && file.name === post.file.name) {
-      const postFile = new Blob([new Uint8Array(blob.data)], { type: file.mimetype });
-      const postFileUrl = URL.createObjectURL(postFile);
-
-      setBlobUrl(postFileUrl);
-    }
-  }, [loading, file, blob, post]);
 
   let postFile = <div />;
 
@@ -52,17 +29,10 @@ const PostFile = ({ post, files: { file, blob, loading }, getFileBlob }) => {
           )}
         </Fragment>
       );
-    else if (blobUrl)
+    else
       postFile = (
         <div style={{ display: 'block', float: 'left' }}>
-          <ReactPlayer
-            url={blobUrl}
-            playing={false}
-            loop={false}
-            controls={true}
-            width={426}
-            height={240}
-          />
+          <Player post={post} />
         </div>
       );
   }
@@ -75,12 +45,6 @@ const isVideo = (mimetype) =>
 
 PostFile.propTypes = {
   post: PropTypes.object.isRequired,
-  getFileBlob: PropTypes.func.isRequired,
-  files: PropTypes.object,
 };
 
-const mapStateToProps = (state) => ({
-  files: state.files,
-});
-
-export default connect(mapStateToProps, { getFileBlob })(PostFile);
+export default PostFile;

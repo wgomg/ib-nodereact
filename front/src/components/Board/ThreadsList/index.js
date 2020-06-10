@@ -15,7 +15,9 @@ const ThreadList = ({ boards: { boards }, threads: { threads, loading, error }, 
   const [board, setBoard] = useState({});
   const [page, setPage] = useState(0);
   const [btnVisited, setBtnVisited] = useState([]);
-  const [hidden, setHidden] = useState(localStorage.getItem('hidden').split(',') || [0]);
+  const [hidden, setHidden] = useState(
+    localStorage.getItem('hidden') ? localStorage.getItem('hidden').split(',') : [0]
+  );
 
   const topThread = useRef(null);
 
@@ -101,7 +103,7 @@ const ThreadList = ({ boards: { boards }, threads: { threads, loading, error }, 
           if (index === 0) divProps.ref = topThread;
 
           return (
-            <div {...divProps}>
+            <div {...divProps} key={index}>
               {opPost}
               {!isHidden && postsList}
             </div>
@@ -113,8 +115,7 @@ const ThreadList = ({ boards: { boards }, threads: { threads, loading, error }, 
       <Fragment key={index}>
         <button
           className={'link' + (btnVisited[index] ? ' visited' : '')}
-          onClick={() => onClick(index, topThread)}
-        >
+          onClick={() => onClick(index, topThread)}>
           {index + 1}
         </button>
         {index !== threadsPages.length - 1 ? ' / ' : ''}

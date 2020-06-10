@@ -8,3 +8,4 @@ export { default as ViewImage } from './ViewImage';
 export { default as Empty } from './Empty';
 export { default as Navbar } from './Navbar';
 export { default as PostFile } from './PostFile';
+export { default as Player } from './Player';
