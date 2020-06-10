@@ -10,8 +10,6 @@ const Banner = ({ board, getAllBanners, banners: { banners, loading } }) => {
 
   const [boardBanners, setBoardBanners] = useState(null);
 
-  const [hide, setHide] = useState(true);
-
   useEffect(() => {
     getAllBanners();
   }, [getAllBanners]);
@@ -24,16 +22,12 @@ const Banner = ({ board, getAllBanners, banners: { banners, loading } }) => {
   const bannerImg = boardBanners ? boardBanners[Math.floor(Math.random() * boardBanners.length)] : null;
 
   let imgSrc = null;
-  let thumbSrc = null;
-  if (bannerImg) {
+  if (bannerImg)
     imgSrc = `/${bannerImg.image.folder}/${bannerImg.image.name}.${bannerImg.image.extension}`;
-    thumbSrc = `/${bannerImg.image.thumb}`;
-  }
 
   const bannerView = bannerImg ? (
     <div className='container centered'>
-      <Image className='banner centered' src={thumbSrc} hide={!hide} onClick={() => setHide(!hide)} />
-      <Image className='banner centered' src={imgSrc} hide={hide} onClick={() => setHide(!hide)} />
+      <Image className='banner centered' src={imgSrc} hide={false} />
     </div>
   ) : (
     <h4 className='centered'>No hay banners</h4>
