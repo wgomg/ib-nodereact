@@ -18,6 +18,7 @@
 --
 -- Current Database: `imageboard`
 --
+
 --
 -- Host, database, usuario y contraseña por defecto
 -- Cambiar si estos se modifican en back/config/db.json
@@ -120,6 +121,7 @@ CREATE TABLE IF NOT EXISTS `Posts` (
   `text` varchar(3000) NOT NULL,
   `name` varchar(10) DEFAULT NULL,
   `file_id` bigint(20) unsigned DEFAULT NULL,
+  `file_url` varchar(500) DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`post_id`),
   KEY `thread_id` (`thread_id`),
@@ -191,10 +193,6 @@ CREATE TABLE IF NOT EXISTS `Staffs` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Default admin user, defaul password: admin
---
-INSERT INTO `Staffs` (`board_id`, `name`, `password`, `admin`, `disabled`) VALUES (NULL,	'admin', '$2b$10$q.GKtwlGnVmtt/fW4ptHIuVcMIPbK7aGLh66dpJbVpS.39qSuHiLa',	1,	0);
---
 -- Table structure for table `Tags`
 --
 
@@ -228,12 +226,6 @@ CREATE TABLE IF NOT EXISTS `Themes` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Default Theme
---
-INSERT INTO `Themes` (`theme_id`, `name`, `css`) VALUES
-(1,	'default',	':root{--general-bg:#0d100f;--general-font:#cecfcc;--general-border:#4d646e;--post-hashed-border:#8be2e4;--card-bg:#232522;--card-header-bg:#7da3b3;--card-header-font:#151613;--link:#8be2e4;--link-visited:#436f70;--link-hover:#b6e3e4;--title:#a2bcc4;--subtitle:#79868a;--button-bg:#414340;--button-font:#a7a8a6;--input-bg:#373c3a;--input-font:#9fafa9;--admin:#ec0033;--thread-title:#066606;--mod:#00ec00;--warning:#ec0000;--separator:#484e4f;--card-post-bg:#3c3d3b;--muted:#658686;--greentext:#b8d962;--redtext:#f84747}*{box-sizing:border-box;margin:0;padding:0}html{font-family:'Lucida Sans','Lucida Sans Regular','Lucida Grande','Lucida Sans Unicode',Geneva,Verdana,sans-serif;font-size:.9rem;background-color:var(--general-bg);color:var(--general-font);height:100%}body{position:relative;min-height:100%}img{display:block;cursor:pointer}img.viewimage{text-align:center;position:absolute;margin:auto;top:0;right:0;bottom:0;left:0}img.viewimage.not-visited{max-width:100vw;max-height:100vh}img.post-image{border:none;max-width:100vw;max-height:100vh;margin-top:.5rem;margin-bottom:.5rem;margin-right:1.5rem;margin-left:1rem;float:left}img.post-image.op{float:left;display:block}img.banner,img.logo{max-width:100vw;max-height:100vh}img.banner.not-visited,img.logo.not-visited{max-width:30%}img.loading{width:20px;margin:auto;display:block}div.container{padding:.5%}div.container.quote-container{padding:0}.centered{margin-left:auto;margin-right:auto}div.centered{width:60%}img.centered{width:80%}h1.centered,h2.centered,h3.centered,h4.centered,h5.centered,h6.centered,p.centered{text-align:center}h1.title,h2.title,h3.title,h4.title,h5.title,h6.title{color:var(--title)}h1.warning,h2.warning,h3.warning,h4.warning,h5.warning,h6.warning{color:var(--warning)}h1.subtitle,h2.subtitle,h3.subtitle,h4.subtitle,h5.subtitle,h6.subtitle,p.subtitle{color:var(--subtitle)}h1.not-found{color:var(--redtext);font-size:20vw}div.card{border:1px;border-style:solid;border-color:var(--general-border);background-color:var(--card-bg);margin-left:1%}div.card>.card-header{background-color:var(--card-header-bg);color:var(--card-header-font);padding-left:1%}div.card-post{display:inline-block;margin-left:0;border-color:var(--card-post-bg)}div.card-post.hashed{border-color:var(--post-hashed-border)}div.columns{display:flex;flex-direction:row;flex-wrap:wrap}div.columns>.col{flex:1}div.columns>.col-1{flex:1;max-width:10%}div.columns>.col-2{flex:1;max-width:20%}div.columns>.col-3{flex:1;max-width:30%}div.columns>.col-4{flex:1;max-width:40%}div.columns>.col-5{flex:1;max-width:50%}div.columns>.col-6{flex:1;max-width:60%}div.columns>.col-7{flex:1;max-width:70%}div.columns>.col-8{flex:1;max-width:80%}div.columns>.col-9{flex:1;max-width:90%}div.columns>.col-10{min-width:100%}div.col.board-list{max-width:33%}ul{padding-left:3%}ul.no-style{padding-left:2%;list-style:none}a{text-decoration:none}a:link,button.link{color:var(--link)}a:visited,button.link.visited{color:var(--link-visited)}a:hover,button.link:hover{color:var(--link-hover)}button.hide{float:left;margin-right:5px;margin-left:5px}button.link{background:0 0!important;border:none;padding:0;cursor:pointer}.form{max-width:50%}.form.floatin{max-width:100%}.form .form-group{margin:.2rem 0;display:block}.form input[type=email],.form input[type=password],.form input[type=text],.form select,.form textarea{display:block;width:100%;padding:.2rem;font-size:1rem;background-color:var(--input-bg);color:var(--input-font);border:none}.form textarea{resize:vertical;white-space:pre-wrap}.form input[type=submit],button{font:inherit}.btn{display:block;background-color:var(--button-bg);color:var(--button-font);padding:.4rem 1.3rem;font-size:1rem;border:none;cursor:pointer;margin-right:.5rem;outline:0;width:100%}.btn:hover{opacity:.8}span.new-item{float:right;padding-right:1rem}span.small{font-size:.8rem}span.admin{color:var(--admin)}span.mod{color:var(--mod)}span.muted{color:var(--muted)}hr.separator{width:99%;border-top:1px solid var(--separator);border-bottom:none;display:inline-block}div.thread-preview{display:block;clear:both}span.thread-title{color:var(--thread-title);font-weight:700;font-size:1.1rem}div.post-container{padding-bottom:0;max-width:80vw}div.quote-container{max-width:50vw}div.post-file{float:none}div.post-file.in-body{margin-right:1rem}div.post-info{display:inline-block;padding-right:1rem}p.file-info{display:block}p.file-info-post{display:block;padding-left:1rem}div.post p{display:block}div.post-text{padding:1rem;word-wrap:break-word;white-space:pre-wrap;font-size:.9rem}div.op-post-text{padding-right:2rem;padding-left:1rem;word-wrap:break-word;white-space:pre-wrap;font-size:.9rem}div.footer,div.pages{display:block;clear:both}.tooltip{padding:0!important;min-width:10vw}span.greentext{color:var(--greentext)}span.redtext{color:var(--redtext)}@media (max-width:700px){div.centered{width:80%}.col-1,.col-10,.col-2,.col-3,.col-4,.col-5,.col-6,.col-7,.col-8,.col-9,div.columns>.col{max-width:100%;min-width:100%;margin-bottom:2%}img.post-image.not-visited{max-width:50vw;max-height:54vh}img.banner.not-visited,img.logo.not-visited{max-width:60%}.form{max-width:100%}div.post-text{padding-top:0}}');
-
---
 -- Table structure for table `Threads`
 --
 
@@ -259,4 +251,47 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-08 18:00:17
+-- Dump completed on 2020-06-11 19:16:30
+
+--
+--
+--Default administrator account admin:admin
+--
+INSERT INTO `Staffs` (`board_id`, `name`, `password`, `admin`, `disabled`) VALUES (NULL,	'admin', '$2b$10$q.GKtwlGnVmtt/fW4ptHIuVcMIPbK7aGLh66dpJbVpS.39qSuHiLa',	1,	0);
+
+-- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: imageboard
+-- ------------------------------------------------------
+-- Server version	10.4.13-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Dumping data for table `Themes`
+--
+-- WHERE:  theme_id=1
+
+LOCK TABLES `Themes` WRITE;
+/*!40000 ALTER TABLE `Themes` DISABLE KEYS */;
+INSERT INTO `Themes` VALUES (1,'default',':root {\r\n  --general-bg: #0d100f;\r\n  --general-font: #cecfcc;\r\n  --general-border: #4d646e;\r\n  --post-hashed-border: #8be2e4;\r\n  --card-bg: #232522;\r\n  --card-header-bg: #7da3b3;\r\n  --card-header-font: #151613;\r\n  --link: #8be2e4;\r\n  --link-visited: #436f70;\r\n  --link-hover: #b6e3e4;\r\n  --title: #a2bcc4;\r\n  --subtitle: #79868a;\r\n  --button-bg: #414340;\r\n  --button-font: #a7a8a6;\r\n  --input-bg: #373c3a;\r\n  --input-font: #9fafa9;\r\n  --admin: #ec0033;\r\n  --thread-title: #066606;\r\n  --mod: #00ec00;\r\n  --warning: #ec0000;\r\n  --separator: #484e4f;\r\n  --card-post-bg: #3c3d3b;\r\n  --muted: #658686;\r\n  --greentext: #b8d962;\r\n  --redtext: #f84747;\r\n}\r\n\r\n* {\r\n  box-sizing: border-box;\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\n\r\nhtml {\r\n  font-family: \'Lucida Sans\', \'Lucida Sans Regular\', \'Lucida Grande\', \'Lucida Sans Unicode\', Geneva,\r\n    Verdana, sans-serif;\r\n  font-size: 0.9rem;\r\n  background-color: var(--general-bg);\r\n  color: var(--general-font);\r\n  height: 100%;\r\n}\r\n\r\nbody {\r\n  position: relative;\r\n  min-height: 100%;\r\n}\r\n\r\nimg {\r\n  display: block;\r\n  cursor: pointer;\r\n}\r\n\r\nimg.viewimage {\r\n  text-align: center;\r\n  position: absolute;\r\n  margin: auto;\r\n  top: 0;\r\n  right: 0;\r\n  bottom: 0;\r\n  left: 0;\r\n}\r\n\r\nimg.viewimage.not-visited {\r\n  max-width: 100vw;\r\n  max-height: 100vh;\r\n}\r\n\r\nimg.post-image {\r\n  border: none;\r\n  max-width: 100vw;\r\n  max-height: 100vh;\r\n  margin-top: 0.5rem;\r\n  margin-bottom: 0.5rem;\r\n  margin-right: 1.5rem;\r\n  margin-left: 1rem;\r\n  float: left;\r\n}\r\n\r\nimg.post-image.op {\r\n  float: left;\r\n  display: block;\r\n}\r\n/*\r\nimg.post-image.not-visited {\r\n max-width: 10vw;\r\n max-height: 20vh;\r\n margin-left: 0.5rem;\r\n}*/\r\n\r\nimg.logo,\r\nimg.banner {\r\n  max-width: 100vw;\r\n  max-height: 100vh;\r\n}\r\n\r\nimg.logo.not-visited,\r\nimg.banner.not-visited {\r\n  max-width: 30%;\r\n}\r\n\r\nimg.loading {\r\n  width: 20px;\r\n  margin: auto;\r\n  display: block;\r\n}\r\n\r\ndiv.container {\r\n  padding: 0.5%;\r\n}\r\n\r\ndiv.container.quote-container {\r\n  padding: 0%;\r\n}\r\n\r\n.centered {\r\n  margin-left: auto;\r\n  margin-right: auto;\r\n}\r\n\r\ndiv.centered {\r\n  width: 60%;\r\n}\r\n\r\nimg.centered {\r\n  margin-left: auto;\r\n  margin-right: auto;\r\n}\r\n\r\nh1.centered,\r\nh2.centered,\r\nh3.centered,\r\nh4.centered,\r\nh5.centered,\r\nh6.centered,\r\np.centered {\r\n  text-align: center;\r\n}\r\n\r\nh1.title,\r\nh2.title,\r\nh3.title,\r\nh4.title,\r\nh5.title,\r\nh6.title {\r\n  color: var(--title);\r\n}\r\n\r\nh1.warning,\r\nh2.warning,\r\nh3.warning,\r\nh4.warning,\r\nh5.warning,\r\nh6.warning {\r\n  color: var(--warning);\r\n}\r\n\r\nh1.subtitle,\r\nh2.subtitle,\r\nh3.subtitle,\r\nh4.subtitle,\r\nh5.subtitle,\r\nh6.subtitle,\r\np.subtitle {\r\n  color: var(--subtitle);\r\n}\r\n\r\nh1.not-found {\r\n  color: var(--redtext);  \r\n  font-size: 20vw;\r\n}\r\n\r\ndiv.card {\r\n  border: 1px;\r\n  border-style: solid;\r\n  border-color: var(--general-border);\r\n  background-color: var(--card-bg);\r\n  margin-left: 1%;\r\n}\r\n\r\ndiv.card > .card-header {\r\n  background-color: var(--card-header-bg);\r\n  color: var(--card-header-font);\r\n  padding-left: 1%;\r\n}\r\n\r\ndiv.card-post {\r\n  display: inline-block;\r\n  margin-left: 0;\r\n  border-color: var(--card-post-bg);\r\n}\r\n\r\ndiv.card-post.hashed {\r\n  border-color: var(--post-hashed-border);\r\n}\r\n\r\ndiv.columns {\r\n  display: flex;\r\n  flex-direction: row;\r\n  flex-wrap: wrap;\r\n}\r\n\r\ndiv.columns > .col {\r\n  flex: 1;\r\n}\r\n\r\ndiv.columns > .col-1 {\r\n  flex: 1;\r\n  max-width: 10%;\r\n}\r\n\r\ndiv.columns > .col-2 {\r\n  flex: 1;\r\n  max-width: 20%;\r\n}\r\n\r\ndiv.columns > .col-3 {\r\n  flex: 1;\r\n  max-width: 30%;\r\n}\r\n\r\ndiv.columns > .col-4 {\r\n  flex: 1;\r\n  max-width: 40%;\r\n}\r\n\r\ndiv.columns > .col-5 {\r\n  flex: 1;\r\n  max-width: 50%;\r\n}\r\n\r\ndiv.columns > .col-6 {\r\n  flex: 1;\r\n  max-width: 60%;\r\n}\r\n\r\ndiv.columns > .col-7 {\r\n  flex: 1;\r\n  max-width: 70%;\r\n}\r\n\r\ndiv.columns > .col-8 {\r\n  flex: 1;\r\n  max-width: 80%;\r\n}\r\n\r\ndiv.columns > .col-9 {\r\n  flex: 1;\r\n  max-width: 90%;\r\n}\r\n\r\ndiv.columns > .col-10 {\r\n  min-width: 100%;\r\n}\r\n\r\ndiv.col.board-list {\r\n  max-width: 33%;\r\n}\r\n\r\nul {\r\n  padding-left: 3%;\r\n}\r\n\r\nul.no-style {\r\n  padding-left: 2%;\r\n  list-style: none;\r\n}\r\n\r\na {\r\n  text-decoration: none;\r\n}\r\n\r\na:link,\r\nbutton.link {\r\n  color: var(--link);\r\n}\r\n\r\na:visited,\r\nbutton.link.visited {\r\n  color: var(--link-visited);\r\n}\r\n\r\na:hover,\r\nbutton.link:hover {\r\n  color: var(--link-hover);\r\n}\r\n\r\nbutton.hide {\r\n  float: left;\r\n  margin-right: 5px;\r\n  margin-left: 5px;\r\n}\r\n\r\nbutton.link {\r\n  background: none !important;\r\n  border: none;\r\n  padding: 0;\r\n  cursor: pointer;\r\n}\r\n\r\n.form {\r\n  max-width: 50%;\r\n}\r\n\r\n.form.floatin {\r\nmax-width: 100%;\r\n}\r\n\r\n.form .form-group {\r\n  margin: 0.2rem 0;\r\n  display: block;\r\n}\r\n\r\n.form input[type=\'text\'],\r\n.form input[type=\'email\'],\r\n.form input[type=\'password\'],\r\n.form select,\r\n.form textarea {\r\n  display: block;\r\n  width: 100%;\r\n  padding: 0.2rem;\r\n  font-size: 1rem;\r\n  background-color: var(--input-bg);\r\n  color: var(--input-font);\r\n  border: none;\r\n}\r\n\r\n.form textarea {\r\n  resize: vertical;\r\n  white-space: pre-wrap;\r\n}\r\n\r\n.form input[type=\'submit\'],\r\nbutton {\r\n  font: inherit;\r\n}\r\n\r\n.btn {\r\n  display: block;\r\n  background-color: var(--button-bg);\r\n  color: var(--button-font);\r\n  padding: 0.4rem 1.3rem;\r\n  font-size: 1rem;\r\n  border: none;\r\n  cursor: pointer;\r\n  margin-right: 0.5rem;\r\n  outline: none;\r\n  width: 100%;\r\n}\r\n\r\n.btn:hover {\r\n  opacity: 0.8;\r\n}\r\n\r\nspan.new-item {\r\n  float: right;\r\n  padding-right: 1rem;\r\n}\r\n\r\nspan.small {\r\n  font-size: 0.8rem;\r\n}\r\n\r\nspan.admin {\r\n  color: var(--admin);\r\n}\r\n\r\nspan.mod {\r\n  color: var(--mod);\r\n}\r\n\r\nspan.muted {\r\n  color: var(--muted);\r\n}\r\n\r\nhr.separator {\r\n  width: 99%;\r\n  border-top: 1px solid var(--separator);\r\n  border-bottom: none;\r\n  display: inline-block;\r\n}\r\n\r\ndiv.thread-preview {\r\n  display: block;\r\n  clear: both;\r\n}\r\n\r\nspan.thread-title {\r\n  color: var(--thread-title);\r\n  font-weight: bold;\r\n  font-size: 1.1rem;\r\n}\r\n\r\ndiv.post-container {\r\n  padding-bottom: 0;\r\n  max-width: 80vw;\r\n}\r\n\r\ndiv.quote-container {\r\n  max-width: 50vw;\r\n}\r\n\r\ndiv.post-file {\r\n  float: none;\r\n}\r\n\r\ndiv.post-file.in-body {\r\n  margin-right: 1rem;\r\n}\r\n\r\ndiv.post-info {\r\n  display: inline-block;\r\n  padding-right: 1rem;\r\n}\r\n\r\np.file-info {\r\n  display: block;\r\n}\r\n\r\np.file-info-post {\r\n  display: block;\r\n  padding-left: 1rem;\r\n}\r\n\r\ndiv.post p {\r\n  display: block;\r\n}\r\n\r\ndiv.post-text {\r\n  padding: 1rem;\r\n  word-wrap: break-word;\r\n  white-space: pre-wrap;\r\n  font-size: 0.9rem;\r\n}\r\n\r\ndiv.op-post-text {\r\n  padding-right: 2rem;\r\n  padding-left: 1rem;\r\n  word-wrap: break-word;\r\n  white-space: pre-wrap;\r\n  font-size: 0.9rem;\r\n}\r\n\r\ndiv.footer,\r\ndiv.pages {\r\n  display: block;\r\n  clear: both;\r\n}\r\n\r\n.tooltip {\r\n  padding: 0 !important;\r\n  min-width: 10vw;\r\n}\r\n\r\nspan.greentext {\r\n  color: var(--greentext);\r\n}\r\n\r\nspan.redtext {\r\n  color: var(--redtext);\r\n}\r\n\r\n.react-player__preview {\r\n  background-size: contain !important;\r\n  background-repeat: no-repeat !important;\r\n}\r\n\r\n@media (max-width: 700px) {\r\n  div.centered {\r\n    width: 80%;\r\n  }\r\n\r\n  div.columns > .col,\r\n  .col-1,\r\n  .col-2,\r\n  .col-3,\r\n  .col-4,\r\n  .col-5,\r\n  .col-6,\r\n  .col-7,\r\n  .col-8,\r\n  .col-9,\r\n  .col-10 {\r\n    max-width: 100%;\r\n    min-width: 100%;\r\n    margin-bottom: 2%;\r\n  }\r\n\r\n  img.post-image.not-visited {\r\n    max-width: 50vw;\r\n    max-height: 54vh;\r\n  }\r\n\r\n  img.logo.not-visited,\r\n  img.banner.not-visited {\r\n    max-width: 60%;\r\n  }\r\n\r\n  .form {\r\n    max-width: 100%;\r\n  }\r\n\r\n  div.post-text {\r\n    padding-top: 0;\r\n  }\r\n}\r\n','2020-05-08 01:47:17');
+/*!40000 ALTER TABLE `Themes` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2020-06-11 19:16:33
