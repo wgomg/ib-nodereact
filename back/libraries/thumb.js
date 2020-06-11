@@ -23,13 +23,13 @@ const make = async ({ name, ext }) => {
 
   try {
     let filePath = `${dataDir}/${name}.${ext}`;
-    const thumbPath = `${thumbDir}/${name}.${ext}`;
+    const thumbPath = `${thumbDir}/${name}.${getThumbExt(ext)}`;
 
     if (!fs.existsSync(thumbPath)) {
       let cmd = `convert ${filePath} -define jpeg:size=500x500 -auto-orient -thumbnail ${thumbsize} -unsharp 0x.5 ${thumbPath}`;
 
-      if (ext === 'pdf') cmd = pdfCmd(name, ext);
-      if (ext === 'mp4' || ext === 'm4v' || ext === 'webm') cmd = videoCmd(name, ext);
+      if (ext === 'pdf') cmd = pdfCmd(filePath, thumbPath);
+      if (ext === 'mp4' || ext === 'm4v' || ext === 'webm') cmd = videoCmd(filePath, thumbPath);
 
       await spawn(cmd);
     }
@@ -41,29 +41,18 @@ const make = async ({ name, ext }) => {
   }
 };
 
-const videoCmd = (name, ext) => {
-  let filePath = `${dataDir}/${name}.${ext}`;
-  const thumbPath = `${thumbDir}/${name}.png`;
+const videoCmd = (filePath, thumbPath) =>
+  `ffmpeg -ss 1 -i ${filePath} -vframes 1 -filter:v 'yadif,scale=-1:240' ${thumbPath}`;
 
-  return `ffmpeg -ss 1 -i ${filePath} -vframes 1 -filter:v 'yadif,scale=-1:240' ${thumbPath}`;
-};
-
-const pdfCmd = (name, ext) => {
-  let filePath = `${dataDir}/${name}.${ext}`;
-  const thumbPath = `${thumbDir}/${name}.png`;
-
-  return `convert ${filePath}[0] -auto-orient -thumbnail 280x280 -unsharp 0x.5 -background white +smush 20 -bordercolor white -border 10 ${thumbPath}`;
-};
+const pdfCmd = (filePath, thumbPath) =>
+  `convert ${filePath}[0] -auto-orient -thumbnail 280x280 -unsharp 0x.5 -background white +smush 20 -bordercolor white -border 10 ${thumbPath}`;
 
 const get = async (name, ext) =>
-  fs.existsSync(
-    `${thumbDir}/${name}.${
-      ext === 'pdf' || ext === 'mp4' || ext === 'm4v' || ext === 'webm' ? 'png' : ext
-    }`
-  )
-    ? `${config.dir}/thumbs/${name}.${
-        ext === 'pdf' || ext === 'mp4' || ext === 'm4v' || ext === 'webm' ? 'png' : ext
-      }`
+  fs.existsSync(`${thumbDir}/${name}.${getThumbExt(ext)}`)
+    ? `${config.dir}/thumbs/${name}.${getThumbExt(ext)}`
     : 'not-found';
+
+const getThumbExt = (ext) =>
+  ext === 'pdf' || ext === 'mp4' || ext === 'm4v' || ext === 'webm' ? 'png' : ext;
 
 module.exports = { make, get };
