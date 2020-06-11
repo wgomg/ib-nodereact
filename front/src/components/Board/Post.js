@@ -15,21 +15,25 @@ import { getFileBlob } from '../../actions/files';
 
 const striptags = require('striptags');
 
-const Post = ({
-  thread,
-  board,
-  post,
-  onClick,
-  auth: { logged },
-  onHiddenClick,
-  isHidden,
-  getFileBlob,
-  files,
-}) => {
+const Post = ({ thread, board, post, onClick, auth: { logged }, getFileBlob, files }) => {
+  const [hidden, setHidden] = useState(localStorage.getItem('hidden').split(','));
+  const [isHidden, setIsHidden] = useState(hidden.includes('p' + post.post_id));
+
+  useEffect(() => {
+    localStorage.setItem('hidden', hidden);
+  }, [hidden, post]);
+
   const [blobFile, setBlobFile] = useState(null);
   const [fileId, setFileId] = useState('');
 
-  const textArray = post.text;
+  const onHiddenClick = (id) => {
+    const postIsHidden = hidden.includes('p' + id);
+
+    if (postIsHidden) setHidden(hidden.filter((hide) => hide !== 'p' + id));
+    else setHidden([...hidden, 'p' + id]);
+
+    setIsHidden(!postIsHidden);
+  };
 
   const tooltipOverridePosition = ({ left, top }, currentEvent, currentTarget, node) => {
     const { height } = node.getBoundingClientRect();
@@ -67,7 +71,7 @@ const Post = ({
 
   const hiddenContent = <span className='small muted'>{postInfo}</span>;
 
-  const text = textArray.map((elem, index) => {
+  const text = post.text.map((elem, index) => {
     if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem)) {
       let props = {
         style: { display: 'inline-grid' },
@@ -173,17 +177,19 @@ const Post = ({
     </Fragment>
   );
 
-  const postComponent = (
+  return (
     <div className='container post-container' key={post.post_id}>
       <div className='post card card-post'>
-        <ButtonLink text={`[${isHidden ? '+' : '-'}]`} extraClass='hide' onClick={onHiddenClick} />
+        <ButtonLink
+          text={`[${isHidden ? '+' : '-'}]`}
+          extraClass='hide'
+          onClick={() => onHiddenClick(post.post_id)}
+        />
 
         {!isHidden ? postContent : hiddenContent}
       </div>
     </div>
   );
-
-  return postComponent;
 };
 
 Post.propTypes = {
@@ -192,8 +198,6 @@ Post.propTypes = {
   post: PropTypes.object.isRequired,
   onClick: PropTypes.func,
   auth: PropTypes.object.isRequired,
-  onHiddenClick: PropTypes.func,
-  isHidden: PropTypes.bool,
   getFileBlob: PropTypes.func.isRequired,
   files: PropTypes.object,
 };

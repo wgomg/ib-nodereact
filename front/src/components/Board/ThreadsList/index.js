@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Post from '../Post';
@@ -12,6 +12,13 @@ import { Empty, Loading } from '../../common';
 import { getThreads } from '../../../actions/threads';
 
 const ThreadList = ({ boards: { boards }, threads: { threads, loading, error }, getThreads }) => {
+  const location = useLocation();
+  const [boardUri, setBoardUri] = useState(null);
+
+  useEffect(() => {
+    setBoardUri(location.pathname.replace(/\//g, ''));
+  }, [location]);
+
   const [board, setBoard] = useState({});
   const [page, setPage] = useState(0);
   const [btnVisited, setBtnVisited] = useState([]);
@@ -20,8 +27,6 @@ const ThreadList = ({ boards: { boards }, threads: { threads, loading, error }, 
   );
 
   const topThread = useRef(null);
-
-  const boardUri = window.location.pathname.replace(/\//g, '');
 
   useEffect(() => {
     setBoard({ ...boards.filter((board) => board.uri === boardUri)[0] });

@@ -35,7 +35,7 @@ function File() {
 
     const allowed = new AllowedFile(file);
 
-    if (allowed.errors) return { errors: { file: allowed.error } };
+    if (allowed.error) return { errors: { file: allowed.error } };
 
     const errors = validate(allowed.schemaData, this.schema);
     if (errors) return { errors };
@@ -43,7 +43,7 @@ function File() {
     await allowed.saveToDisk();
     if (this.genThumb) await allowed.generateThumb();
 
-    if (allowed.errors) return { errors: { file: allowed.error } };
+    if (allowed.error) return { errors: { file: allowed.error } };
 
     file = await db.insert({ body: allowed.schemaData, table: this.table });
 

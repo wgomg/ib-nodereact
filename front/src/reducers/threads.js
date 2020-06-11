@@ -11,7 +11,7 @@ import {
 const initState = {
   latests: [],
   threads: [],
-  thread: {},
+  thread: null,
   loading: true,
   error: null,
 };

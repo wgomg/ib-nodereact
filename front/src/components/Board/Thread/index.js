@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import Post from '../Post';
 import OpPost from '../OpPost';
@@ -15,9 +15,11 @@ import { createPost } from '../../../actions/threads';
 import { createReport } from '../../../actions/reports';
 
 import ReactTooltip from 'react-tooltip';
+import { Loading } from '../../common';
 
 const Thread = ({
-  boards: { boards },
+  board,
+  thread_id,
   threads: { thread, loading, error },
   rules: { rules },
   getThread,
@@ -25,24 +27,12 @@ const Thread = ({
   createReport,
   history,
 }) => {
-  const thread_id = parseInt(window.location.pathname.split('/')[2].replace(/\w/, ''));
-  const boardUri = window.location.pathname.split('/')[1];
-
-  useEffect(() => {
-    getThread(thread_id);
-  }, [thread_id, getThread]);
-
-  const [board, setBoard] = useState({});
-  const [hidden, setHidden] = useState(localStorage.getItem('hidden').split(',') || [0]);
-
-  useEffect(() => {
-    setBoard({ ...boards.filter((board) => board.uri === boardUri)[0] });
-  }, [boards, boardUri]);
-
-  const hash = window.location.hash;
+  let location = useLocation();
+  const [boardUri, setBoardUri] = useState(null);
+  const [urlHash, setUrlHash] = useState(null);
 
   const [newPostData, setNewPostData] = useState({
-    thread_id: 0,
+    thread_id: thread_id,
     text: '',
     name: 'Anon',
     file_url: '',
@@ -53,22 +43,24 @@ const Thread = ({
     post_id: 0,
     rule_id: 0,
   });
-
   const [tooltipData, setTooltipData] = useState({
     qp: null,
     rp: null,
   });
-
+  const { qp, rp } = tooltipData;
   const [prevTooltipPost, setPrevTooltipPost] = useState({
     prevQp: null,
     prevRp: null,
   });
 
-  const { qp, rp } = tooltipData;
+  useEffect(() => {
+    setBoardUri(location.pathname.split('/')[1]);
+    setUrlHash(location.hash);
+  }, [location]);
 
   useEffect(() => {
-    setNewPostData((newPostData) => ({ ...newPostData, thread_id: thread.thread_id }));
-  }, [thread]);
+    getThread(thread_id);
+  }, [thread_id, getThread]);
 
   useEffect(() => {
     if (error)
@@ -83,21 +75,21 @@ const Thread = ({
     setTooltipData((tooltipData) => {
       if (qp) return { ...tooltipData, qp };
 
-      if (hash.includes('#qp')) return { ...tooltipData, qp: hash.replace('#qp', '') };
+      if (urlHash && urlHash.includes('#qp')) return { ...tooltipData, qp: urlHash.replace('#qp', '') };
 
       return tooltipData;
     });
-  }, [qp, hash]);
+  }, [qp, urlHash]);
 
   useEffect(() => {
     setTooltipData((tooltipData) => {
       if (rp) return { ...tooltipData, rp };
 
-      if (hash.includes('#rp')) return { ...tooltipData, rp: hash.replace('#rp', '') };
+      if (urlHash && urlHash.includes('#rp')) return { ...tooltipData, rp: urlHash.replace('#rp', '') };
 
       return tooltipData;
     });
-  }, [rp, hash]);
+  }, [rp, urlHash]);
 
   useEffect(() => {
     setNewPostData((newPostData) =>
@@ -109,15 +101,19 @@ const Thread = ({
     setReportData((reportData) => (rp ? { ...reportData, post_id: rp } : reportData));
   }, [rp]);
 
+  const currRef = useRef(null);
+
   setTimeout(() => {
-    if (hash && currRef.current) {
+    if (urlHash && currRef.current) {
       window.scrollTo({ left: 0, top: currRef.current.offsetTop, behavior: 'smooth' });
       currRef.current.firstChild.firstChild.classList.add('hashed');
 
-      if (hash.includes('#qp') || hash.includes('#rp')) {
-        const key = hash.replace('#', '').replace(/\d+/g, '');
+      if (urlHash.includes('#qp') || urlHash.includes('#rp')) {
+        const key = urlHash.replace('#', '').replace(/\d+/g, '');
         openTooltip(key);
       }
+
+      currRef.current = null;
     }
   }, 100);
 
@@ -184,6 +180,7 @@ const Thread = ({
           name: 'Anon',
           file_url: '',
         });
+        setFile(null);
 
         history.push(`/${boardUri}/t${thread_id}`);
 
@@ -208,45 +205,29 @@ const Thread = ({
     }
   };
 
-  const onHiddenClick = (id) => {
-    if (hidden.includes(id)) setHidden(hidden.filter((hide) => hide !== id));
-    else setHidden([...hidden, id]);
-  };
+  const postsList =
+    loading || !thread ? (
+      <Loading />
+    ) : (
+      thread.posts.map((post, index) => {
+        if (index === 0)
+          return <OpPost thread={thread} board={board} post={post} isThread={true} key={index} />;
 
-  useEffect(() => {
-    localStorage.setItem('hidden', hidden);
-  }, [hidden]);
+        let props = { id: 'p' + post.post_id, key: index };
 
-  let posts = loading ? [] : [...thread.posts];
+        if (urlHash && urlHash.includes(post.post_id)) {
+          if (currRef.current) currRef.current.firstChild.firstChild.classList.remove('hashed');
 
-  const currRef = useRef(null);
+          props.ref = currRef;
+        }
 
-  const opPost = posts.length > 0 && (
-    <OpPost thread={thread} board={board} post={posts[0]} isThread={true} />
-  );
-
-  const postsList = posts.splice(1).map((post, index) => {
-    let props = { id: 'p' + post.post_id, key: index };
-
-    if (hash && hash.includes(post.post_id)) {
-      if (currRef.current) currRef.current.firstChild.firstChild.classList.remove('hashed');
-
-      props.ref = currRef;
-    }
-
-    return (
-      <div {...props}>
-        <Post
-          thread={thread}
-          board={board}
-          post={post}
-          onClick={onToolTipClick}
-          onHiddenClick={() => onHiddenClick('p' + post.post_id)}
-          isHidden={hidden.includes('p' + post.post_id)}
-        />
-      </div>
+        return (
+          <div {...props} key={index}>
+            <Post thread={thread} board={board} post={post} onClick={onToolTipClick} />
+          </div>
+        );
+      })
     );
-  });
 
   const tooltipOverridePosition = ({ left }, currentEvent, currentTarget, node) => {
     const { width: nodeWidth } = node.getBoundingClientRect();
@@ -272,8 +253,7 @@ const Thread = ({
       clickable={true}
       globalEventOff='click'
       isCapture={true}
-      overridePosition={tooltipOverridePosition}
-    >
+      overridePosition={tooltipOverridePosition}>
       <NewPost
         formData={newPostData}
         onChange={onPostChange}
@@ -302,8 +282,7 @@ const Thread = ({
       clickable={true}
       globalEventOff='click'
       isCapture={true}
-      overridePosition={tooltipOverridePosition}
-    >
+      overridePosition={tooltipOverridePosition}>
       <ReportForm
         formData={reportData}
         onChange={onReportChange}
@@ -322,8 +301,9 @@ const Thread = ({
         onSubmit={onPostSubmit}
         isFloatin={false}
       />
-      {opPost}
+
       {postsList}
+
       <hr className='separator' />
       <div className='container centered'>[ {<Link to={`/${board.uri}/`}>return</Link>} ]</div>
 
@@ -337,17 +317,18 @@ const Thread = ({
 };
 
 Thread.propTypes = {
+  thread_id: PropTypes.number.isRequired,
+  board: PropTypes.object.isRequired,
   threads: PropTypes.object.isRequired,
   getThread: PropTypes.func.isRequired,
-  boards: PropTypes.object.isRequired,
   createPost: PropTypes.func.isRequired,
   createReport: PropTypes.func.isRequired,
   rules: PropTypes.object.isRequired,
+  history: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   threads: state.threads,
-  boards: state.boards,
   rules: state.rules,
 });
 

@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, useLocation } from 'react-router-dom';
 
 import Thread from './Thread';
 import ThreadsList from './ThreadsList';
@@ -15,6 +15,13 @@ import { getBoardsList } from '../../actions/boards';
 import { getRules } from '../../actions/rules';
 
 const Board = ({ getBoardsList, getRules, boards: { boards, loading }, auth: { staff } }) => {
+  const location = useLocation();
+  const [boardUri, setBoardUri] = useState(null);
+
+  useEffect(() => {
+    setBoardUri(location.pathname.split('/')[1]);
+  }, [location]);
+
   const [board, setBoard] = useState(null);
 
   useEffect(() => {
@@ -24,19 +31,29 @@ const Board = ({ getBoardsList, getRules, boards: { boards, loading }, auth: { s
   let routes = [];
 
   boards.forEach((board) => {
-    routes.push(<Route exact path={'/' + board.uri} component={ThreadsList} key={board.board_id} />);
+    routes.push(
+      <Route
+        exact
+        path={'/' + board.uri}
+        render={(props) => <ThreadsList {...props} board={board} />}
+        key={board.board_id}
+      />
+    );
 
     if (board.threadsIds)
       board.threadsIds.forEach((thread_id) => {
         routes.push(
-          <Route exact path={'/' + board.uri + '/t' + thread_id} component={Thread} key={thread_id} />
+          <Route
+            exact
+            path={'/' + board.uri + '/t' + thread_id}
+            render={(props) => <Thread {...props} board={board} thread_id={thread_id} />}
+            key={thread_id}
+          />
         );
       });
   });
 
   routes.push(<NotFound key='notfound' />);
-
-  const boardUri = window.location.pathname.split('/')[1];
 
   useEffect(() => {
     setBoard(boards.filter((board) => board.uri === boardUri));
