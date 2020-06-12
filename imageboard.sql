@@ -61,7 +61,6 @@ CREATE TABLE IF NOT EXISTS `Bans` (
   `post_id` bigint(20) unsigned NOT NULL,
   `rule_id` bigint(20) unsigned NOT NULL,
   `user` int(10) unsigned NOT NULL,
-  `comment` varchar(45) DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`ban_id`),
   KEY `staff_id` (`staff_id`),
@@ -161,7 +160,7 @@ CREATE TABLE IF NOT EXISTS `Rules` (
   `rule_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `board_id` bigint(20) unsigned DEFAULT NULL,
   `text` varchar(45) NOT NULL,
-  `duration` int(10) unsigned DEFAULT 0,
+  `ban_duration` int(10) unsigned DEFAULT 0,
   `details` varchar(250) DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`rule_id`),
@@ -251,7 +250,7 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-11 19:16:30
+-- Dump completed on 2020-06-11 21:13:02
 
 --
 --
@@ -294,4 +293,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-11 19:16:33
+-- Dump completed on 2020-06-11 21:13:04
