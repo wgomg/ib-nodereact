@@ -16,7 +16,6 @@ const Home = () => {
           <LatestThreads />
         </div>
       </div>
-      <Footer />
     </Fragment>
   );
 };
