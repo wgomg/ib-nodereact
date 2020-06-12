@@ -124,8 +124,19 @@ function Post() {
   };
 
   this.getAll = async () => {
-    const cachedPosts = cache.getTable(this.table);
-    if (cachedPosts.length > 0) return cachedPosts;
+    let cachedPosts = cache.getTable(this.table);
+    if (cachedPosts.length > 0) {
+      cachedPosts = cachedPosts.map((post) => {
+        const postUser = cache.getPostAddress(post.post_id);
+
+        if (ip.isV4(postUser)) post.user = ip.hashV4(postUser);
+        else if (ip.isV6(postUser)) post.user = ip.hashV6(postUser);
+
+        return post;
+      });
+
+      return cachedPosts;
+    }
 
     let posts = await db.select({
       table: this.table,
@@ -140,8 +151,19 @@ function Post() {
   };
 
   this.find = async (filters) => {
-    const cachedPosts = cache.getTableData(this.table, { ...filters });
-    if (cachedPosts.length > 0) return cachedPosts;
+    let cachedPosts = cache.getTableData(this.table, { ...filters });
+    if (cachedPosts.length > 0) {
+      cachedPosts = cachedPosts.map((post) => {
+        const postUser = cache.getPostAddress(post.post_id);
+
+        if (ip.isV4(postUser)) post.user = ip.hashV4(postUser);
+        else if (ip.isV6(postUser)) post.user = ip.hashV6(postUser);
+
+        return post;
+      });
+
+      return cachedPosts;
+    }
 
     let posts = await db.select({
       table: this.table,
