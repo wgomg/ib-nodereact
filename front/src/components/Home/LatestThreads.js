@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { Card, Loading } from '../common';
 
 import { getLatestThreads } from '../../actions/threads';
-import { getBoardsList } from '../../actions/boards';
 
 import timeSince from '../../utils/timeSince';
 
@@ -14,14 +13,12 @@ import ReactTooltip from 'react-tooltip';
 
 const LatestThreads = ({
   getLatestThreads,
-  getBoardsList,
   threads: { latests, loading: latestLoading },
   boards: { boards, loading: boardsLoading },
 }) => {
   useEffect(() => {
     getLatestThreads();
-    getBoardsList();
-  }, [getLatestThreads, getBoardsList]);
+  }, [getLatestThreads]);
 
   const latestThreads =
     latests.length > 0 ? (
@@ -80,7 +77,6 @@ const LatestThreads = ({
 
 LatestThreads.propTypes = {
   getLatestThreads: PropTypes.func.isRequired,
-  getBoardsList: PropTypes.func.isRequired,
   threads: PropTypes.object.isRequired,
   boards: PropTypes.object.isRequired,
 };
@@ -90,4 +86,4 @@ const mapStateToProps = (state) => ({
   boards: state.boards,
 });
 
-export default connect(mapStateToProps, { getLatestThreads, getBoardsList })(LatestThreads);
+export default connect(mapStateToProps, { getLatestThreads })(LatestThreads);
