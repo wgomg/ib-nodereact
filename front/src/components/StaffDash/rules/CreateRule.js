@@ -11,7 +11,7 @@ const CreateRule = ({ createRule, history, board_id, rules: { error } }) => {
   const [formData, setFormData] = useState({
     board_id: null,
     text: '',
-    duration: '',
+    ban_duration: '',
     details: '',
   });
 
@@ -30,7 +30,7 @@ const CreateRule = ({ createRule, history, board_id, rules: { error } }) => {
       );
   }, [error]);
 
-  const { text, duration } = formData;
+  const { text, ban_duration } = formData;
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -43,7 +43,7 @@ const CreateRule = ({ createRule, history, board_id, rules: { error } }) => {
     },
     {
       component: 'text',
-      name: 'duration',
+      name: 'ban_duration',
       label: 'Duración',
       onChange: (e) => onChange(e),
     },
@@ -63,7 +63,7 @@ const CreateRule = ({ createRule, history, board_id, rules: { error } }) => {
   const onSubmit = (e) => {
     e.preventDefault();
 
-    if (text === '' || duration === '') alert('Todos los campos son obligatorios');
+    if (text === '' || ban_duration === '') alert('Todos los campos son obligatorios');
     else createRule(formData, history);
   };
 
@@ -83,6 +83,7 @@ CreateRule.propTypes = {
   createRule: PropTypes.func.isRequired,
   board_id: PropTypes.number,
   rules: PropTypes.object.isRequired,
+  history: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({

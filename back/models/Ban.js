@@ -18,7 +18,6 @@ function Ban() {
     post_id: { type: 'table', required: true },
     rule_id: { type: 'table', required: true },
     user: { type: 'ipaddr', required: true },
-    comment: { type: 'alphanum', length: 45, required: true },
   };
 
   this.save = async (body) => {

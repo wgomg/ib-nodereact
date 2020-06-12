@@ -30,11 +30,11 @@ const RulesList = ({ getAllRules, getRules, deleteRule, rules: { rules, loading 
         );
 
         const text = <div className='col'>{rule.text}</div>;
-        const duration = <div className='col-1'>{rule.duration}</div>;
+        const banDuration = <div className='col-1'>{rule.ban_duration}</div>;
 
         return (
           <div className='columns' key={rule.rule_id} data-tip={rule.details}>
-            {actions} {text} {duration}
+            {actions} {text} {banDuration}
           </div>
         );
       })

@@ -16,7 +16,7 @@ function Rule() {
   this.schema = {
     board_id: { type: 'table' },
     text: { type: 'alphanum', length: 45, required: true },
-    duration: { type: 'num', required: true },
+    ban_duration: { type: 'num', required: true },
     details: { type: 'string', length: 250 },
   };
 
@@ -45,7 +45,7 @@ function Rule() {
           board_id: rule[0].board_id ? cache.getIdFromHash('Boards', rule[0].board_id) : null,
         });
 
-        rule = cache.getTableData(this.table, { field: this.idField, value: rule.insertId });
+        rule = cache.getTableData(this.table, { field: this.idField, value: rule[0].rule_id });
       }
     }
 
