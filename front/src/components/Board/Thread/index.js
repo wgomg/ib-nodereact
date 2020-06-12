@@ -53,6 +53,8 @@ const Thread = ({
     prevRp: null,
   });
 
+  const [scrolledOnRef, setScrolledOnRef] = useState(false);
+
   useEffect(() => {
     setBoardUri(location.pathname.split('/')[1]);
     setUrlHash(location.hash);
@@ -104,7 +106,7 @@ const Thread = ({
   const currRef = useRef(null);
 
   setTimeout(() => {
-    if (urlHash && currRef.current) {
+    if (urlHash && currRef.current && !scrolledOnRef) {
       window.scrollTo({ left: 0, top: currRef.current.offsetTop, behavior: 'smooth' });
       currRef.current.firstChild.firstChild.classList.add('hashed');
 
@@ -113,7 +115,7 @@ const Thread = ({
         openTooltip(key);
       }
 
-      currRef.current = null;
+      setScrolledOnRef(true);
     }
   }, 100);
 
