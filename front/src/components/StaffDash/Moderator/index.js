@@ -11,13 +11,9 @@ import ReportsList from '../reports/ReportsList';
 //
 import ChangePassword from '../ChangePassword';
 
-//
-import StaffNavbar from '../StaffNavbar';
-
 export default ({ board_id }) => {
   return (
     <Fragment>
-      <StaffNavbar />
       <Switch>
         <Route
           exact

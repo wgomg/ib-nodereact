@@ -9,12 +9,11 @@ import ThreadsList from './ThreadsList';
 import NotFound from '../NotFound';
 import Banner from './Banner';
 import BoardTitle from './BoardTitle';
-import { Loading, Navbar, Footer } from '../common';
+import { Loading } from '../common';
 
-import { getBoardsList } from '../../actions/boards';
 import { getRules } from '../../actions/rules';
 
-const Board = ({ getBoardsList, getRules, boards: { boards, loading }, auth: { staff } }) => {
+const Board = ({ getRules, boards: { boards, loading } }) => {
   const location = useLocation();
   const [boardUri, setBoardUri] = useState(null);
 
@@ -23,10 +22,6 @@ const Board = ({ getBoardsList, getRules, boards: { boards, loading }, auth: { s
   }, [location]);
 
   const [board, setBoard] = useState(null);
-
-  useEffect(() => {
-    getBoardsList();
-  }, [getBoardsList]);
 
   let routes = [];
 
@@ -67,7 +62,6 @@ const Board = ({ getBoardsList, getRules, boards: { boards, loading }, auth: { s
     <Loading />
   ) : (
     <Fragment>
-      <Navbar boards={boards} staff={staff} />
       {board && (
         <Fragment>
           <Banner board={board} />
@@ -76,22 +70,19 @@ const Board = ({ getBoardsList, getRules, boards: { boards, loading }, auth: { s
       )}
 
       <Switch>{routes}</Switch>
-
-      <Footer />
     </Fragment>
   );
 };
 
 Board.propTypes = {
-  getBoardsList: PropTypes.func.isRequired,
-  getRules: PropTypes.func.isRequired,
   boards: PropTypes.object.isRequired,
+  getRules: PropTypes.func.isRequired,
   auth: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
-  boards: state.boards,
   auth: state.auth,
+  boards: state.boards,
 });
 
-export default connect(mapStateToProps, { getBoardsList, getRules })(Board);
+export default connect(mapStateToProps, { getRules })(Board);

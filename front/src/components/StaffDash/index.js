@@ -3,7 +3,6 @@ import { Route, Switch, Redirect } from 'react-router-dom';
 
 import Login from './Login';
 import Dash from './Dash';
-import { Footer } from '../common';
 
 export default () => {
   return (
@@ -13,7 +12,6 @@ export default () => {
         <Route exact path='/staff/login' component={Login} />
         <Route path='/staff/dash' component={Dash} />
       </Switch>
-      <Footer />
     </Fragment>
   );
 };

@@ -26,12 +26,8 @@ import ThemesList from './themes/ThemesList';
 //
 import ReportsList from '../reports/ReportsList';
 
-//
-import StaffNavbar from '../StaffNavbar';
-
 export default () => (
   <Fragment>
-    <StaffNavbar />
     <Switch>
       <Route exact path='/staff/dash/create-board' component={CreateBoard} />
       <Route exact path='/staff/dash/edit-board/:board_uri' component={EditBoard} />

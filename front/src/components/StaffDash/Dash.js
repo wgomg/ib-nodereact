@@ -7,8 +7,8 @@ import Moderator from './Moderator';
 import { Loading } from '../common';
 import { Redirect } from 'react-router-dom';
 
-const Dash = ({ auth: { loading, logged, staff } }) => {
-  return loading ? (
+const Dash = ({ auth: { loading, logged, staff } }) =>
+  loading ? (
     <Loading />
   ) : logged ? (
     staff && staff.admin ? (
@@ -19,7 +19,6 @@ const Dash = ({ auth: { loading, logged, staff } }) => {
   ) : (
     <Redirect to='/' />
   );
-};
 
 Dash.propTypes = {
   auth: PropTypes.object.isRequired,

@@ -3,11 +3,11 @@ import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { Form } from '../common';
+import { Form, Loading } from '../common';
 
 import { login } from '../../actions/auth';
 
-const Login = ({ login, auth: { logged, error } }) => {
+const Login = ({ login, auth: { loading, logged, error } }) => {
   const [formData, setFormData] = useState({ name: '', password: '' });
 
   useEffect(() => {
@@ -18,6 +18,8 @@ const Login = ({ login, auth: { logged, error } }) => {
           .join('\n')
       );
   }, [error]);
+
+  let loginForm = <Loading />;
 
   const { name, password } = formData;
 
@@ -52,11 +54,14 @@ const Login = ({ login, auth: { logged, error } }) => {
     },
   ];
 
-  return (
-    <div className='container centered'>
-      <Form onSubmit={onSubmit} elements={formElements} />
-    </div>
-  );
+  if (!loading)
+    loginForm = (
+      <div className='container centered'>
+        <Form onSubmit={onSubmit} elements={formElements} />
+      </div>
+    );
+
+  return loginForm;
 };
 
 Login.propTypes = {
