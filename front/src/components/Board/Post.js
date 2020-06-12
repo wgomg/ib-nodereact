@@ -15,7 +15,16 @@ import { getFileBlob } from '../../actions/files';
 
 const striptags = require('striptags');
 
-const Post = ({ thread, board, post, onClick, auth: { logged }, getFileBlob, files }) => {
+const Post = ({
+  thread,
+  board,
+  post,
+  onClick,
+  auth: { logged },
+  getFileBlob,
+  files,
+  rules: { rules },
+}) => {
   const [hidden, setHidden] = useState(localStorage.getItem('hidden').split(','));
   const [isHidden, setIsHidden] = useState(hidden.includes('p' + post.post_id));
 
@@ -55,11 +64,13 @@ const Post = ({ thread, board, post, onClick, auth: { logged }, getFileBlob, fil
         onClick={() => onClick('qp', post.post_id)}>
         {post.post_id}
       </a>{' '}
-      <a
-        href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
-        onClick={() => onClick('rp', post.post_id)}>
-        [!!!]
-      </a>
+      {rules.length > 0 && (
+        <a
+          href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
+          onClick={() => onClick('rp', post.post_id)}>
+          [!!!]
+        </a>
+      )}
       {logged && (
         <span className='small muted'>
           {'  '}
@@ -200,11 +211,13 @@ Post.propTypes = {
   auth: PropTypes.object.isRequired,
   getFileBlob: PropTypes.func.isRequired,
   files: PropTypes.object,
+  rules: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   auth: state.auth,
   files: state.files,
+  rules: state.rules,
 });
 
 export default connect(mapStateToProps, { getFileBlob })(Post);

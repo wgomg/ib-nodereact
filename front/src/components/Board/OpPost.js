@@ -27,6 +27,7 @@ const OpPost = ({
   isHidden,
   getFileBlob,
   files,
+  rules: { rules },
 }) => {
   const [blobFile, setBlobFile] = useState(null);
   const [fileId, setFileId] = useState('');
@@ -55,6 +56,14 @@ const OpPost = ({
         </Fragment>
       )}
       {!isThread && !isHidden && <a href={`/${board.uri}/t${thread.thread_id}`}>[reply]</a>}
+      {rules.length > 0 && (
+        <a
+          href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
+          onClick={() => onClick('rp', post.post_id)}>
+          {' '}
+          [!!!]
+        </a>
+      )}
       {logged && (
         <span className='small muted'>
           {'  '}
@@ -203,11 +212,13 @@ OpPost.propTypes = {
   getFileBlob: PropTypes.func.isRequired,
   files: PropTypes.object,
   hideButton: PropTypes.bool,
+  rules: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   auth: state.auth,
   files: state.files,
+  rules: state.rules,
 });
 
 export default connect(mapStateToProps, { getFileBlob })(OpPost);
