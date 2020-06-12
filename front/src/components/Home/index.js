@@ -4,8 +4,6 @@ import Logo from './Logo';
 import BoardsList from './BoardsList';
 import LatestThreads from './LatestThreads';
 
-import Footer from '../common/Footer';
-
 const Home = () => {
   return (
     <Fragment>
