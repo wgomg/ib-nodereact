@@ -17,11 +17,15 @@ const ReportsList = ({ getAllReports, getReports, reports: { reports, loading },
   const reportsList =
     reports.length > 0 ? (
       reports.map((report) => {
-        const updateSolved = <Link to='/staff/dash'>aplicar ban</Link>;
+        const banear = <Link to='/staff/dash'>banear</Link>;
+
+        const descartar = <Link to='/staff/dash'>descartar</Link>;
 
         const actions = (
           <div className='col-2'>
-            <span className='small'>[ {updateSolved} ]</span>
+            <span className='small'>
+              [ {banear} | {descartar} ]
+            </span>
           </div>
         );
 
@@ -38,19 +42,35 @@ const ReportsList = ({ getAllReports, getReports, reports: { reports, loading },
           return elem;
         });
 
+        const rule = (
+          <div className='col-3'>
+            {report.rule.board_id ? `/${report.post.board[0].uri}/ - ` : '[G] - ' + report.rule.text}
+          </div>
+        );
+
         const post = (
           <div className='col-1' data-tip data-for={'rt' + report.report_id}>
             <Link to={`/${report.post.board[0].uri}/t${report.post.thread_id}#p${report.post.post_id}`}>
-              {report.post.post_id}
+              >>{report.post.post_id}
             </Link>
           </div>
         );
-        const rule = <div className='col'>{report.text}</div>;
-        const duration = <div className='col-1'>{report.duration}</div>;
+
+        const duration = (
+          <div className='col-1'>
+            {report.rule.ban_duration === 0 ? '&P' : report.rule.ban_duration + ' hrs'}
+          </div>
+        );
+
+        const user = (
+          <div className='col-1'>
+            <span className='small muted'>{report.post.user ? report.post.user : 'expired'}</span>
+          </div>
+        );
 
         return (
           <div className='columns' key={report.report_id}>
-            {actions} {post} {rule} {duration}
+            {actions} {rule} {post} {duration} {user}
             <ReactTooltip
               className='tooltip'
               id={'rt' + report.report_id}
@@ -58,8 +78,7 @@ const ReportsList = ({ getAllReports, getReports, reports: { reports, loading },
               type='dark'
               effect='solid'
               border={true}
-              borderColor='#7da3b3'
-            >
+              borderColor='#7da3b3'>
               <div className='post-text'>{postText}</div>
             </ReactTooltip>
           </div>

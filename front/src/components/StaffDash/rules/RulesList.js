@@ -6,9 +6,14 @@ import { Link } from 'react-router-dom';
 import { Card, Loading } from '../../common';
 import { deleteRule, getAllRules, getRules } from '../../../actions/rules';
 
-import ReactTooltip from 'react-tooltip';
-
-const RulesList = ({ getAllRules, getRules, deleteRule, rules: { rules, loading }, board_id }) => {
+const RulesList = ({
+  getAllRules,
+  getRules,
+  deleteRule,
+  boards: { boards },
+  rules: { rules, loading },
+  board_id,
+}) => {
   useEffect(() => {
     if (board_id) getRules(board_id);
     else getAllRules();
@@ -29,11 +34,20 @@ const RulesList = ({ getAllRules, getRules, deleteRule, rules: { rules, loading 
           </div>
         );
 
-        const text = <div className='col'>{rule.text}</div>;
-        const banDuration = <div className='col-1'>{rule.ban_duration}</div>;
+        const ruleBoard = boards.filter((board) => board.board_id === rule.board_id);
+
+        const board = ruleBoard.length > 0 ? `/${ruleBoard[0].board.uri}/` : '[G]';
+
+        const text = (
+          <div className='col'>
+            {board} - {rule.text}
+          </div>
+        );
+
+        const banDuration = <div className='col-1'>{rule.ban_duration} hrs</div>;
 
         return (
-          <div className='columns' key={rule.rule_id} data-tip={rule.details}>
+          <div className='columns' key={rule.rule_id}>
             {actions} {text} {banDuration}
           </div>
         );
@@ -53,7 +67,6 @@ const RulesList = ({ getAllRules, getRules, deleteRule, rules: { rules, loading 
   ) : (
     <Fragment>
       {rulesList}
-      <ReactTooltip border={true} borderColor='#7da3b3' />
       {newRule}
     </Fragment>
   );
@@ -67,10 +80,12 @@ RulesList.propTypes = {
   deleteRule: PropTypes.func.isRequired,
   rules: PropTypes.object.isRequired,
   board_id: PropTypes.number,
+  boards: PropTypes.array.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   rules: state.rules,
+  boards: state.boards,
 });
 
 export default connect(mapStateToProps, { getAllRules, getRules, deleteRule })(RulesList);

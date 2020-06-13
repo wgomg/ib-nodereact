@@ -15,8 +15,7 @@ function Ban() {
 
   this.schema = {
     staff_id: { type: 'table', required: true },
-    post_id: { type: 'table', required: true },
-    rule_id: { type: 'table', required: true },
+    report_id: { type: 'table', required: true },
     user: { type: 'ipaddr', required: true },
   };
 
@@ -26,13 +25,16 @@ function Ban() {
     body = {
       ...body,
       staff_id: cache.getIdFromHash('Staffs', body.staff_id),
-      rule_id: cache.getIdFromHash('Rules', body.rule_id),
+      report_id: cache.getIdFromHash('Reports', body.rule_id),
     };
 
     const errors = validate(body, this.schema);
     if (errors) return { errors };
 
-    const rule = cache.getTableData('Rules', { field: 'rule_id', value: body.rule_id });
+    const report = cache.getTableData('Reports', { field: 'report_id', value: body.report_id });
+    if (report.errors) return { errors: report.errors };
+
+    const rule = cache.getTableData('Rules', { field: 'hash', value: report[0].rule_id });
     if (rule.errors) return { errors: rule.errors };
 
     const banDuration = rule[0].duration;

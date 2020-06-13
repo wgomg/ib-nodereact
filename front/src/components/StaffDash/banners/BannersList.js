@@ -41,8 +41,7 @@ const BannersList = ({
         const name = (
           <div className='col'>
             <Link
-              to={'/' + banner.image.folder + '/' + banner.image.name + '.' + banner.image.extension}
-            >
+              to={'/' + banner.image.folder + '/' + banner.image.name + '.' + banner.image.extension}>
               {banner.image.name}.{banner.image.extension}
             </Link>
           </div>
@@ -50,7 +49,7 @@ const BannersList = ({
 
         const size = <div className='col-1'>{prettyBytes(banner.image.size)}</div>;
 
-        const board = <div className='col-1'>{banner.board ? banner.board.uri : 'global'}</div>;
+        const board = <div className='col-1'>{banner.board ? `/${banner.board.uri}/` : '[G]'}</div>;
 
         return (
           <div className='columns' key={banner.banner_id}>

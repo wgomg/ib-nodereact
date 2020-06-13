@@ -37,7 +37,7 @@ function Report() {
 
       if (report.length > 0) {
         cache.addTableData(this.table, {
-          ...report,
+          ...report[0],
           rule_id: cache.getHash('Rules', report[0].rule_id),
         });
         report = cache.getTableData(this.table, { field: this.idField, value: report.insertId });
@@ -58,11 +58,16 @@ function Report() {
     if (cachedReports.length > 0) {
       cachedReports = await Promise.all(
         cachedReports.map(async (report) => {
+          const post = await Post.get(report.post_id);
+          const rule = cache.getTableData('Rules', { field: 'hash', value: report.rule_id });
+
           report = {
             ...report,
-            post: (await Post.get(report.post_id))[0],
+            post: post.length > 0 ? post[0] : {},
+            rule: rule[0],
           };
 
+          delete report.rule_id;
           delete report.post_id;
 
           return report;
@@ -96,11 +101,16 @@ function Report() {
 
     reports = await Promise.all(
       reports.map(async (report) => {
+        const post = await Post.get(report.post_id);
+        const rule = cache.getTableData('Rules', { field: 'hash', value: report.rule_id });
+
         report = {
           ...report,
-          post: (await Post.get(report.post_id))[0],
+          post: post.length > 0 ? post[0] : {},
+          rule: rule[0],
         };
 
+        delete report.rule_id;
         delete report.post_id;
 
         return report;
@@ -147,7 +157,7 @@ function Report() {
         cache.addTableData(this.table, report);
       });
 
-    return cache.getTableData(this.table, { field: 'board_id', value: board_id });
+    return cache.getTableData(this.table, { ...filters });
   };
 
   this.getFunctions = () => {

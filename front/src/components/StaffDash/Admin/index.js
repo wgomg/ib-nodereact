@@ -62,7 +62,6 @@ export default () => (
         <div className='container centered'>
           <div className='columns'>
             <ReportsList />
-            <div className='col-5' />
           </div>
         </div>
       </Fragment>
