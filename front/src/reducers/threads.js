@@ -37,7 +37,7 @@ export default function (state = initState, action) {
     case CREATE_POST:
       return {
         ...state,
-        thread: { ...state.threads, posts: [...state.thread.posts, payload] },
+        thread: { ...state.thread, posts: [...state.thread.posts, payload] },
         loading: false,
         error: null,
       };

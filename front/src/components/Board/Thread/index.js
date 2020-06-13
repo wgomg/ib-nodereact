@@ -41,7 +41,7 @@ const Thread = ({
 
   const [reportData, setReportData] = useState({
     post_id: 0,
-    rule_id: 0,
+    rule_id: '0',
   });
   const [tooltipData, setTooltipData] = useState({
     qp: null,
@@ -153,8 +153,7 @@ const Thread = ({
 
   const onPostChange = (e) => setNewPostData({ ...newPostData, [e.target.name]: e.target.value });
 
-  const onReportChange = (e) =>
-    setReportData({ ...reportData, [e.target.name]: parseInt(e.target.value) });
+  const onReportChange = (e) => setReportData({ ...reportData, [e.target.name]: e.target.value });
 
   const onFileSelected = (e) => setFile(e.target.files[0]);
 
