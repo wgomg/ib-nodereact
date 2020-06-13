@@ -58,17 +58,14 @@ CREATE TABLE IF NOT EXISTS `Banners` (
 CREATE TABLE IF NOT EXISTS `Bans` (
   `ban_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `staff_id` bigint(20) unsigned NOT NULL,
-  `post_id` bigint(20) unsigned NOT NULL,
-  `rule_id` bigint(20) unsigned NOT NULL,
+  `report_id` bigint(20) unsigned NOT NULL,
   `user` int(10) unsigned NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`ban_id`),
   KEY `staff_id` (`staff_id`),
-  KEY `post_id` (`post_id`),
-  KEY `rule_id` (`rule_id`),
+  KEY `report_id` (`report_id`),
   CONSTRAINT `Bans_ibfk_1` FOREIGN KEY (`staff_id`) REFERENCES `Staffs` (`staff_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `Bans_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `Posts` (`post_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `Bans_ibfk_3` FOREIGN KEY (`rule_id`) REFERENCES `Rules` (`rule_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `Bans_ibfk_2` FOREIGN KEY (`report_id`) REFERENCES `Reports` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -250,7 +247,7 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-11 21:13:02
+-- Dump completed on 2020-06-12 21:54:55
 
 --
 --
@@ -293,4 +290,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-11 21:13:04
+-- Dump completed on 2020-06-12 21:54:58
