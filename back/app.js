@@ -5,6 +5,7 @@ const fileupload = require('express-fileupload');
 const compression = require('compression');
 const morgan = require('morgan');
 const path = require('path');
+const Fingerprint = require('express-fingerprint');
 
 const config = require('./config').logger;
 const logger = require('./libraries/logger');
@@ -33,6 +34,12 @@ app.use(
 );
 
 app.use(express.static(__dirname + '/public'));
+
+app.use(
+  Fingerprint({
+    parameters: [Fingerprint.useragent, Fingerprint.acceptHeaders, Fingerprint.geoip],
+  })
+);
 
 require('./routes')(app);
 

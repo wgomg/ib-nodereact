@@ -17,39 +17,53 @@ function Ban() {
     staff_id: { type: 'table', required: true },
     report_id: { type: 'table', required: true },
     user: { type: 'ipaddr', required: true },
+    fingerprint: { type: 'string', required: true },
   };
 
   this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
+    const report = cache.getTableData('Reports', { field: 'report_id', value: body.report_id });
+    if (report.errors) return { errors: report.errors };
+
+    const user = cache.getPostUser(report[0].post_id);
+
     body = {
       ...body,
       staff_id: cache.getIdFromHash('Staffs', body.staff_id),
       report_id: cache.getIdFromHash('Reports', body.rule_id),
+      ...user,
     };
 
     const errors = validate(body, this.schema);
     if (errors) return { errors };
-
-    const report = cache.getTableData('Reports', { field: 'report_id', value: body.report_id });
-    if (report.errors) return { errors: report.errors };
 
     const rule = cache.getTableData('Rules', { field: 'hash', value: report[0].rule_id });
     if (rule.errors) return { errors: rule.errors };
 
     const banDuration = rule[0].duration;
 
-    if (banDuration === 0) await db.insert({ body, table: this.table, ipField: 'user' });
+    let ban = null;
 
-    cache.setBannedAddress(body.user, banDuration);
+    if (banDuration === 0) ban = await db.insert({ body, table: this.table, ipField: 'user' });
 
-    return true;
+    if (ban.insertId) {
+      cache.setBannedUser(body.user, banDuration);
+      const Report = require('./Report');
+      Report.procId = this.procId;
+
+      await Report.updateAsSolved(body.report_id);
+
+      return true;
+    }
+
+    return false;
   };
 
   this.isUserBanned = async (user) => {
     logger.debug({ name: `${this.name}.isUserBanned()`, data: user }, this.procId, 'method');
 
-    return cache.findBannedAddress(user);
+    return cache.findBannedUser(user);
   };
 
   this.getAll = async () => {
@@ -61,7 +75,7 @@ function Ban() {
     let bans = await db.select({ table: this.table, ipField: 'user' });
     if (bans.length > 0)
       bans.forEach((ban) => {
-        cache.setBannedAddress(ban.user);
+        cache.setBannedUser(ban.user);
       });
 
     return cache.getBannedList();

@@ -58,7 +58,7 @@ function Post() {
     let post = await db.insert({ body: body, table: this.table });
 
     if (post.insertId) {
-      cache.setPostAddress(post.insertId, user);
+      cache.setPostUser(post.insertId, user);
       post = await this.get(post.insertId);
     }
 
@@ -71,10 +71,14 @@ function Post() {
     let cachedPost = cache.getTableData(this.table, { field: this.idField, value: post_id });
 
     if (cachedPost.length > 0) {
-      cachedPost[0].user = cache.getPostAddress(cachedPost[0].post_id);
+      cachedPost[0].user = cache.getPostUser(cachedPost[0].post_id);
 
-      if (ip.isV4(cachedPost[0].user)) cachedPost[0].user = ip.hashV4(cachedPost[0].user);
-      else if (ip.isV6(cachedPost[0].user)) cachedPost[0].user = ip.hashV6(cachedPost[0].user);
+      if (cachedPost[0].user) {
+        if (ip.isV4(cachedPost[0].user.ipaddress))
+          cachedPost[0].user.ipaddress = ip.hashV4(cachedPost[0].user.ipaddress);
+        else if (ip.isV6(cachedPost[0].user.ipaddress))
+          cachedPost[0].user.ipaddress = ip.hashV6(cachedPost[0].user.ipaddress);
+      }
 
       return cachedPost;
     }
@@ -107,10 +111,14 @@ function Post() {
 
       cache.addTableData(this.table, post[0], false);
 
-      const postUser = cache.getPostAddress(post[0].post_id);
+      const postUser = cache.getPostUser(post[0].post_id);
 
-      if (ip.isV4(postUser)) post[0].user = ip.hashV4(postUser);
-      else if (ip.isV6(postUser)) post[0].user = ip.hashV6(postUser);
+      if (postUser) {
+        if (ip.isV4(postUser.ipaddress))
+          post[0].user = { ...postUser, ipaddress: ip.hashV4(postUser.ipaddress) };
+        else if (ip.isV6(postUser.ipaddress))
+          post[0].user = { ...postUser, ipaddress: ip.hashV6(postUser.ipaddress) };
+      }
     }
 
     return post;
@@ -127,7 +135,7 @@ function Post() {
     let cachedPosts = cache.getTable(this.table);
     if (cachedPosts.length > 0) {
       cachedPosts = cachedPosts.map((post) => {
-        const postUser = cache.getPostAddress(post.post_id);
+        const postUser = cache.getPostUser(post.post_id);
 
         if (ip.isV4(postUser)) post.user = ip.hashV4(postUser);
         else if (ip.isV6(postUser)) post.user = ip.hashV6(postUser);
@@ -154,7 +162,7 @@ function Post() {
     let cachedPosts = cache.getTableData(this.table, { ...filters });
     if (cachedPosts.length > 0) {
       cachedPosts = cachedPosts.map((post) => {
-        const postUser = cache.getPostAddress(post.post_id);
+        const postUser = cache.getPostUser(post.post_id);
 
         if (ip.isV4(postUser)) post.user = ip.hashV4(postUser);
         else if (ip.isV6(postUser)) post.user = ip.hashV6(postUser);

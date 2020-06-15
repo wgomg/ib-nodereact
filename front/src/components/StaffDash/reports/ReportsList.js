@@ -64,7 +64,11 @@ const ReportsList = ({ getAllReports, getReports, reports: { reports, loading },
 
         const user = (
           <div className='col-1'>
-            <span className='small muted'>{report.post.user ? report.post.user : 'expired'}</span>
+            <span className='small muted'>
+              {report.post.user
+                ? report.post.user.ipaddress + '::' + report.post.user.fingerprint
+                : 'expired'}
+            </span>
           </div>
         );
 

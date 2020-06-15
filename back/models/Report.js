@@ -57,21 +57,29 @@ function Report() {
 
     if (cachedReports.length > 0) {
       cachedReports = await Promise.all(
-        cachedReports.map(async (report) => {
-          const post = await Post.get(report.post_id);
-          const rule = cache.getTableData('Rules', { field: 'hash', value: report.rule_id });
+        cachedReports
+          .filter(async (report) => {
+            if (cache.getPostUser(report.post_id)) return true;
 
-          report = {
-            ...report,
-            post: post.length > 0 ? post[0] : {},
-            rule: rule[0],
-          };
+            this.updateAsSolved(report.report_id);
 
-          delete report.rule_id;
-          delete report.post_id;
+            return false;
+          })
+          .map(async (report) => {
+            const post = await Post.get(report.post_id);
+            const rule = cache.getTableData('Rules', { field: 'hash', value: report.rule_id });
 
-          return report;
-        })
+            report = {
+              ...report,
+              post: post.length > 0 ? post[0] : {},
+              rule: rule[0],
+            };
+
+            delete report.rule_id;
+            delete report.post_id;
+
+            return report;
+          })
       );
 
       return cachedReports;
@@ -83,7 +91,8 @@ function Report() {
         ' FROM Reports' +
         ' INNER JOIN Posts ON Posts.post_id = Reports.post_id' +
         ' INNER JOIN Threads ON Threads.thread_id = Posts.thread_id' +
-        ' INNER JOIN Boards ON Boards.board_id = Threads.board_id'
+        ' INNER JOIN Boards ON Boards.board_id = Threads.board_id' +
+        ' WHERE solved = 0'
     );
 
     if (reports.length > 0)
@@ -118,6 +127,21 @@ function Report() {
     );
 
     return reports;
+  };
+
+  this.updateAsSolved = async (report_id) => {
+    const cachedId = cache.getIdFromHash(this.table, report_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { report: 'Invalid ID' } };
+
+    const res = await db.update({
+      table: this.table,
+      body: { solved: 1 },
+      id: { field: this.idField, value: cachedId },
+    });
+
+    if (res.changedRows > 0) cache.removeFromTable(this.table, report_id);
+
+    return res;
   };
 
   this.find = async (filters) => {
@@ -162,7 +186,7 @@ function Report() {
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'find'];
+    const excluded = ['getFunctions', 'find', 'updateAsSolved'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

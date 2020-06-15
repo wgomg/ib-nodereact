@@ -9,7 +9,7 @@ const NodeCache = require('node-cache');
 const cache = new NodeCache();
 
 const ttl = {
-  userAdress: config.userAdressTTL,
+  userId: config.userIdTTL * 24 * 60 * 60,
   dbData: config.dbDataTTL * 24 * 60 * 60,
 };
 
@@ -112,37 +112,44 @@ const removeFromTable = (table, hash) => {
   setTable(table, cachedTable);
 };
 
-const setBannedAddress = (address, banTTL = 0) => {
-  cache.set(address, Date.now(), banTTL);
+const setBannedUser = (user, banTTL = 0) => {
+  cache.set(user.ipaddress + '__' + user.fingerprint, { ...user, date: Date.now() }, banTTL);
 
-  let bannedList = getBannedList();
+  const found = findBannedUser(user);
 
-  if (!bannedList.includes(address)) {
-    bannedList.push(address);
+  if (found) {
+    let bannedList = getBannedList();
+    bannedList.push(user);
     cache.set('banned', bannedList, 0);
   }
 };
 
-const findBannedAddress = (address) => {
+const findBannedUser = (user) => {
   const bannedList = getBannedList();
 
-  return bannedList.includes(address);
+  const found = bannedList.filter(
+    (banned) => banned.ipaddress === user.ipaddress || banned.fingerprint === user.fingerprint
+  );
+
+  return found.length > 0;
 };
 
 const getBannedList = () => {
   let bannedList = cache.get('banned');
 
-  bannedList = bannedList ? bannedList.filter((address) => cache.get(address)) : [];
+  bannedList = bannedList
+    ? bannedList.filter((user) => cache.get(user.ipaddress + '__' + user.fingerprint))
+    : [];
   cache.set('banned', bannedList, 0);
 
   return bannedList;
 };
 
-const setPostAddress = (post, address) => {
-  cache.set(post, address, ttl.userAdress);
+const setPostUser = (post, user) => {
+  cache.set(post, user, ttl.userId);
 };
 
-const getPostAddress = (post_id) => cache.get(post_id);
+const getPostUser = (post_id) => cache.get(post_id);
 
 // TODO: simplificar esto
 const init = async () => {
@@ -196,11 +203,11 @@ module.exports = {
   setTable,
   upateTableData,
   removeFromTable,
-  setBannedAddress,
-  findBannedAddress,
+  setBannedUser,
+  findBannedUser,
   getBannedList,
-  setPostAddress,
-  getPostAddress,
+  setPostUser,
+  getPostUser,
   init,
   close,
   stats,

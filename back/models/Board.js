@@ -165,7 +165,7 @@ function Board() {
 
     const res = await db.remove({ id: { field: this.idField, value: cachedId }, table: this.table });
 
-    if (res.affectedRows > 0) cache.removeFromTable(this.table, banner_id);
+    if (res.affectedRows > 0) cache.removeFromTable(this.table, board_id);
 
     return res;
   };

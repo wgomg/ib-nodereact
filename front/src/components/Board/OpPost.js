@@ -64,10 +64,12 @@ const OpPost = ({
           [!!!]
         </a>
       )}
-      {logged && (
+      {logged && post.user && (
         <span className='small muted'>
           {'  '}
-          <i>{post.user}</i>
+          <i>
+            {post.user.ipaddress}::{post.user.fingerprint}
+          </i>
         </span>
       )}
     </div>

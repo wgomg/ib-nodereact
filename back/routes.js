@@ -98,7 +98,10 @@ const appMethodArgs = (modelName, ep) => {
           if (arg === 'body' && 'file_id' in Model.schema) req[arg].files = req.files || [];
 
           if ((modelName === 'Post' || modelName === 'Thread') && ep.httpMethod === 'post')
-            req[arg].user = req.ip;
+            req[arg].user = {
+              ipaddress: req.ip,
+              fingerprint: req.fingerprint.hash,
+            };
 
           fnArgs.push(req[arg]);
         } else fnArgs.push(req.params[arg]);
