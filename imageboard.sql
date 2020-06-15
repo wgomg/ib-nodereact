@@ -59,7 +59,8 @@ CREATE TABLE IF NOT EXISTS `Bans` (
   `ban_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `staff_id` bigint(20) unsigned NOT NULL,
   `report_id` bigint(20) unsigned NOT NULL,
-  `user` int(10) unsigned NOT NULL,
+  `ipaddress` int(10) unsigned NOT NULL,
+  `fingerprint` char(32) CHARACTER SET utf8 COLLATE utf8_general_mysql500_ci NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`ban_id`),
   KEY `staff_id` (`staff_id`),
@@ -247,7 +248,7 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-12 21:54:55
+-- Dump completed on 2020-06-14 20:20:30
 
 --
 --
@@ -290,4 +291,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-12 21:54:58
+-- Dump completed on 2020-06-14 20:20:32
