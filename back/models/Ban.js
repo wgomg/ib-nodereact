@@ -16,22 +16,26 @@ function Ban() {
   this.schema = {
     staff_id: { type: 'table', required: true },
     report_id: { type: 'table', required: true },
-    user: { type: 'ipaddr', required: true },
+    ipaddress: { type: 'ipaddr', required: true },
     fingerprint: { type: 'string', required: true },
   };
 
   this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
-    const report = cache.getTableData('Reports', { field: 'report_id', value: body.report_id });
+    const report = cache.getTableData('Reports', { field: 'hash', value: body.report_id });
     if (report.errors) return { errors: report.errors };
 
+    if (report.length === 0) return false;
+
     const user = cache.getPostUser(report[0].post_id);
+
+    if (!user) return false;
 
     body = {
       ...body,
       staff_id: cache.getIdFromHash('Staffs', body.staff_id),
-      report_id: cache.getIdFromHash('Reports', body.rule_id),
+      report_id: cache.getIdFromHash('Reports', body.report_id),
       ...user,
     };
 
@@ -41,23 +45,17 @@ function Ban() {
     const rule = cache.getTableData('Rules', { field: 'hash', value: report[0].rule_id });
     if (rule.errors) return { errors: rule.errors };
 
-    const banDuration = rule[0].duration;
+    const banDuration = rule[0].ban_duration;
 
-    let ban = null;
+    if (banDuration === 0) await db.insert({ body, table: this.table, ipField: 'ipaddress' });
 
-    if (banDuration === 0) ban = await db.insert({ body, table: this.table, ipField: 'user' });
+    cache.setBannedUser(user, banDuration);
+    const Report = require('./Report');
+    Report.procId = this.procId;
 
-    if (ban.insertId) {
-      cache.setBannedUser(body.user, banDuration);
-      const Report = require('./Report');
-      Report.procId = this.procId;
+    await Report.updateSolved({ report_id: report[0].report_id });
 
-      await Report.updateAsSolved(body.report_id);
-
-      return true;
-    }
-
-    return false;
+    return true;
   };
 
   this.isUserBanned = async (user) => {

@@ -80,7 +80,7 @@ RulesList.propTypes = {
   deleteRule: PropTypes.func.isRequired,
   rules: PropTypes.object.isRequired,
   board_id: PropTypes.number,
-  boards: PropTypes.array.isRequired,
+  boards: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({

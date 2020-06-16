@@ -61,7 +61,7 @@ function Report() {
           .filter(async (report) => {
             if (cache.getPostUser(report.post_id)) return true;
 
-            this.updateAsSolved(report.report_id);
+            this.updateSolved({ report_id: report.report_id });
 
             return false;
           })
@@ -129,8 +129,8 @@ function Report() {
     return reports;
   };
 
-  this.updateAsSolved = async (report_id) => {
-    const cachedId = cache.getIdFromHash(this.table, report_id);
+  this.updateSolved = async (body) => {
+    const cachedId = cache.getIdFromHash(this.table, body.report_id);
     if (!/^[0-9]+$/i.test(cachedId)) return { errors: { report: 'Invalid ID' } };
 
     const res = await db.update({
@@ -139,7 +139,7 @@ function Report() {
       id: { field: this.idField, value: cachedId },
     });
 
-    if (res.changedRows > 0) cache.removeFromTable(this.table, report_id);
+    if (res.changedRows > 0) cache.removeFromTable(this.table, body.report_id);
 
     return res;
   };
@@ -186,7 +186,7 @@ function Report() {
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'find', 'updateAsSolved'];
+    const excluded = ['getFunctions', 'find'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

@@ -4,22 +4,54 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { Card, Loading } from '../../common';
-import { getAllReports, getReports } from '../../../actions/reports';
+import { getAllReports, getReports, discardReport } from '../../../actions/reports';
+import { applyBan } from '../../../actions/ban';
 
 import ReactTooltip from 'react-tooltip';
 
-const ReportsList = ({ getAllReports, getReports, reports: { reports, loading }, board_id }) => {
+const ReportsList = ({
+  getAllReports,
+  getReports,
+  discardReport,
+  applyBan,
+  reports: { reports, loading },
+  auth: { staff },
+  board_id,
+}) => {
   useEffect(() => {
     if (board_id) getReports(board_id);
     else getAllReports();
   }, [getAllReports, getReports, board_id]);
 
+  const onBanClick = (report) => {
+    const newBan = {
+      staff_id: staff.staff_id,
+      report_id: report.report_id,
+    };
+
+    const res = applyBan(newBan);
+
+    if (res) alert('Ban applied');
+  };
+
+  const onDiscardReportClick = (report) => {
+    discardReport({ report_id: report.report_id });
+  };
+
   const reportsList =
     reports.length > 0 ? (
       reports.map((report) => {
-        const banear = <Link to='/staff/dash'>banear</Link>;
+        const banear = (
+          <Link to='#' onClick={() => onBanClick(report)}>
+            banear
+          </Link>
+        );
 
-        const descartar = <Link to='/staff/dash'>descartar</Link>;
+        const descartar = (
+          <Link to='#' onClick={() => onDiscardReportClick(report)}>
+            descartar
+          </Link>
+        );
 
         const actions = (
           <div className='col-2'>
@@ -100,12 +132,17 @@ const ReportsList = ({ getAllReports, getReports, reports: { reports, loading },
 ReportsList.propTypes = {
   getAllReports: PropTypes.func.isRequired,
   getReports: PropTypes.func.isRequired,
+  discardReport: PropTypes.func.isRequired,
+  applyBan: PropTypes.func.isRequired,
   reports: PropTypes.object.isRequired,
   board_id: PropTypes.number,
 };
 
 const mapStateToProps = (state) => ({
   reports: state.reports,
+  auth: state.auth,
 });
 
-export default connect(mapStateToProps, { getAllReports, getReports })(ReportsList);
+export default connect(mapStateToProps, { getAllReports, getReports, discardReport, applyBan })(
+  ReportsList
+);

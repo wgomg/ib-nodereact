@@ -8,9 +8,12 @@ const NodeCache = require('node-cache');
 
 const cache = new NodeCache();
 
+const HOUR = 60 * 60;
+const DAY = 24 * HOUR;
+
 const ttl = {
-  userId: config.userIdTTL * 24 * 60 * 60,
-  dbData: config.dbDataTTL * 24 * 60 * 60,
+  userId: config.userIdTTL * DAY,
+  dbData: config.dbDataTTL * DAY,
 };
 
 const addTableData = (table, value, hashId = true) => {
@@ -113,11 +116,11 @@ const removeFromTable = (table, hash) => {
 };
 
 const setBannedUser = (user, banTTL = 0) => {
-  cache.set(user.ipaddress + '__' + user.fingerprint, { ...user, date: Date.now() }, banTTL);
+  cache.set(user.ipaddress + '__' + user.fingerprint, { ...user, date: Date.now() }, banTTL * HOUR);
 
   const found = findBannedUser(user);
 
-  if (found) {
+  if (!found) {
     let bannedList = getBannedList();
     bannedList.push(user);
     cache.set('banned', bannedList, 0);

@@ -1,4 +1,4 @@
-import { CREATE_REPORT, REPORT_ERROR, GET_REPORTS } from '../actions/types';
+import { CREATE_REPORT, REPORT_ERROR, GET_REPORTS, DISCARD_REPORT, APPLY_BAN } from '../actions/types';
 
 const initState = {
   sent: false,
@@ -19,6 +19,14 @@ export default function (state = initState, action) {
 
     case REPORT_ERROR:
       return { ...state, error: payload.data, sent: false, loading: false };
+
+    case APPLY_BAN:
+    case DISCARD_REPORT:
+      return {
+        ...state,
+        reports: state.reports.filter((report) => report.report_id !== payload),
+        loading: false,
+      };
 
     default:
       return state;

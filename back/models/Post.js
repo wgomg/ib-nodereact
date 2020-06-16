@@ -135,10 +135,12 @@ function Post() {
     let cachedPosts = cache.getTable(this.table);
     if (cachedPosts.length > 0) {
       cachedPosts = cachedPosts.map((post) => {
-        const postUser = cache.getPostUser(post.post_id);
+        post.user = cache.getPostUser(post.post_id);
 
-        if (ip.isV4(postUser)) post.user = ip.hashV4(postUser);
-        else if (ip.isV6(postUser)) post.user = ip.hashV6(postUser);
+        if (post.user) {
+          if (ip.isV4(post.user.ipaddress)) post.user.ipaddress = ip.hashV4(post.user.ipaddress);
+          else if (ip.isV6(post.user.ipaddress)) post.user.ipaddress = ip.hashV6(post.user.ipaddress);
+        }
 
         return post;
       });
@@ -164,8 +166,12 @@ function Post() {
       cachedPosts = cachedPosts.map((post) => {
         const postUser = cache.getPostUser(post.post_id);
 
-        if (ip.isV4(postUser)) post.user = ip.hashV4(postUser);
-        else if (ip.isV6(postUser)) post.user = ip.hashV6(postUser);
+        if (postUser) {
+          if (ip.isV4(postUser.ipaddress))
+            post.user = { ...postUser, ipaddress: ip.hashV4(postUser.ipaddress) };
+          else if (ip.isV6(postUser.ipaddress))
+            post.user = { ...postUser, ipaddress: ip.hashV6(postUser.ipaddress) };
+        }
 
         return post;
       });

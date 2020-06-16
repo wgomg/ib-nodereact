@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { REPORT_ERROR, CREATE_REPORT, GET_REPORTS } from './types';
+import { REPORT_ERROR, CREATE_REPORT, GET_REPORTS, DISCARD_REPORT } from './types';
 
 export const createReport = (newReport) => async (dispatch) => {
   try {
@@ -39,6 +39,24 @@ export const getAllReports = () => async (dispatch) => {
     dispatch({
       type: GET_REPORTS,
       payload: res.data,
+    });
+  } catch (error) {
+    dispatch({
+      type: REPORT_ERROR,
+      payload: error.response,
+    });
+  }
+};
+
+export const discardReport = (discardedReport) => async (dispatch) => {
+  try {
+    const config = { headers: { 'Content-Type': 'application/json' } };
+
+    const res = await axios.put('/_back/api/reports/solved', discardedReport, config);
+
+    dispatch({
+      type: DISCARD_REPORT,
+      payload: res.data ? discardedReport.report_id : null,
     });
   } catch (error) {
     dispatch({
