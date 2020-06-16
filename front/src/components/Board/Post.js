@@ -64,7 +64,7 @@ const Post = ({
         onClick={() => onClick('qp', post.post_id)}>
         {post.post_id}
       </a>{' '}
-      {rules.length > 0 && (
+      {rules.length > 0 && post.user && (
         <a
           href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
           onClick={() => onClick('rp', post.post_id)}>

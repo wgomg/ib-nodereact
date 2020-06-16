@@ -56,7 +56,7 @@ const OpPost = ({
         </Fragment>
       )}
       {!isThread && !isHidden && <a href={`/${board.uri}/t${thread.thread_id}`}>[reply]</a>}
-      {rules.length > 0 && (
+      {rules.length > 0 && post.user && (
         <a
           href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
           onClick={() => onClick('rp', post.post_id)}>
