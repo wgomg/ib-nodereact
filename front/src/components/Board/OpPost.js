@@ -2,173 +2,50 @@ import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import timeSince from '../../utils/timeSince';
-import prettyBytes from '../../utils/prettyBytes';
-import prettyDate from '../../utils/prettyDate';
-
 import { ButtonLink, PostFile, Player } from '../common';
+import FileDownload from './FileDownload';
+import PostHeader from './PostHeader';
+import PostText from './PostText';
 
-import ReactTooltip from 'react-tooltip';
-import QuotePost from './QuotePost';
-
-import { getFileBlob } from '../../actions/files';
-
-const striptags = require('striptags');
+import { hideThread, unhideThread } from '../../actions/localStorage';
 
 const OpPost = ({
   thread,
-  board,
   post,
   isThread,
-  hiddenPosts,
-  auth: { logged },
-  hideButton,
-  onClick,
-  isHidden,
-  getFileBlob,
-  files,
-  rules: { rules },
+  hideThread,
+  unhideThread,
+  localStorage: { hiddenThreads },
 }) => {
-  const [blobFile, setBlobFile] = useState(null);
-  const [fileId, setFileId] = useState('');
+  const [threadHideState, setThreadHideState] = useState(false);
 
-  const textArray = post.text;
+  useEffect(() => {
+    setThreadHideState(hiddenThreads.includes(thread.thread_id));
+  }, [hiddenThreads, thread]);
 
-  const tooltipOverridePosition = ({ left, top }, currentEvent, currentTarget, node) => {
-    const { height } = node.getBoundingClientRect();
-
-    let newTop = null;
-    if (top + height > window.innerHeight)
-      newTop = top - Math.abs(top + height - window.innerHeight) - 10;
-
-    return { left, top: newTop || top };
+  const hideOrUnhideThread = (thread_id) => {
+    if (threadHideState) unhideThread(thread_id);
+    else hideThread(thread_id);
   };
 
   const postInfo = (
-    <div className='post-info'>
-      <span className='thread-title'>{thread.subject}</span> <strong>{post.name || 'Anon'}</strong>{' '}
-      {prettyDate(post.created_on).toLocaleString()}{' '}
-      <span className='small'>({timeSince(post.created_on)}) </span>
-      {!isHidden && (
-        <Fragment>
-          <a href={`/${board.uri}/t${thread.thread_id}#p${post.post_id}`}>No.</a>{' '}
-          <a href={`/${board.uri}/t${thread.thread_id}#qp${post.post_id}`}>{thread.thread_id}</a>{' '}
-        </Fragment>
-      )}
-      {!isThread && !isHidden && <a href={`/${board.uri}/t${thread.thread_id}`}>[reply]</a>}
-      {rules.length > 0 && post.user && (
-        <a
-          href={`/${board.uri}/t${thread.thread_id}#rp${post.post_id}`}
-          onClick={() => onClick('rp', post.post_id)}>
-          {' '}
-          [!!!]
-        </a>
-      )}
-      {logged && post.user && (
-        <span className='small muted'>
-          {'  '}
-          <i>
-            {post.user.ipaddress}::{post.user.fingerprint}
-          </i>
-        </span>
-      )}
-    </div>
+    <PostHeader
+      thread={thread}
+      post={post}
+      isHidden={threadHideState}
+      onClick={() => null}
+      isThread={isThread}
+      op={true}
+    />
   );
 
-  const hiddenContent = <span className='small muted'>{postInfo}</span>;
-
-  const text = textArray.map((elem, index) => {
-    if (/<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/g.test(elem)) {
-      let props = {
-        style: { display: 'inline-grid' },
-        dangerouslySetInnerHTML: { __html: elem },
-      };
-
-      let quotePost = null;
-
-      if (/<\s*a[^>]*>(.*?)<\s*\/\s*a>/g.test(elem) && /(>{2}(\d+))/g.test(elem)) {
-        const quotePostId = striptags(elem.replace('>>', '')) + '_' + post.post_id;
-        const quoted = post.quoted.filter((q) => q.post_id.toString() === quotePostId.split('_')[0])[0];
-
-        return (
-          <Fragment key={index}>
-            <div {...props} data-tip data-for={quotePostId} />
-            <ReactTooltip
-              className='tooltip'
-              id={quotePostId}
-              place='right'
-              type='dark'
-              effect='solid'
-              overridePosition={tooltipOverridePosition}>
-              <QuotePost post={quoted} />
-            </ReactTooltip>
-          </Fragment>
-        );
-      }
-
-      return (
-        <Fragment key={index}>
-          <div {...props} />
-          {quotePost}
-        </Fragment>
-      );
-    }
-
-    return elem;
-  });
-
-  useEffect(() => {
-    const { loading, blob, file } = files;
-
-    if (!loading && blob && file && file.file_id === fileId) setBlobFile({ blob, file });
-  }, [files, setBlobFile, fileId]);
-
-  useEffect(() => {
-    if (blobFile) {
-      const { file, blob } = blobFile;
-
-      if (file && blob) {
-        const postFile = new Blob([new Uint8Array(blob.data)], { type: file.mimetype });
-        const postFileUrl = URL.createObjectURL(postFile);
-
-        const link = document.createElement('a');
-        link.href = postFileUrl;
-        link.download = file.name + '.' + file.extension;
-
-        document.body.appendChild(link);
-
-        link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-
-        setFileId('');
-        setBlobFile(null);
-
-        document.body.removeChild(link);
-      }
-    }
-  }, [blobFile]);
-
-  const downloadFile = (postFileId) => {
-    getFileBlob(postFileId);
-    setFileId(postFileId);
-  };
+  const opPostHidden = <span className='small muted'>{postInfo}</span>;
 
   const opPost = (
     <Fragment>
       <div className='post-file'>
         <p className='file-info'>
-          <span className='small'>
-            {' '}
-            {post.file && (
-              <Fragment>
-                <ButtonLink
-                  text={`File: ${post.file.name}.${post.file.extension} (${prettyBytes(
-                    post.file.size
-                  )})`}
-                  onClick={() => downloadFile(post.file.file_id)}
-                />
-              </Fragment>
-            )}
-          </span>
+          <FileDownload post={post} />
         </p>
 
         <PostFile post={post} />
@@ -182,10 +59,13 @@ const OpPost = ({
 
       <div className='post-body op'>
         {postInfo}
-        <div className='op-post-text'>{text}</div>
+
+        <div className='op-post-text'>
+          <PostText post={post} />
+        </div>
       </div>
 
-      {hiddenPosts && <span className='small'>{hiddenPosts} respuestas ocultas</span>}
+      {thread.hiddenPosts && <span className='small'>{thread.hiddenPosts} respuestas ocultas</span>}
     </Fragment>
   );
 
@@ -193,34 +73,31 @@ const OpPost = ({
     <div className='op' id={'p' + post.post_id}>
       <hr className='separator' />
 
-      {hideButton && (
-        <ButtonLink text={`[${isHidden ? '+' : '-'}]`} extraClass='hide' onClick={onClick} />
+      {!isThread && (
+        <ButtonLink
+          text={`[${threadHideState ? '+' : '-'}]`}
+          extraClass='hide'
+          onClick={() => hideOrUnhideThread(thread.thread_id)}
+        />
       )}
 
-      {!isHidden ? opPost : hiddenContent}
+      {threadHideState && !isThread ? opPostHidden : opPost}
     </div>
   );
 };
 
 OpPost.propTypes = {
   thread: PropTypes.object.isRequired,
-  board: PropTypes.object.isRequired,
   post: PropTypes.object.isRequired,
   isThread: PropTypes.bool,
   hiddenPosts: PropTypes.number,
-  auth: PropTypes.object.isRequired,
   onClick: PropTypes.func,
-  isHidden: PropTypes.bool,
-  getFileBlob: PropTypes.func.isRequired,
-  files: PropTypes.object,
-  hideButton: PropTypes.bool,
-  rules: PropTypes.object.isRequired,
+  hideThread: PropTypes.func.isRequired,
+  unhideThread: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
-  auth: state.auth,
-  files: state.files,
-  rules: state.rules,
+  localStorage: state.localStorage,
 });
 
-export default connect(mapStateToProps, { getFileBlob })(OpPost);
+export default connect(mapStateToProps, { hideThread, unhideThread })(OpPost);

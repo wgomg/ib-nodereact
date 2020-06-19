@@ -12,8 +12,9 @@ import { getTheme } from '../actions/themes';
 import { getTags } from '../actions/tags';
 
 import { getBoardsList } from '../actions/boards';
+import { getHiddenPosts, getHiddenThreads } from '../actions/localStorage';
 
-import { getThemeFromStorage, setCssInStorage, getCssFromStorage } from '../utils/theme';
+import localStorage from '../utils/localStorage';
 
 const IB = ({
   getBoardsList,
@@ -21,10 +22,19 @@ const IB = ({
   getTags,
   tags: { tags, loading: tagsLoading },
   themes: { theme, loading: themesLoading },
+  getHiddenPosts,
+  getHiddenThreads,
 }) => {
-  const [selectedCss, setSelectedCss] = useState(getCssFromStorage());
+  const [selectedCss, setSelectedCss] = useState(localStorage.getCss());
+  const selectedTheme = localStorage.getTheme();
 
-  const selectedTheme = getThemeFromStorage();
+  localStorage.getHiddenThreads();
+  localStorage.getHiddenPosts();
+
+  useEffect(() => {
+    getHiddenPosts();
+    getHiddenThreads();
+  }, [getHiddenPosts, getHiddenThreads]);
 
   useEffect(() => {
     getBoardsList();
@@ -41,7 +51,7 @@ const IB = ({
   let ib = <div />;
 
   let themeStyle = getStyleElement('theme');
-  if (!selectedCss && !themesLoading) setSelectedCss(setCssInStorage(theme.css));
+  if (!selectedCss && !themesLoading) setSelectedCss(localStorage.setCss(theme.css));
 
   if (selectedCss) {
     themeStyle.innerHTML = selectedCss;
@@ -91,11 +101,20 @@ IB.propTypes = {
   getTags: PropTypes.func.isRequired,
   themes: PropTypes.object.isRequired,
   tags: PropTypes.object.isRequired,
+  getHiddenPosts: PropTypes.func.isRequired,
+  getHiddenThreads: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   themes: state.themes,
   tags: state.tags,
+  localStorage: state.localStorage,
 });
 
-export default connect(mapStateToProps, { getTheme, getTags, getBoardsList })(IB);
+export default connect(mapStateToProps, {
+  getTheme,
+  getTags,
+  getBoardsList,
+  getHiddenPosts,
+  getHiddenThreads,
+})(IB);

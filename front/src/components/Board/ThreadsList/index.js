@@ -1,12 +1,10 @@
 import React, { Fragment, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-
 import { Link, useLocation } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Post from '../Post';
-import OpPost from '../OpPost';
 import NewThread from './NewThread';
+import ThreadPreview from '../ThreadPreview';
 import { Empty, Loading } from '../../common';
 
 import { getThreads } from '../../../actions/threads';
@@ -22,9 +20,6 @@ const ThreadList = ({ boards: { boards }, threads: { threads, loading, error }, 
   const [board, setBoard] = useState({});
   const [page, setPage] = useState(0);
   const [btnVisited, setBtnVisited] = useState([]);
-  const [hidden, setHidden] = useState(
-    localStorage.getItem('hidden') ? localStorage.getItem('hidden').split(',') : [0]
-  );
 
   const topThread = useRef(null);
 
@@ -36,20 +31,11 @@ const ThreadList = ({ boards: { boards }, threads: { threads, loading, error }, 
     if (board.board_id) getThreads(board.board_id);
   }, [board, getThreads]);
 
-  useEffect(() => {
-    localStorage.setItem('hidden', hidden);
-  }, [hidden]);
-
   const onClick = (page, topThread) => {
     setBtnVisited(btnVisited.map((btn, index) => index === page));
     setPage(page);
 
     window.scrollTo(0, topThread.current.offsetTop);
-  };
-
-  const onHiddenClick = (id) => {
-    if (hidden.includes(id)) setHidden(hidden.filter((hide) => hide !== id));
-    else setHidden([...hidden, id]);
   };
 
   let pages = [];
@@ -62,58 +48,16 @@ const ThreadList = ({ boards: { boards }, threads: { threads, loading, error }, 
   let threadsList = <Empty element='Hilos' />;
 
   if (threads.length > 0) {
-    let threadsCopy = [...threads];
     let threadsPages = [];
+    let threadsCopy = [...threads];
 
     while (threadsCopy.length > 0)
       threadsPages.push(
-        threadsCopy.splice(0, 10).map((thread, index) => {
-          let postsList =
-            thread.posts.length > 1
-              ? thread.posts.slice(Math.max(thread.posts.length - 5, 1)).map((post) => (
-                  <div id={'p' + post.post_id} key={post.post_id}>
-                    <Post
-                      thread={thread}
-                      board={board}
-                      post={post}
-                      onHiddenClick={() => onHiddenClick('p' + post.post_id)}
-                      isHidden={hidden.includes('p' + post.post_id)}
-                    />
-                  </div>
-                ))
-              : '';
-
-          const hiddenPosts = thread.hiddenPosts;
-          let isHidden = hidden.includes('t' + thread.thread_id);
-
-          let props = {
-            thread,
-            board,
-            post: thread.posts[0],
-            isThread: false,
-            hideButton: true,
-            onClick: () => onHiddenClick('t' + thread.thread_id),
-            isHidden,
-          };
-          if (hiddenPosts > 0) props.hiddenPosts = hiddenPosts;
-
-          const opPost = <OpPost {...props} />;
-
-          let divProps = {
-            className: 'container thread-preview',
-            id: 't' + thread.thread_id,
-            key: thread.thread_id,
-          };
-
-          if (index === 0) divProps.ref = topThread;
-
-          return (
-            <div {...divProps} key={index}>
-              {opPost}
-              {!isHidden && postsList}
-            </div>
-          );
-        })
+        threadsCopy
+          .splice(0, 10)
+          .map((thread, index) => (
+            <ThreadPreview thread={thread} index={index} topThread={topThread} key={index} />
+          ))
       );
 
     pages = threadsPages.map((list, index) => (

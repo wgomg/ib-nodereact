@@ -10,6 +10,7 @@ import tags from './tags';
 import posts from './posts';
 import reports from './reports';
 import files from './files';
+import localStorage from './localStorage';
 
 export default combineReducers({
   auth,
@@ -23,4 +24,5 @@ export default combineReducers({
   posts,
   reports,
   files,
+  localStorage,
 });

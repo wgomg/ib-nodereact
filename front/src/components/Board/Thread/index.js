@@ -10,8 +10,7 @@ import OpPost from '../OpPost';
 import NewPost from './NewPost';
 import ReportForm from './ReportForm';
 
-import { getThread } from '../../../actions/threads';
-import { createPost } from '../../../actions/threads';
+import { getThread, createPost } from '../../../actions/threads';
 import { createReport } from '../../../actions/reports';
 
 import ReactTooltip from 'react-tooltip';
@@ -27,9 +26,13 @@ const Thread = ({
   createReport,
   history,
 }) => {
-  let location = useLocation();
-  const [boardUri, setBoardUri] = useState(null);
+  const location = useLocation();
+
   const [urlHash, setUrlHash] = useState(null);
+
+  useEffect(() => {
+    setUrlHash(location.hash);
+  }, [location]);
 
   const [newPostData, setNewPostData] = useState({
     thread_id: thread_id,
@@ -54,11 +57,6 @@ const Thread = ({
   });
 
   const [scrolledOnRef, setScrolledOnRef] = useState(false);
-
-  useEffect(() => {
-    setBoardUri(location.pathname.split('/')[1]);
-    setUrlHash(location.hash);
-  }, [location]);
 
   useEffect(() => {
     getThread(thread_id);
@@ -183,7 +181,7 @@ const Thread = ({
         });
         setFile(null);
 
-        history.push(`/${boardUri}/t${thread_id}`);
+        history.push(`/${board.uri}/t${thread_id}`);
 
         setTimeout(() => {
           window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -212,7 +210,9 @@ const Thread = ({
     ) : (
       thread.posts.map((post, index) => {
         if (index === 0)
-          return <OpPost thread={thread} board={board} post={post} isThread={true} key={index} />;
+          return (
+            <OpPost thread={thread} post={post} isThread={true} onClick={onToolTipClick} key={index} />
+          );
 
         let props = { id: 'p' + post.post_id, key: index };
 
