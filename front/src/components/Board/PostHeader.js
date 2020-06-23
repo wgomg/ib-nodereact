@@ -6,7 +6,16 @@ import { Link } from 'react-router-dom';
 import prettyDate from '../../utils/prettyDate';
 import timeSince from '../../utils/timeSince';
 
-const PostHeader = ({ thread, post, isHidden, op, onClick, isThread, rules, auth: { logged } }) => {
+const PostHeader = ({
+  thread,
+  post,
+  isHidden,
+  op,
+  isThread,
+  rules: { rules },
+  auth: { logged },
+  onOpenTooltipClick,
+}) => {
   const threadSubject = op ? <span className='thread-title'>{thread.subject + ' '}</span> : '';
 
   const postName = (
@@ -17,31 +26,51 @@ const PostHeader = ({ thread, post, isHidden, op, onClick, isThread, rules, auth
 
   const postCreationDate = <span className='small'>{timeSince(post.created_on)} </span>;
 
+  let onQuoteClickProp = '';
+  let onReportClickProp = '';
+
+  if (isThread) {
+    onQuoteClickProp = {
+      onClick: () =>
+        onOpenTooltipClick('qp', {
+          newPost: {
+            thread_id: thread.thread_id,
+            text: '>>' + post.post_id,
+          },
+        }),
+    };
+
+    onReportClickProp = {
+      onClick: () => onOpenTooltipClick('rp', { report: { rule_id: '0', post_id: post.post_id } }),
+    };
+  }
+
+  const quoteButton = (
+    <Link to={`/${post.board[0].uri}/t${thread.thread_id}#qp${post.post_id}`} {...onQuoteClickProp}>
+      {op ? thread.thread_id : post.post_id}
+    </Link>
+  );
+
+  const reportButton =
+    rules.length > 0 && post.user ? (
+      <Fragment>
+        <Link to={`/${post.board[0].uri}/t${thread.thread_id}#rp${post.post_id}`} {...onReportClickProp}>
+          [!!!]
+        </Link>
+      </Fragment>
+    ) : (
+      ''
+    );
+
   const postInfo = !isHidden ? (
     <Fragment>
       <Link to={`/${post.board[0].uri}/t${thread.thread_id}#p${post.post_id}`}>No. </Link>
-      <Link
-        to={`/${post.board[0].uri}/t${thread.thread_id}#qp${post.post_id}`}
-        onClick={() => onClick('qp', post.post_id)}>
-        {op ? thread.thread_id : post.post_id}{' '}
-      </Link>
+      {quoteButton}
       {!isThread && op && <Link to={`/${post.board[0].uri}/t${thread.thread_id}`}>[reply]</Link>}
     </Fragment>
   ) : (
     ''
   );
-
-  const reportButton =
-    rules.length > 0 && post.user ? (
-      <Link
-        to={`/${post.board[0].uri}/t${thread.thread_id}#rp${post.post_id}`}
-        onClick={() => onClick('rp', post.post_id)}>
-        {' '}
-        [!!!]
-      </Link>
-    ) : (
-      ''
-    );
 
   const postUser =
     logged && post.user ? (
@@ -67,15 +96,20 @@ const PostHeader = ({ thread, post, isHidden, op, onClick, isThread, rules, auth
   );
 };
 
+PostHeader.defaultProps = {
+  isReferenced: false,
+};
+
 PostHeader.propTypes = {
   thread: PropTypes.object,
   post: PropTypes.object.isRequired,
   isHidden: PropTypes.bool,
-  onClick: PropTypes.func.isRequired,
   isThread: PropTypes.bool,
   rules: PropTypes.object.isRequired,
   auth: PropTypes.object.isRequired,
   op: PropTypes.bool,
+  isReferenced: PropTypes.bool.isRequired,
+  onOpenTooltipClick: PropTypes.func,
 };
 
 const mapStateToProps = (state) => ({

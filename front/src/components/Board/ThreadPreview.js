@@ -14,11 +14,9 @@ const ThreadPreview = ({ thread, index, topThread, localStorage: { hiddenThreads
 
   let postsList =
     thread.posts.length > 1 && !threadHideState
-      ? thread.posts.slice(Math.max(thread.posts.length - 5, 1)).map((post) => (
-          <div id={'p' + post.post_id} key={post.post_id}>
-            <Post thread={thread} post={post} />
-          </div>
-        ))
+      ? thread.posts
+          .slice(Math.max(thread.posts.length - 5, 1))
+          .map((post) => <Post thread={thread} post={post} key={post.post_id} />)
       : '';
 
   const opPost = <OpPost thread={thread} post={thread.posts[0]} />;

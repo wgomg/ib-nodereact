@@ -1,6 +1,8 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+
+import { useLocation } from 'react-router-dom';
 
 import { ButtonLink, PostFile, Player } from '../common';
 import FileDownload from './FileDownload';
@@ -9,7 +11,24 @@ import PostText from './PostText';
 
 import { hidePost, unhidePost } from '../../actions/localStorage';
 
-const Post = ({ thread, post, localStorage: { hiddenPosts }, hidePost, unhidePost }) => {
+const Post = ({
+  thread,
+  post,
+  localStorage: { hiddenPosts },
+  hidePost,
+  unhidePost,
+  onOpenTooltipClick,
+}) => {
+  const location = useLocation();
+  const [isReferenced, setIsReferenced] = useState(false);
+
+  useEffect(() => {
+    if (location.hash && location.hash.includes('p' + post.post_id)) setIsReferenced(true);
+    else setIsReferenced(false);
+  }, [location, post]);
+
+  const currRef = useRef(null);
+
   const [postHideState, setPostHideState] = useState(false);
 
   useEffect(() => {
@@ -22,7 +41,13 @@ const Post = ({ thread, post, localStorage: { hiddenPosts }, hidePost, unhidePos
   };
 
   const postInfo = (
-    <PostHeader thread={thread} post={post} isHidden={postHideState} onClick={() => null} />
+    <PostHeader
+      thread={thread}
+      post={post}
+      isHidden={postHideState}
+      isReferenced={isReferenced}
+      onOpenTooltipClick={onOpenTooltipClick}
+    />
   );
 
   const hiddenContent = <span className='small muted'>{postInfo}</span>;
@@ -51,9 +76,19 @@ const Post = ({ thread, post, localStorage: { hiddenPosts }, hidePost, unhidePos
     </Fragment>
   );
 
+  const referenceProp = isReferenced ? { ref: currRef } : '';
+
+  useEffect(() => {
+    if (isReferenced) window.scrollTo({ left: 0, top: currRef.current.offsetTop, behavior: 'smooth' });
+  }, [isReferenced, currRef]);
+
   return (
-    <div className='container post-container' key={post.post_id}>
-      <div className='post card card-post'>
+    <div
+      className='container post-container'
+      {...referenceProp}
+      id={'p' + post.post_id}
+      key={post.post_id}>
+      <div className={'post card card-post' + (isReferenced ? ' hashed' : '')}>
         <ButtonLink
           text={`[${postHideState ? '+' : '-'}]`}
           extraClass='hide'
@@ -72,6 +107,7 @@ Post.propTypes = {
   localStorage: PropTypes.object.isRequired,
   hidePost: PropTypes.func.isRequired,
   unhidePost: PropTypes.func.isRequired,
+  onOpenTooltipClick: PropTypes.func,
 };
 
 const mapStateToProps = (state) => ({

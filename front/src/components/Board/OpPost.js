@@ -2,6 +2,8 @@ import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
+import { useLocation } from 'react-router-dom';
+
 import { ButtonLink, PostFile, Player } from '../common';
 import FileDownload from './FileDownload';
 import PostHeader from './PostHeader';
@@ -16,7 +18,16 @@ const OpPost = ({
   hideThread,
   unhideThread,
   localStorage: { hiddenThreads },
+  onOpenTooltipClick,
 }) => {
+  const location = useLocation();
+  const [isReferenced, setIsReferenced] = useState(false);
+
+  useEffect(() => {
+    if (isThread && location.hash && location.hash.includes('p' + post.post_id)) setIsReferenced(true);
+    else setIsReferenced(false);
+  }, [location, post, isThread]);
+
   const [threadHideState, setThreadHideState] = useState(false);
 
   useEffect(() => {
@@ -33,8 +44,9 @@ const OpPost = ({
       thread={thread}
       post={post}
       isHidden={threadHideState}
-      onClick={() => null}
+      onOpenTooltipClick={onOpenTooltipClick}
       isThread={isThread}
+      isReferenced={isReferenced}
       op={true}
     />
   );
@@ -86,14 +98,18 @@ const OpPost = ({
   );
 };
 
+OpPost.defaultProps = {
+  isThread: false,
+};
+
 OpPost.propTypes = {
   thread: PropTypes.object.isRequired,
   post: PropTypes.object.isRequired,
-  isThread: PropTypes.bool,
+  isThread: PropTypes.bool.isRequired,
   hiddenPosts: PropTypes.number,
-  onClick: PropTypes.func,
   hideThread: PropTypes.func.isRequired,
   unhideThread: PropTypes.func.isRequired,
+  onOpenTooltipClick: PropTypes.func,
 };
 
 const mapStateToProps = (state) => ({
