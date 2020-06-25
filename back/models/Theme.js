@@ -29,7 +29,7 @@ function Theme() {
     if (theme.insertId) {
       theme = await db.select({
         table: this.table,
-        filters: [{ field: this.idField, value: tag.insertId }],
+        filters: [{ field: this.idField, value: theme.insertId }],
       });
 
       if (theme.length > 0) cache.addTableData(this.table, theme[0]);
@@ -37,7 +37,7 @@ function Theme() {
       theme = cache.getTableData(this.table, { field: this.idField, value: theme[0].theme_id });
     }
 
-    return tag;
+    return theme;
   };
 
   this.get = async (name) => {
