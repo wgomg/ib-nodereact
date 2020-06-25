@@ -67,7 +67,7 @@ const Post = ({
       </div>
 
       <div className='post-text'>
-        <PostText post={post} />
+        <PostText post={post} thread={thread} />
       </div>
 
       {post.file_url && (

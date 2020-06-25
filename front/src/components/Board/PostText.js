@@ -6,7 +6,7 @@ import QuotePost from './QuotePost';
 
 const striptags = require('striptags');
 
-const PostText = ({ post }) => {
+const PostText = ({ post, thread }) => {
   const tooltipOverridePosition = ({ left, top }, currentEvent, currentTarget, node) => {
     const { height } = node.getBoundingClientRect();
 
@@ -40,7 +40,7 @@ const PostText = ({ post }) => {
               type='dark'
               effect='solid'
               overridePosition={tooltipOverridePosition}>
-              <QuotePost post={quoted} />
+              <QuotePost post={quoted} thread={thread} />
             </ReactTooltip>
           </Fragment>
         );
@@ -62,6 +62,7 @@ const PostText = ({ post }) => {
 
 PostText.propTypes = {
   post: PropTypes.object.isRequired,
+  thread: PropTypes.object.isRequired,
 };
 
 export default PostText;

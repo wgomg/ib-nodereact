@@ -73,7 +73,7 @@ const OpPost = ({
         {postInfo}
 
         <div className='op-post-text'>
-          <PostText post={post} />
+          <PostText post={post} thread={thread} />
         </div>
       </div>
 
