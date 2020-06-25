@@ -14,7 +14,7 @@ const getCss = () => localStorage.getItem('css');
 
 const setDefaultTheme = () => {
   localStorage.setItem('theme', 'default');
-  localStorage.setItem('css', null);
+  localStorage.setItem('css', false);
 };
 
 const addHiddenThread = (thread_id) => {
