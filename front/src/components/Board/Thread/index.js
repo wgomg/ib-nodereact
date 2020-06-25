@@ -57,6 +57,7 @@ const Thread = ({ board, thread_id, threads: { thread, loading, error }, getThre
           ...formData,
           newPost: {
             ...formData.newPost,
+            thread_id: location.pathname.replace(/[^\d]/g, ''),
             text: (formData.newPost.text += `>>${location.hash.replace(/[^\d]/g, '')}\n`),
           },
         }));
