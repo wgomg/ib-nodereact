@@ -99,7 +99,7 @@ module.exports = {
   },
 
   debug: (data, procId, type) => {
-    if (procId)
+    if (procId !== null)
       switch (type) {
         case 'method': {
           let dataStr = '';
