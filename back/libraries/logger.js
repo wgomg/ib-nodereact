@@ -99,33 +99,35 @@ module.exports = {
   },
 
   debug: (data, procId, type) => {
-    switch (type) {
-      case 'method':
-        let dataStr = '';
+    if (procId)
+      switch (type) {
+        case 'method': {
+          let dataStr = '';
 
-        if (data.data)
-          dataStr =
-            'data: ' +
-            JSON.stringify(data.data, (key, value) =>
-              key === 'user' ||
-              (key === 'files' && Object.keys(value).length > 0) ||
-              key === 'password' ||
-              key === 'data'
-                ? typeof value
-                : value
-            );
+          if (data.data)
+            dataStr =
+              'data: ' +
+              JSON.stringify(data.data, (key, value) =>
+                key === 'user' ||
+                (key === 'files' && Object.keys(value).length > 0) ||
+                key === 'password' ||
+                key === 'data'
+                  ? typeof value
+                  : value
+              );
 
-        logger.debug(`[${procId}] Call on ${data.name}, ${dataStr}`);
-        break;
+          logger.debug(`[${procId}] Call on ${data.name}, ${dataStr}`);
+          break;
+        }
 
-      case 'dbop':
-        logger.debug(`[${procId}] DB: Attempt to ${data.name} ${JSON.stringify(data.data)}`);
-        break;
+        case 'dbop':
+          logger.debug(`[${procId}] DB: Attempt to ${data.name} ${JSON.stringify(data.data)}`);
+          break;
 
-      default:
-        logger.debug(data);
-        break;
-    }
+        default:
+          logger.debug(data);
+          break;
+      }
   },
 
   connection: (message) => {

@@ -37,7 +37,7 @@ server.on('connection', (connection) => {
 });
 
 function shutDown() {
-  logger.info('Received kill signal, shutting down gracefully');
+  logger.info('Received kill signal, shutting down gracefully', 'server');
 
   server.close(() => {
     logger.connection('Closed out remaining connections');
@@ -45,7 +45,7 @@ function shutDown() {
   });
 
   cache.close();
-  logger.info('Flushing cache');
+  logger.info('Flushing cache', 'CACHE');
 
   setTimeout(() => {
     logger.connection('Could not close connections in time, forcefully shutting down');

@@ -53,6 +53,7 @@ if (process.env.NODE_ENV === 'production') {
 if (config.logRoutes)
   logger.debug(app._router.stack.filter((s) => s.name === 'bound dispatch').map((s) => s.route));
 
+logger.info('Initializing cache', 'CACHE');
 cache.init();
 
 module.exports = app;
