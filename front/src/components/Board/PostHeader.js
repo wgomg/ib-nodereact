@@ -98,6 +98,7 @@ const PostHeader = ({
 
 PostHeader.defaultProps = {
   isReferenced: false,
+  isThread: false
 };
 
 PostHeader.propTypes = {

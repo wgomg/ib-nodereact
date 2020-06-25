@@ -18,6 +18,7 @@ const Post = ({
   hidePost,
   unhidePost,
   onOpenTooltipClick,
+  isThread,
 }) => {
   const location = useLocation();
   const [isReferenced, setIsReferenced] = useState(false);
@@ -47,6 +48,7 @@ const Post = ({
       isHidden={postHideState}
       isReferenced={isReferenced}
       onOpenTooltipClick={onOpenTooltipClick}
+      isThread={isThread}
     />
   );
 
@@ -101,6 +103,10 @@ const Post = ({
   );
 };
 
+Post.defaultProps = {
+  isThread: false,
+};
+
 Post.propTypes = {
   thread: PropTypes.object.isRequired,
   post: PropTypes.object.isRequired,
@@ -108,6 +114,7 @@ Post.propTypes = {
   hidePost: PropTypes.func.isRequired,
   unhidePost: PropTypes.func.isRequired,
   onOpenTooltipClick: PropTypes.func,
+  isThread: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = (state) => ({

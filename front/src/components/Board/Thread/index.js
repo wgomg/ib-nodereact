@@ -48,8 +48,20 @@ const Thread = ({ board, thread_id, threads: { thread, loading, error }, getThre
   const [tooltipOpen, setTooltipOpen] = useState(null);
 
   useEffect(() => {
-    if (location.hash) setTooltipOpen(location.hash.replace(/[#\d]/g, ''));
-  }, [location]);
+    if (location.hash) {
+      let tooltip = location.hash.replace(/[#\d]/g, '');
+      setTooltipOpen(tooltip);
+
+      if (tooltip === 'qp')
+        setFormData((formData) => ({
+          ...formData,
+          newPost: {
+            ...formData.newPost,
+            text: (formData.newPost.text += `>>${location.hash.replace(/[^\d]/g, '')}\n`),
+          },
+        }));
+    }
+  }, []);
 
   useEffect(() => {
     if (tooltipOpen) openTooltip(tooltipOpen);
@@ -94,7 +106,13 @@ const Thread = ({ board, thread_id, threads: { thread, loading, error }, getThre
             onOpenTooltipClick={onOpenTooltipClick}
           />
         ) : (
-          <Post thread={thread} post={post} key={post.post_id} onOpenTooltipClick={onOpenTooltipClick} />
+          <Post
+            thread={thread}
+            post={post}
+            key={post.post_id}
+            onOpenTooltipClick={onOpenTooltipClick}
+            isThread={true}
+          />
         )
       )
     );
