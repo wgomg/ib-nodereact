@@ -50,7 +50,10 @@ function Board() {
       id: { field: this.idField, value: cachedId },
     });
 
-    if (board.changedRows > 0) board = await this.get(cachedId);
+    if (board.changedRows > 0) {
+      cache.upateTableData(this.table, { ...body, [this.idField]: cachedId });
+      board = await this.get(cachedId);
+    }
 
     return board;
   };

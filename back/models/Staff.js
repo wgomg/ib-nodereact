@@ -76,12 +76,10 @@ function Staff() {
     const tzoffset = new Date().getTimezoneOffset() * 60000;
     const now = (tzoffset) => new Date(Date.now() - tzoffset).toISOString();
 
-    const updateStaff = {
-      last_login: now(tzoffset).slice(0, 19).replace('T', ' '),
-    };
-
     await db.update({
-      body: updateStaff,
+      body: {
+        last_login: now(tzoffset).slice(0, 19).replace('T', ' '),
+      },
       table: this.table,
       id: { field: this.idField, value: staff[0].staff_id },
     });
@@ -180,6 +178,8 @@ function Staff() {
 
     return res;
   };
+
+  //TODO: reset password method
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;

@@ -85,7 +85,7 @@ const setTable = (table, values, hashId = true) => {
   cache.set(
     table,
     values.map((value) => {
-      if (hashId) value = { ...value, hash: shortid() };
+      if (hashId && !value.hash) value = { ...value, hash: shortid() };
 
       return value;
     }),
@@ -99,7 +99,7 @@ const upateTableData = (table, value) => {
   if (cachedTable.length > 0)
     cachedTable = cachedTable.map((entry) => {
       const idField = table.toLowerCase().slice(0, -1) + '_id';
-      if (entry[idField] === value[idField]) entry = { ...value };
+      if (entry[idField] === value[idField]) entry = { ...entry, ...value };
 
       return entry;
     });

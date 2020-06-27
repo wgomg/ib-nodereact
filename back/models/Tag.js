@@ -43,6 +43,32 @@ function Tag() {
     return tag;
   };
 
+  this.update = async (body) => {
+    logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
+
+    const idValue = body[this.idField];
+    delete body[this.idField];
+
+    const errors = validate(body, this.schema);
+    if (errors) return { errors };
+
+    const cachedId = cache.getIdFromHash(this.table, idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { tag: 'Invalid ID' } };
+
+    let tag = await db.update({
+      body,
+      table: this.table,
+      id: { field: this.idField, value: cachedId },
+    });
+
+    if (tag.changedRows > 0) {
+      cache.upateTableData(this.table, { ...body, [this.idField]: cachedId });
+      tag = cache.getTableData(this.table, { field: this.idField, value: cachedId });
+    }
+
+    return tag;
+  };
+
   this.getAll = async () => {
     logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
 

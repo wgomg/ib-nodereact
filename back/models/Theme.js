@@ -40,6 +40,32 @@ function Theme() {
     return theme;
   };
 
+  this.update = async (body) => {
+    logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
+
+    const idValue = body[this.idField];
+    delete body[this.idField];
+
+    const errors = validate(body, this.schema);
+    if (errors) return { errors };
+
+    const cachedId = cache.getIdFromHash(this.table, idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { theme: 'Invalid ID' } };
+
+    let theme = await db.update({
+      body,
+      table: this.table,
+      id: { field: this.idField, value: cachedId },
+    });
+
+    if (theme.changedRows > 0) {
+      cache.upateTableData(this.table, { ...body, [this.idField]: cachedId });
+      theme = cache.getTableData(this.table, { field: this.idField, value: cachedId });
+    }
+
+    return theme;
+  };
+
   this.get = async (name) => {
     logger.debug({ name: `${this.name}.get()` }, this.procId, 'method');
 

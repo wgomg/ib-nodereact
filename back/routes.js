@@ -11,13 +11,13 @@ const privateMethods = new Map([
   ['Ban', ['save']],
   ['Banner', ['save', 'delete']],
   ['Board', ['save', 'update', 'delete']],
-  ['Post', ['update', 'delete']],
+  ['Post', []],
   ['Report', ['getAll', 'updateSolved']],
   ['Rule', ['save', 'update', 'delete']],
   ['Staff', ['save', 'get', 'getAuth', 'getAll', 'update', 'delete', 'updatePassword']],
-  ['Tag', ['save', 'delete']],
+  ['Tag', ['save', 'update', 'delete']],
   ['Theme', ['save', 'update', 'delete']],
-  ['Thread', ['delete']],
+  ['Thread', []],
   ['File', []],
 ]);
 
