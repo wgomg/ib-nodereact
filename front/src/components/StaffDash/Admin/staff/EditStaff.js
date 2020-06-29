@@ -1,5 +1,5 @@
 import React, { useState, Fragment, useEffect } from 'react';
-import { withRouter, useHistory, Link } from 'react-router-dom';
+import { withRouter, useHistory, Link, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -15,12 +15,13 @@ const EditStaff = ({
   editStaff,
   getStaff,
   getBoardsList,
-  match,
 }) => {
   let history = useHistory();
 
+  let { staff_id } = useParams();
+
   const [formData, setFormData] = useState({
-    staff_id: '',
+    staff_id: staff_id,
     board_id: 0,
     name: '',
     admin: 0,
@@ -28,8 +29,8 @@ const EditStaff = ({
   });
 
   useEffect(() => {
-    getStaff(match.params.staff_id);
-  }, [getStaff, match.params.staff_id]);
+    getStaff(staff_id);
+  }, [getStaff, staff_id]);
 
   useEffect(() => {
     getBoardsList();
@@ -58,7 +59,7 @@ const EditStaff = ({
       );
   }, [error]);
 
-  const { staff_id, board_id, name, admin, disabled } = formData;
+  const { board_id, name, admin, disabled } = formData;
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 

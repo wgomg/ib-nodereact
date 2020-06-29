@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useEffect } from 'react';
-import { withRouter, useHistory } from 'react-router-dom';
+import { withRouter, useHistory, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -7,17 +7,19 @@ import { editTheme, getTheme } from '../../../../actions/themes';
 
 import { Form } from '../../../common';
 
-const EditTheme = ({ editTheme, match, themes: { theme, error, loading } }) => {
+const EditTheme = ({ editTheme, themes: { theme, error, loading } }) => {
   let history = useHistory();
 
+  let { name } = useParams();
+
   const [formData, setFormData] = useState({
-    name: '',
+    name: name,
     css: '',
   });
 
   useEffect(() => {
-    getTheme(match.params.name);
-  }, [match.params.name]);
+    getTheme(name);
+  }, [name]);
 
   useEffect(() => {
     setFormData((formData) => {
@@ -40,7 +42,7 @@ const EditTheme = ({ editTheme, match, themes: { theme, error, loading } }) => {
       );
   }, [error]);
 
-  const { name, css } = formData;
+  const { css } = formData;
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 

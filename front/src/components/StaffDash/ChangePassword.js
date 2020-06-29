@@ -1,5 +1,5 @@
 import React, { useState, Fragment, useEffect } from 'react';
-import { withRouter, useHistory } from 'react-router-dom';
+import { withRouter, useHistory, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -7,8 +7,10 @@ import { getStaff, changePassword } from '../../actions/staffs';
 
 import { Form } from '../common';
 
-const ChangePassword = ({ staffs: { staff, error, loading }, getStaff, changePassword, match }) => {
+const ChangePassword = ({ staffs: { staff, error, loading }, getStaff, changePassword }) => {
   let history = useHistory();
+
+  let { staff_id } = useParams();
 
   const [formData, setFormData] = useState({
     staff_id: '',
@@ -18,8 +20,8 @@ const ChangePassword = ({ staffs: { staff, error, loading }, getStaff, changePas
   });
 
   useEffect(() => {
-    getStaff(match.params.staff_id);
-  }, [getStaff, match.params.staff_id]);
+    getStaff(staff_id);
+  }, [getStaff, staff_id]);
 
   useEffect(() => {
     setFormData((formData) => {
