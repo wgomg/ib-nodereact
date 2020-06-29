@@ -36,7 +36,7 @@ const Thread = ({ board, thread_id, threads: { thread, loading, error }, getThre
       rule_id: '0',
     },
     newPost: {
-      thread_id: 0,
+      thread_id: thread_id,
       text: '',
       name: 'Anon',
       file_url: '',

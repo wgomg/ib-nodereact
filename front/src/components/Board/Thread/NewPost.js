@@ -11,7 +11,7 @@ import { createPost } from '../../../actions/threads';
 
 const NewPostForm = ({ formData, setFormData, isFloatin, createPost }) => {
   let history = useHistory();
-  
+
   const location = useLocation();
   const boardUri = location.pathname.split('/')[1];
 
@@ -45,7 +45,7 @@ const NewPostForm = ({ formData, setFormData, isFloatin, createPost }) => {
       if (res) {
         setFormData({
           ...formData,
-          newPost: { thread_id: 0, text: '', name: 'Anon', file_url: '', image: null },
+          newPost: { thread_id: thread_id, text: '', name: 'Anon', file_url: '', image: null },
         });
 
         history.push(`/${boardUri}/t${thread_id}`);
