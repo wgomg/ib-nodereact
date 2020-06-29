@@ -8,7 +8,9 @@ const initState = {};
 const middleware = [thunk];
 
 const actionSanitizer = (action) =>
-  action.type === 'GET_FILE' && action.payload ? { ...action, payload: '<<LONG_BLOB>>' } : action;
+  action.type === 'GET_FILE' && action.payload
+    ? { ...action, payload: { ...action.payload, blob: '<<LONG_BLOB>>' } }
+    : action;
 
 const stateSanitizer = (state) =>
   state.files.blob ? { ...state, files: { ...state.files, blob: '<<LONG_BLOB>>' } } : state;
