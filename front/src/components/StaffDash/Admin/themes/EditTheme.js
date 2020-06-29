@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -7,7 +7,9 @@ import { editTheme, getTheme } from '../../../../actions/themes';
 
 import { Form } from '../../../common';
 
-const EditTheme = ({ editTheme, history, match, themes: { theme, error, loading } }) => {
+const EditTheme = ({ editTheme, match, themes: { theme, error, loading } }) => {
+  let history = useHistory();
+
   const [formData, setFormData] = useState({
     name: '',
     css: '',

@@ -1,5 +1,5 @@
 import React, { useState, Fragment, useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -8,13 +8,9 @@ import { getBoardsList } from '../../../../actions/boards';
 
 import { Form } from '../../../common';
 
-const CreateStaff = ({
-  createStaff,
-  getBoardsList,
-  history,
-  boards: { boards, loading },
-  staffs: { error },
-}) => {
+const CreateStaff = ({ createStaff, getBoardsList, boards: { boards, loading }, staffs: { error } }) => {
+  let history = useHistory();
+
   const [formData, setFormData] = useState({
     board_id: 0,
     name: '',

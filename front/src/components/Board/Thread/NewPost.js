@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter, useHistory } from 'react-router-dom';
 
 import { useLocation } from 'react-router-dom';
 
@@ -9,7 +9,9 @@ import { Form } from '../../common';
 
 import { createPost } from '../../../actions/threads';
 
-const NewPostForm = ({ formData, setFormData, isFloatin, createPost, history }) => {
+const NewPostForm = ({ formData, setFormData, isFloatin, createPost }) => {
+  let history = useHistory();
+  
   const location = useLocation();
   const boardUri = location.pathname.split('/')[1];
 

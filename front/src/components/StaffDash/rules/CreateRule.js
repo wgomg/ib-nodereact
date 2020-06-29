@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -7,7 +7,9 @@ import { createRule } from '../../../actions/rules';
 
 import { Form } from '../../common';
 
-const CreateRule = ({ createRule, history, board_id, rules: { error } }) => {
+const CreateRule = ({ createRule, board_id, rules: { error } }) => {
+  let history = useHistory();
+
   const [formData, setFormData] = useState({
     board_id: null,
     text: '',

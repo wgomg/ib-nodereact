@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -11,10 +11,11 @@ import { Form } from '../../common';
 const CreateBanner = ({
   createBanner,
   getBoardsList,
-  history,
   boards: { boards, loading },
   banners: { error },
 }) => {
+  let history = useHistory();
+
   const [board_id, setBoardId] = useState(0);
 
   useEffect(() => {

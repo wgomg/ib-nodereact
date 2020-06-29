@@ -1,5 +1,5 @@
 import React, { useState, Fragment, useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -7,7 +7,9 @@ import { createBoard } from '../../../../actions/boards';
 
 import { Form } from '../../../common';
 
-const CreateBoard = ({ createBoard, history, boards: { error } }) => {
+const CreateBoard = ({ createBoard, boards: { error } }) => {
+  let history = useHistory();
+
   const [formData, setFormData] = useState({
     name: '',
     uri: '',

@@ -1,5 +1,5 @@
 import React, { useState, Fragment, useEffect } from 'react';
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter, useHistory, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -15,9 +15,10 @@ const EditStaff = ({
   editStaff,
   getStaff,
   getBoardsList,
-  history,
   match,
 }) => {
+  let history = useHistory();
+
   const [formData, setFormData] = useState({
     staff_id: '',
     board_id: 0,

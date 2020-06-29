@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -14,11 +14,12 @@ const EditBanner = ({
   editBanner,
   getBoard,
   getBoardsList,
-  history,
   banners: { banner, error, loading: bannerLoading },
   boards: { boards, board, loading: boardsLoading },
   match,
 }) => {
+  let history = useHistory();
+
   const [formData, setFormData] = useState({
     banner_id: '',
     board_id: 0,

@@ -1,13 +1,17 @@
 import React, { useState, Fragment, useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, useHistory, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { editBoard, getBoard } from '../../../../actions/boards';
+import { editBoard } from '../../../../actions/boards';
 
 import { Form } from '../../../common';
 
-const EditBoard = ({ boards: { board, error, loading }, editBoard, getBoard, history, match }) => {
+const EditBoard = ({ boards: { boards, error, loading }, editBoard }) => {
+  let history = useHistory();
+  let { board_uri } = useParams();
+
+  const [board, setBoard] = useState(null);
   const [formData, setFormData] = useState({
     board_id: '',
     name: '',
@@ -16,8 +20,12 @@ const EditBoard = ({ boards: { board, error, loading }, editBoard, getBoard, his
   });
 
   useEffect(() => {
-    getBoard(match.params.board_uri);
-  }, [getBoard, match.params.board_uri]);
+    if (!loading) {
+      const board = boards.filter((board) => board.uri === board_uri);
+
+      if (board.length > 0) setBoard(board[0]);
+    }
+  }, [boards, loading, board_uri]);
 
   useEffect(() => {
     setFormData((formData) => {
@@ -90,7 +98,6 @@ const EditBoard = ({ boards: { board, error, loading }, editBoard, getBoard, his
 
 EditBoard.propTypes = {
   editBoard: PropTypes.func.isRequired,
-  getBoard: PropTypes.func.isRequired,
   boards: PropTypes.object.isRequired,
 };
 
@@ -98,4 +105,4 @@ const mapStateToProps = (state) => ({
   boards: state.boards,
 });
 
-export default connect(mapStateToProps, { editBoard, getBoard })(withRouter(EditBoard));
+export default connect(mapStateToProps, { editBoard })(withRouter(EditBoard));
