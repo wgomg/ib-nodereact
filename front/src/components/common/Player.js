@@ -1,33 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-
-import { getFileBlob } from '../../actions/files';
 
 import ReactPlayer from 'react-player/lazy';
 
-const Player = ({ post, files: { loading, file, blob }, getFileBlob }) => {
-  const [isVideoFile, setIsVideoFile] = useState(post.file ? isVideo(post.file.mimetype) : false);
-  const [blobUrl, setBlobUrl] = useState(null);
-
-  useEffect(() => {
-    if (isVideoFile) {
-      getFileBlob(post.file.file_id);
-      setIsVideoFile(false);
-    }
-  }, [isVideoFile, getFileBlob, post]);
-
-  useEffect(() => {
-    if (!loading && blob && file && post.file && file.name === post.file.name) {
-      const postFile = new Blob([new Uint8Array(blob.data)], { type: file.mimetype });
-
-      const postFileUrl = URL.createObjectURL(postFile);
-
-      setBlobUrl(postFileUrl);
-    }
-  }, [loading, file, blob, post]);
-
-  const url = post.file_url || blobUrl;
+const Player = ({ post }) => {
+  const isVideoFile = post.file ? isVideo(post.file.mimetype) : false;
+  const url = isVideoFile ? `/data/${post.file.name}.${post.file.extension}` : post.file_url;
 
   const thumb = () => {
     if (post.file_url && (post.file_url.includes('dai.ly') || post.file_url.includes('dailymotion'))) {
@@ -62,12 +40,6 @@ const isVideo = (mimetype) =>
 
 Player.propTypes = {
   post: PropTypes.object.isRequired,
-  getFileBlob: PropTypes.func.isRequired,
-  files: PropTypes.object,
 };
 
-const mapStateToProps = (state) => ({
-  files: state.files,
-});
-
-export default connect(mapStateToProps, { getFileBlob })(Player);
+export default Player;
