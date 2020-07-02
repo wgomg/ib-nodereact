@@ -13,6 +13,7 @@ const logger = require('./libraries/logger');
 const cache = require('./libraries/cache');
 
 const app = express();
+const trustProxy = require('./config').server.trustProxy;
 
 app.use(express.json({ extended: false }));
 app.use(
@@ -40,6 +41,8 @@ app.use(
     parameters: [Fingerprint.useragent, Fingerprint.acceptHeaders, Fingerprint.geoip],
   })
 );
+
+app.set('trust proxy', trustProxy);
 
 require('./routes')(app);
 

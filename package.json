@@ -2,7 +2,7 @@
   "name": "ibnodereact",
   "version": "1.0.0",
   "description": "Proyecto de imageboard sencillo con fines de aprendiza de node/react",
-  "main": "index.js",
+  "main": "back/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "front": "npm start --prefix front",
