@@ -27,7 +27,7 @@ const addTableData = (table, value, hashId = true) => {
       value[table.toLowerCase().slice(0, -1) + '_id']
   );
 
-  if (cachedValue.length === 0) setTable(table, [...cachedTable, value]);
+  if (cachedValue.length === 0) setTable(table, [...cachedTable, value], hashId);
 };
 
 const getIdFromHash = (table, hash) => {
