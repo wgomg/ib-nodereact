@@ -17,7 +17,7 @@ const ttl = {
 };
 
 const addTableData = (table, value, hashId = true) => {
-  const cachedTable = getTable(table);
+  let cachedTable = cache.get(table) || [];
 
   if (hashId) value = { ...value, hash: shortid() };
 
@@ -27,7 +27,7 @@ const addTableData = (table, value, hashId = true) => {
       value[table.toLowerCase().slice(0, -1) + '_id']
   );
 
-  if (cachedValue.length === 0) cache.set(table, [...cachedTable, value], ttl.dbData);
+  if (cachedValue.length === 0) setTable(table, [...cachedTable, value]);
 };
 
 const getIdFromHash = (table, hash) => {
