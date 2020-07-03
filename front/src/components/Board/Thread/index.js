@@ -83,6 +83,7 @@ const Thread = ({ board, thread_id, threads: { thread, loading, error }, getThre
       ...tooltipData,
     });
 
+    setTooltipOpen(tooltip);
     openTooltip(tooltip);
   };
 
