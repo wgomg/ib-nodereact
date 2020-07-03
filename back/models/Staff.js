@@ -31,12 +31,17 @@ function Staff() {
 
     body = {
       ...body,
-      password: bcrypt.hashSync(body.name, 10),
+      password: body.name,
       board_id: cache.getIdFromHash('Boards', body.board_id),
     };
 
     const errors = validate(body, this.schema);
     if (errors) return { errors };
+
+    body = {
+      ...body,
+      password: bcrypt.hashSync(body.password, 10),
+    };
 
     let staff = await db.insert({ body, table: this.table });
 
