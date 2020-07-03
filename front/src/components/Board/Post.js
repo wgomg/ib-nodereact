@@ -72,7 +72,7 @@ const Post = ({
 
       {post.file_url && (
         <div style={{ display: 'inline-block' }}>
-          <Player post={post} />
+          <Player post={post} isFileUrl={true} />
         </div>
       )}
     </Fragment>

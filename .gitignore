@@ -1,3 +1,5 @@
 dump-db.sh
 
 .sync-exclude.lst
+
+dependencias.txt
