@@ -252,9 +252,9 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 
 --
 --
---Default administrator account admin:admin
+-- Default administrator account admin:admin
 --
-INSERT INTO `Staffs` (`board_id`, `name`, `password`, `admin`, `disabled`) VALUES (NULL,	'admin', '$2b$10$q.GKtwlGnVmtt/fW4ptHIuVcMIPbK7aGLh66dpJbVpS.39qSuHiLa',	1,	0);
+INSERT INTO `Staffs` (`board_id`, `name`, `password`, `admin`, `disabled`) VALUES (NULL, 'admin', '$2b$10$q.GKtwlGnVmtt/fW4ptHIuVcMIPbK7aGLh66dpJbVpS.39qSuHiLa', 1, 0);
 
 -- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
 --
