@@ -16,6 +16,7 @@ const signaturesMap = new Map([
   ['6674797069736f6d', { mimetype: 'video/mp4', extensions: ['mp4'] }],
   ['667479706d703432', { mimetype: 'video/mp4', extensions: ['m4v', 'mp4'] }],
   ['1a45dfa3', { mimetype: 'video/webm', extensions: ['webm'] }],
+  ['5249464657454250', { mimetype: 'image/webp', extensions: ['webp'] }],
 ]);
 
 const rootDir = __dirname.split('/').slice(0, -1).join('/');
@@ -29,6 +30,10 @@ function AllowedFile(file) {
 
   if (fileExtension === 'mp4' || fileExtension === 'm4v')
     fileHeader = this.file.data.subarray(4, 12).toString('hex');
+
+  if (fileExtension === 'webp')
+    fileHeader =
+      this.file.data.subarray(0, 4).toString('hex') + this.file.data.subarray(8, 12).toString('hex');
 
   this.schemaData = {
     mimetype: null,
