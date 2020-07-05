@@ -8,6 +8,7 @@ import {
   GET_THREAD,
   CREATE_POST,
   POST_ERROR,
+  BOARD_ADD_THREAD_ID,
 } from './types';
 
 export const getLatestThreads = () => async (dispatch) => {
@@ -35,6 +36,11 @@ export const createThread = (newThread) => async (dispatch) => {
     dispatch({
       type: CREATE_THREAD,
       payload: res.data.length > 0 ? res.data[0] : {},
+    });
+
+    dispatch({
+      type: BOARD_ADD_THREAD_ID,
+      payload: res.data.length > 0 ? res.data[0] : null,
     });
 
     if (res.data[0]) return true;

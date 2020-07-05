@@ -1,4 +1,10 @@
-import { GET_BOARDS_LIST, BOARDS_ERROR, GET_BOARD, DELETE_BOARD } from '../actions/types';
+import {
+  GET_BOARDS_LIST,
+  BOARDS_ERROR,
+  GET_BOARD,
+  DELETE_BOARD,
+  BOARD_ADD_THREAD_ID,
+} from '../actions/types';
 
 const initState = {
   boards: [],
@@ -24,6 +30,21 @@ export default function (state = initState, action) {
         loading: false,
         error: null,
       };
+
+    case BOARD_ADD_THREAD_ID: {
+      if (payload)
+        return {
+          ...state,
+          boards: state.boards.map((board) => {
+            if (board.board_id == payload.board_id) board.threadsIds.push(payload.thread_id);
+
+            return board;
+          }),
+          loading: false,
+          error: null,
+        };
+      else return state;
+    }
 
     case BOARDS_ERROR:
       return { ...state, error: payload.data, loading: false };
