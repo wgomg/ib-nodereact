@@ -65,10 +65,7 @@ function Board() {
     if (!/^[0-9]+$/i.test(cachedId)) return { errors: { board: 'Invalid ID' } };
 
     const Report = require('./Report');
-    return Report.find([
-      { field: this.idField, value: board_id },
-      { field: this.idField, value: null },
-    ]);
+    return Report.find([{ field: this.idField, value: cachedId }]);
   };
 
   this.getThreads = async (board_id) => {
@@ -116,7 +113,7 @@ function Board() {
 
     const Rule = require('./Rule');
     return Rule.find([
-      { field: this.idField, value: board_id },
+      { field: this.idField, value: cachedId },
       { field: this.idField, value: null },
     ]);
   };
@@ -129,7 +126,7 @@ function Board() {
 
     const Banner = require('./Banner');
     return Banner.find([
-      { field: this.idField, value: board_id },
+      { field: this.idField, value: cachedId },
       { field: this.idField, value: null },
     ]);
   };

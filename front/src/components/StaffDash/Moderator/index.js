@@ -36,7 +36,6 @@ export default ({ board_id }) => {
           <div className='container centered'>
             <div className='columns'>
               <ReportsList board_id={board_id} />
-              <div className='col-5' />
             </div>
           </div>
         </Fragment>

@@ -147,6 +147,10 @@ function Report() {
   this.find = async (filters) => {
     let cachedReports = [];
 
+    const Post = require('./Post');
+    Post.procId = this.procId;
+
+    console.log(filters);
     filters.forEach((filter) => {
       const cached = cache.getTableData(this.table, { ...filter });
 
@@ -155,14 +159,42 @@ function Report() {
       });
     });
 
-    if (cachedReports.length > 0) return cachedReports;
+    if (cachedReports.length > 0) {
+      cachedReports = await Promise.all(
+        cachedReports
+          .filter(async (report) => {
+            if (cache.getPostUser(report.post_id)) return true;
+
+            this.updateSolved({ report_id: report.report_id });
+
+            return false;
+          })
+          .map(async (report) => {
+            const post = await Post.get(report.post_id);
+            const rule = cache.getTableData('Rules', { field: 'hash', value: report.rule_id });
+
+            report = {
+              ...report,
+              post: post.length > 0 ? post[0] : {},
+              rule: rule[0],
+            };
+
+            delete report.rule_id;
+            delete report.post_id;
+
+            return report;
+          })
+      );
+
+      return cachedReports;
+    }
 
     let sql =
       'SELECT ' +
-      'report_id, Reports.post_id, Boards.boards_id, Reports.rule_id, Rules.text, duration, solved, Reports.created_on ' +
+      'report_id, Reports.post_id, Boards.board_id, Reports.rule_id, solved, Reports.created_on ' +
       ' FROM Reports' +
       ' INNER JOIN Posts ON Posts.post_id = Reports.report_id' +
-      ' INNER JOIN Threads ON Threads.thread_od = Posts.thread_od' +
+      ' INNER JOIN Threads ON Threads.thread_id = Posts.thread_id' +
       ' INNER JOIN Boards ON Boards.board_id = Threads.board_id' +
       ' WHERE ';
 
@@ -181,7 +213,27 @@ function Report() {
         cache.addTableData(this.table, report);
       });
 
-    return cache.getTableData(this.table, { ...filters });
+    reports = cache.getTableData(this.table, { ...filters });
+
+    reports = await Promise.all(
+      reports.map(async (report) => {
+        const post = await Post.get(report.post_id);
+        const rule = cache.getTableData('Rules', { field: 'hash', value: report.rule_id });
+
+        report = {
+          ...report,
+          post: post.length > 0 ? post[0] : {},
+          rule: rule[0],
+        };
+
+        delete report.rule_id;
+        delete report.post_id;
+
+        return report;
+      })
+    );
+
+    return reports;
   };
 
   this.getFunctions = () => {
