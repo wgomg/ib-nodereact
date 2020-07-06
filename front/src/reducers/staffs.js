@@ -1,4 +1,4 @@
-import { GET_STAFFS, GET_STAFF, STAFF_ERROR, DELETE_STAFF } from '../actions/types';
+import { GET_STAFFS, GET_STAFF, STAFF_ERROR } from '../actions/types';
 
 const initState = {
   staffs: [],
@@ -13,18 +13,10 @@ export default function (state = initState, action) {
     case GET_STAFFS:
       return { ...state, staffs: payload, loading: false, error: null };
 
-    case DELETE_STAFF:
-      return {
-        ...state,
-        staffs: state.staffs.filter((staff) => staff.staff_id !== payload),
-        loading: false,
-        error: null,
-      };
-
     case GET_STAFF:
       return {
         ...state,
-        staffs: state.staffs.push(payload),
+        staffs: [...state.staffs.filter((staff) => staff.staff_id !== payload.staff_id), payload],
         loading: false,
         error: null,
       };

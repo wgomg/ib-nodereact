@@ -3,14 +3,16 @@ import { withRouter, useHistory, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { getStaff, changePassword } from '../../actions/staffs';
+import { changePassword } from '../../actions/staffs';
 
 import { Form } from '../common';
 
-const ChangePassword = ({ staffs: { staff, error, loading }, getStaff, changePassword }) => {
+const ChangePassword = ({ staffs: { staffs, error }, changePassword }) => {
   let history = useHistory();
 
   let { staff_id } = useParams();
+
+  const staff = staffs.filter((s) => s.staff_id === staff_id)[0];
 
   const [formData, setFormData] = useState({
     staff_id: '',
@@ -20,14 +22,10 @@ const ChangePassword = ({ staffs: { staff, error, loading }, getStaff, changePas
   });
 
   useEffect(() => {
-    getStaff(staff_id);
-  }, [getStaff, staff_id]);
-
-  useEffect(() => {
     setFormData((formData) => {
-      return !staff || loading ? formData : { ...formData, staff_id: staff.staff_id, name: staff.name };
+      return !staff ? formData : { ...formData, staff_id: staff.staff_id, name: staff.name };
     });
-  }, [staff, loading]);
+  }, [staff]);
 
   useEffect(() => {
     if (error)
@@ -90,7 +88,6 @@ const ChangePassword = ({ staffs: { staff, error, loading }, getStaff, changePas
 };
 
 ChangePassword.propTypes = {
-  getStaff: PropTypes.func.isRequired,
   changePassword: PropTypes.func.isRequired,
   staffs: PropTypes.object.isRequired,
 };
@@ -99,4 +96,4 @@ const mapStateToProps = (state) => ({
   staffs: state.staffs,
 });
 
-export default connect(mapStateToProps, { getStaff, changePassword })(withRouter(ChangePassword));
+export default connect(mapStateToProps, { changePassword })(withRouter(ChangePassword));

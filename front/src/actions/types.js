@@ -27,7 +27,6 @@ export const BANNERS_ERROR = 'BANNERS_ERROR';
 
 export const GET_STAFFS = 'GET_STAFFS';
 export const GET_STAFF = 'GET_STAFF';
-export const DELETE_STAFF = 'DELETE_STAFF';
 export const STAFF_ERROR = 'STAFF_ERROR';
 
 export const GET_RULES = 'GET_RULES';

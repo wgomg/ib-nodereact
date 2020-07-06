@@ -93,7 +93,7 @@ function Staff() {
 
     if (staff[0].board_id) staff[0].board_id = cache.getHash('Boards', staff[0].board_id);
 
-    cache.upateTableData(this.table, staff[0]);
+    cache.updateTableData(this.table, staff[0]);
 
     staff = cache.getTableData(this.table, { field: this.idField, value: staff[0].staff_id });
 
@@ -171,20 +171,91 @@ function Staff() {
     return staffs;
   };
 
-  this.delete = async (staff_id) => {
-    logger.debug({ name: `${this.name}.delete()`, data: staff_id }, this.procId, 'method');
+  this.update = async (body) => {
+    logger.debug({ name: `${this.name}.update()`, data: body }, this.procId, 'method');
 
-    const cachedId = cache.getIdFromHash(this.table, staff_id);
+    const idValue = body[this.idField];
+    body = { name: body.name };
+
+    const errors = validate(body, this.schema);
+    if (errors) return { errors };
+
+    const cachedId = cache.getIdFromHash(this.table, idValue);
     if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
 
-    const res = await db.remove({ id: { field: this.idField, value: cachedId }, table: this.table });
+    let staff = await db.update({
+      body,
+      table: this.table,
+      id: { field: this.idField, value: cachedId },
+    });
 
-    if (res.affectedRows > 0) cache.removeFromTable(this.table, staff_id);
+    if (staff.changedRows > 0) {
+      cache.updateTableData(this.table, { ...body, [this.idField]: cachedId });
+      staff = cache.getTableData(this.table, { field: this.idField, value: cachedId });
+      delete staff.password;
+    }
 
-    return res;
+    return staff;
   };
 
-  //TODO: reset password method
+  this.updateChangepassword = async (body) => {
+    logger.debug({ name: `${this.name}.updateChangepassword()`, data: body }, this.procId, 'method');
+
+    const idValue = body[this.idField];
+    body = { password: body.password };
+
+    const errors = validate(body, this.schema);
+    if (errors) return { errors };
+
+    const cachedId = cache.getIdFromHash(this.table, idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
+
+    body = { password: bcrypt.hashSync(body.password, 10) };
+
+    let staff = await db.update({
+      body,
+      table: this.table,
+      id: { field: this.idField, value: cachedId },
+    });
+
+    if (staff.changedRows > 0) {
+      cache.updateTableData(this.table, { ...body, [this.idField]: cachedId });
+      staff = cache.getTableData(this.table, { field: this.idField, value: cachedId });
+      delete staff[0].password;
+    }
+
+    return staff;
+  };
+
+  this.updateResetpassword = async (body) => {
+    logger.debug({ name: `${this.name}.updateResetpassword()`, data: body }, this.procId, 'method');
+
+    const idValue = body[this.idField];
+    body = { password: body.name };
+
+    const errors = validate(body, this.schema);
+    if (errors) return { errors };
+
+    body = { password: bcrypt.hashSync(body.password, 10) };
+
+    const cachedId = cache.getIdFromHash(this.table, idValue);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { staff: 'Invalid ID' } };
+
+    let staff = await db.update({
+      body,
+      table: this.table,
+      id: { field: this.idField, value: cachedId },
+    });
+
+    if (staff.changedRows > 0) {
+      cache.updateTableData(this.table, { ...body, [this.idField]: cachedId });
+      staff = cache.getTableData(this.table, { field: this.idField, value: cachedId });
+
+      delete staff[0].password;
+    }
+
+    return staff;
+  };
 
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;

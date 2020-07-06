@@ -4,11 +4,11 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { Card, Loading } from '../../../common';
-import { getStaffs, deleteStaff } from '../../../../actions/staffs';
+import { getStaffs, resetPassword } from '../../../../actions/staffs';
 
 import timeSince from '../../../../utils/timeSince';
 
-const StaffsList = ({ getStaffs, deleteStaff, staffs: { staffs, loading }, auth: { staff } }) => {
+const StaffsList = ({ getStaffs, resetPassword, staffs: { staffs, loading }, auth: { staff } }) => {
   useEffect(() => {
     getStaffs();
   }, [getStaffs]);
@@ -18,25 +18,25 @@ const StaffsList = ({ getStaffs, deleteStaff, staffs: { staffs, loading }, auth:
       staffs
         .filter((s) => !s.admin || s.staff_id === staff.staff_id)
         .map((s) => {
-          const delStaff = (
-            <Link to='/staff/dash' onClick={() => deleteStaff(s.staff_id)}>
-              borrar
+          const editStaff = <Link to={`dash/edit-staff/${s.staff_id}`}>editar</Link>;
+          const changePassword = <Link to={`dash/change-password/${s.staff_id}`}>contraseña</Link>;
+          const resetPwd = (
+            <Link to='/staff/dash' onClick={() => resetPassword(s)}>
+              contraseña
             </Link>
           );
-          const editStaff = <Link to={`dash/edit-staff/${s.staff_id}`}>editar</Link>;
-          const resetPassword = <Link to={`dash/change-password/${s.staff_id}`}>contraseña</Link>;
 
           const actions = (
-            <div className='col-4'>
+            <div className='col-3'>
               <span className='small'>
-                [ {s.admin && <Fragment>{delStaff} |</Fragment>} {editStaff} | {resetPassword} ]
+                [ {editStaff} | {s.staff_id === staff.staff_id ? changePassword : resetPwd} ]
               </span>
             </div>
           );
 
           const role = s.admin ? 'admin' : 'mod';
           const name = (
-            <div className='col-2'>
+            <div className='col'>
               <span className={role}>{s.name}</span>
             </div>
           );
@@ -47,7 +47,7 @@ const StaffsList = ({ getStaffs, deleteStaff, staffs: { staffs, loading }, auth:
             </div>
           );
 
-          const lastLogin = <div className='col'>{timeSince(s.last_login)}</div>;
+          const lastLogin = <div className='col-2'>{timeSince(s.last_login)}</div>;
 
           return (
             <div className='columns' key={s.staff_id}>
@@ -79,7 +79,7 @@ const StaffsList = ({ getStaffs, deleteStaff, staffs: { staffs, loading }, auth:
 
 StaffsList.propTypes = {
   getStaffs: PropTypes.func.isRequired,
-  deleteStaff: PropTypes.func.isRequired,
+  resetPassword: PropTypes.func.isRequired,
   staffs: PropTypes.object.isRequired,
   auth: PropTypes.object.isRequired,
 };
@@ -89,4 +89,4 @@ const mapStateToProps = (state) => ({
   auth: state.auth,
 });
 
-export default connect(mapStateToProps, { getStaffs, deleteStaff })(StaffsList);
+export default connect(mapStateToProps, { getStaffs, resetPassword })(StaffsList);
