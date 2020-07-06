@@ -3,22 +3,21 @@ import { withRouter, useHistory, Link, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { editStaff, getStaff } from '../../../../actions/staffs';
-import { getBoardsList } from '../../../../actions/boards';
+import { editStaff } from '../../../../actions/staffs';
 
 import { Form } from '../../../common';
 
 const EditStaff = ({
-  staffs: { staff, error, loading: staffLoading },
-  boards: { boards, loading: boardsLoading },
+  staffs: { staffs, error },
+  boards: { boards },
   auth: { staff: loggedStaff },
   editStaff,
-  getStaff,
-  getBoardsList,
 }) => {
   let history = useHistory();
 
   let { staff_id } = useParams();
+
+  const staff = staffs.filter((s) => s.staff_id === staff_id)[0];
 
   const [formData, setFormData] = useState({
     staff_id: staff_id,
@@ -29,16 +28,8 @@ const EditStaff = ({
   });
 
   useEffect(() => {
-    getStaff(staff_id);
-  }, [getStaff, staff_id]);
-
-  useEffect(() => {
-    getBoardsList();
-  }, [getBoardsList]);
-
-  useEffect(() => {
     setFormData((formData) => {
-      return !staff || staffLoading
+      return !staff
         ? formData
         : {
             staff_id: staff.staff_id,
@@ -48,7 +39,7 @@ const EditStaff = ({
             disabled: staff.disabled,
           };
     });
-  }, [staff, staffLoading]);
+  }, [staff]);
 
   useEffect(() => {
     if (error)
@@ -74,7 +65,7 @@ const EditStaff = ({
       return option;
     });
 
-  const elements = [
+  let elements = [
     {
       component: 'text',
       name: 'name',
@@ -82,31 +73,39 @@ const EditStaff = ({
       label: 'Nombre',
       onChange: (e) => onChange(e),
     },
-    {
-      component: 'select',
-      name: 'board_id',
-      value: board_id,
-      options:
-        !boards || boardsLoading
+  ];
+
+  if (loggedStaff.admin && loggedStaff.staff_id !== staff_id)
+    elements = [
+      ...elements,
+      {
+        component: 'select',
+        name: 'board_id',
+        value: board_id,
+        options: !boards
           ? [{ value: 0, text: 'Boards' }]
           : [{ value: 0, text: 'Boards' }, ...boardsToSelectOptions(boards)],
-      label: 'Board',
-      onChange: (e) => onChange(e),
-    },
-    {
-      component: 'check',
-      name: 'admin',
-      value: admin,
-      label: 'Admin ¿?',
-      onChange: (e) => onCheckChange('admin'),
-    },
-    {
-      component: 'check',
-      name: 'disabled',
-      value: !disabled,
-      label: 'Habilitado ¿?',
-      onChange: (e) => onCheckChange('disabled'),
-    },
+        label: 'Board',
+        onChange: (e) => onChange(e),
+      },
+      {
+        component: 'check',
+        name: 'admin',
+        value: admin,
+        label: 'Admin ¿?',
+        onChange: () => onCheckChange('admin'),
+      },
+      {
+        component: 'check',
+        name: 'disabled',
+        value: !disabled,
+        label: 'Habilitado ¿?',
+        onChange: () => onCheckChange('disabled'),
+      },
+    ];
+
+  elements = [
+    ...elements,
     {
       component: 'btn',
       type: 'submit',
@@ -148,17 +147,15 @@ const EditStaff = ({
 
 EditStaff.propTypes = {
   editStaff: PropTypes.func.isRequired,
-  getStaff: PropTypes.func.isRequired,
-  getBoardsList: PropTypes.func.isRequired,
   staffs: PropTypes.object.isRequired,
   boards: PropTypes.object.isRequired,
   auth: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
-  boards: state.boards,
   staffs: state.staffs,
+  boards: state.boards,
   auth: state.auth,
 });
 
-export default connect(mapStateToProps, { editStaff, getStaff, getBoardsList })(withRouter(EditStaff));
+export default connect(mapStateToProps, { editStaff })(withRouter(EditStaff));
