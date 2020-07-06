@@ -20,7 +20,7 @@ export const getAllBanners = () => async (dispatch) => {
 
 export const getBanners = (board_id) => async (dispatch) => {
   try {
-    const res = await axios.get(`/_back/api/boardss/banners/${board_id}`);
+    const res = await axios.get(`/_back/api/boards/banners/${board_id}`);
 
     dispatch({
       type: GET_BANNERS,

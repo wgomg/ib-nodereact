@@ -135,7 +135,7 @@ ReportsList.propTypes = {
   discardReport: PropTypes.func.isRequired,
   applyBan: PropTypes.func.isRequired,
   reports: PropTypes.object.isRequired,
-  board_id: PropTypes.number,
+  board_id: PropTypes.string,
 };
 
 const mapStateToProps = (state) => ({

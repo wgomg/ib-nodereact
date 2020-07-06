@@ -79,7 +79,7 @@ RulesList.propTypes = {
   getRules: PropTypes.func.isRequired,
   deleteRule: PropTypes.func.isRequired,
   rules: PropTypes.object.isRequired,
-  board_id: PropTypes.number,
+  board_id: PropTypes.string,
   boards: PropTypes.object.isRequired,
 };
 

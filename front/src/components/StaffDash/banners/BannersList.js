@@ -84,7 +84,7 @@ BannersList.propTypes = {
   getBanners: PropTypes.func.isRequired,
   deleteBanner: PropTypes.func.isRequired,
   banners: PropTypes.object.isRequired,
-  board_id: PropTypes.number,
+  board_id: PropTypes.string,
 };
 
 const mapStateToProps = (state) => ({
