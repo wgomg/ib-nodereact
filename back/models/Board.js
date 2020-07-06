@@ -51,7 +51,7 @@ function Board() {
     });
 
     if (board.changedRows > 0) {
-      cache.upateTableData(this.table, { ...body, [this.idField]: cachedId });
+      cache.updateTableData(this.table, { ...body, [this.idField]: cachedId });
       board = await this.get(cachedId);
     }
 

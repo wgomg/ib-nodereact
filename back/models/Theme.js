@@ -59,7 +59,7 @@ function Theme() {
     });
 
     if (theme.changedRows > 0) {
-      cache.upateTableData(this.table, { ...body, [this.idField]: cachedId });
+      cache.updateTableData(this.table, { ...body, [this.idField]: cachedId });
       theme = cache.getTableData(this.table, { field: this.idField, value: cachedId });
     }
 

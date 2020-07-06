@@ -93,7 +93,7 @@ const setTable = (table, values, hashId = true) => {
   );
 };
 
-const upateTableData = (table, value) => {
+const updateTableData = (table, value) => {
   let cachedTable = cache.get(table) || [];
 
   if (cachedTable.length > 0)
@@ -204,7 +204,7 @@ module.exports = {
   getTableData,
   getTable,
   setTable,
-  upateTableData,
+  updateTableData,
   removeFromTable,
   setBannedUser,
   findBannedUser,

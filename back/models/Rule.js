@@ -71,7 +71,7 @@ function Rule() {
     });
 
     if (rule.changedRows > 0) {
-      cache.upateTableData(this.table, { ...body, [this.idField]: cachedId });
+      cache.updateTableData(this.table, { ...body, [this.idField]: cachedId });
       rule = cache.getTableData(this.table, { field: this.idField, value: cachedId });
     }
 
