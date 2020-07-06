@@ -14,7 +14,7 @@ const Dash = ({ auth: { loading, logged, staff } }) =>
     staff && staff.admin ? (
       <Admin />
     ) : (
-      <Moderator board_id={staff.board_id} />
+      <Moderator board_id={staff.board_id} staff_id={staff.staff_id} />
     )
   ) : (
     <Redirect to='/' />

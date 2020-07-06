@@ -13,7 +13,7 @@ const modPermissionsMap = new Map([
   ['Post', ['update', 'delete']],
   ['Report', ['updateSolved']],
   ['Rule', ['save', 'update', 'delete']],
-  ['Staff', ['getAuth', 'get', 'updatePassword']],
+  ['Staff', ['getAuth', 'get', 'updateChangepassword']],
   ['Thread', ['delete']],
 ]);
 

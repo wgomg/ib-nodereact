@@ -7,12 +7,14 @@ import { changePassword } from '../../actions/staffs';
 
 import { Form } from '../common';
 
-const ChangePassword = ({ staffs: { staffs, error }, changePassword }) => {
+const ChangePassword = ({ staffs: { staffs, error }, auth: { staff: loggedStaff }, changePassword }) => {
   let history = useHistory();
 
   let { staff_id } = useParams();
 
-  const staff = staffs.filter((s) => s.staff_id === staff_id)[0];
+  let staff = staffs.filter((s) => s.staff_id === staff_id)[0];
+
+  if (!loggedStaff.admin) staff = loggedStaff;
 
   const [formData, setFormData] = useState({
     staff_id: '',
@@ -90,10 +92,12 @@ const ChangePassword = ({ staffs: { staffs, error }, changePassword }) => {
 ChangePassword.propTypes = {
   changePassword: PropTypes.func.isRequired,
   staffs: PropTypes.object.isRequired,
+  auth: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   staffs: state.staffs,
+  auth: state.auth,
 });
 
 export default connect(mapStateToProps, { changePassword })(withRouter(ChangePassword));
