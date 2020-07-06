@@ -36,7 +36,7 @@ export default function (state = initState, action) {
         return {
           ...state,
           boards: state.boards.map((board) => {
-            if (board.board_id == payload.board_id) board.threadsIds.push(payload.thread_id);
+            if (board.board_id === payload.board_id) board.threadsIds.push(payload.thread_id);
 
             return board;
           }),

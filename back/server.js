@@ -20,9 +20,7 @@ setInterval(
 
 setInterval(
   () =>
-    server.getConnections((err, connections) =>
-      logger.info(`Cache size (kb): ${cache.stats('vsize') / 1024}`, 'CACHE')
-    ),
+    server.getConnections(() => logger.info(`Cache size (kb): ${cache.stats('vsize') / 1024}`, 'CACHE')),
   1000 * 60
 );
 
