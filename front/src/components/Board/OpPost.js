@@ -82,7 +82,7 @@ const OpPost = ({
   );
 
   return (
-    <div className='op' id={'p' + post.post_id}>
+    <div className='container op' id={'p' + post.post_id}>
       <hr className='separator' />
 
       {!isThread && (
