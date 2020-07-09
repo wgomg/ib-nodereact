@@ -50,27 +50,6 @@ CREATE TABLE IF NOT EXISTS `Banners` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `Bans`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `Bans` (
-  `ban_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `staff_id` bigint(20) unsigned NOT NULL,
-  `report_id` bigint(20) unsigned NOT NULL,
-  `ipaddress` int(10) unsigned NOT NULL,
-  `fingerprint` char(32) CHARACTER SET utf8 COLLATE utf8_general_mysql500_ci NOT NULL,
-  `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`ban_id`),
-  KEY `staff_id` (`staff_id`),
-  KEY `report_id` (`report_id`),
-  CONSTRAINT `Bans_ibfk_1` FOREIGN KEY (`staff_id`) REFERENCES `Staffs` (`staff_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `Bans_ibfk_2` FOREIGN KEY (`report_id`) REFERENCES `Reports` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `Boards`
 --
 
@@ -248,7 +227,7 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-05 18:51:50
+-- Dump completed on 2020-07-08 22:20:51
 
 --
 --
@@ -291,7 +270,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-05 18:51:53
+-- Dump completed on 2020-07-08 22:20:54
 -- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: imageboard
@@ -326,4 +305,76 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-05 18:51:56
+-- Dump completed on 2020-07-08 22:20:56
+-- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: imageboard
+-- ------------------------------------------------------
+-- Server version	10.4.13-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Dumping data for table `Rules`
+--
+-- WHERE:  rule_id=1
+
+LOCK TABLES `Rules` WRITE;
+/*!40000 ALTER TABLE `Rules` DISABLE KEYS */;
+INSERT INTO `Rules` VALUES (1,NULL,'Archivo no permitido',0,NULL,'2020-07-08 22:58:30');
+/*!40000 ALTER TABLE `Rules` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2020-07-08 22:20:59
+-- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: imageboard
+-- ------------------------------------------------------
+-- Server version	10.4.13-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Dumping data for table `Files`
+--
+-- WHERE:  file_id=1
+
+LOCK TABLES `Files` WRITE;
+/*!40000 ALTER TABLE `Files` DISABLE KEYS */;
+INSERT INTO `Files` VALUES (1,'image/gif','vanished','gif',494234,'default','2020-07-09 01:51:11');
+/*!40000 ALTER TABLE `Files` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2020-07-08 22:21:01

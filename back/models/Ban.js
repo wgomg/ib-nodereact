@@ -1,7 +1,5 @@
 'use strict';
 
-const db = require('../db');
-
 const logger = require('../libraries/logger');
 const cache = require('../libraries/cache');
 const validate = require('../libraries/validate');
@@ -47,8 +45,6 @@ function Ban() {
 
     const banDuration = rule[0].ban_duration;
 
-    if (banDuration === 0) await db.insert({ body, table: this.table, ipField: 'ipaddress' });
-
     cache.setBannedUser(user, banDuration);
     const Report = require('./Report');
     Report.procId = this.procId;
@@ -64,24 +60,9 @@ function Ban() {
     return cache.findBannedUser(user);
   };
 
-  this.getAll = async () => {
-    logger.debug({ name: `${this.name}.getAll()` }, this.procId, 'method');
-
-    const cachedBans = cache.getBannedList();
-    if (cachedBans.length > 0) return cachedBans;
-
-    let bans = await db.select({ table: this.table, ipField: 'user' });
-    if (bans.length > 0)
-      bans.forEach((ban) => {
-        cache.setBannedUser(ban.user);
-      });
-
-    return cache.getBannedList();
-  };
-
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'isUserBanned', 'getAll'];
+    const excluded = ['getFunctions', 'isUserBanned'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

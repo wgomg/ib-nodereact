@@ -168,9 +168,6 @@ const init = async () => {
   const File = require('../models/File');
   await File.getAll();
 
-  const Ban = require('../models/Ban');
-  Ban.getAll();
-
   const Banner = require('../models/Banner');
   Banner.getAll();
 
