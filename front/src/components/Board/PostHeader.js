@@ -87,7 +87,7 @@ const PostHeader = ({
       {threadSubject}
       {postName}
       {postCreationDate}
-      {postInfo} {reportButton}
+      {!post.has_ban && postInfo} {!post.has_ban && reportButton}
       {postUser}
     </div>
   );

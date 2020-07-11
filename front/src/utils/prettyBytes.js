@@ -1,4 +1,6 @@
-const prettyBytes = bytes => {
+const prettyBytes = (bytes) => {
+  if (!bytes) return null;
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 

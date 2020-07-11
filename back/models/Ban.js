@@ -68,26 +68,24 @@ function Ban() {
     if (errors) return { errors };
 
     const banDuration = rule[0].ban_duration;
+    const post = cache.getTableData('Posts', { field: 'post_id', value: report[0].post_id });
 
     if (rule[0].apply_on === 'post') cache.setBannedUser(user, banDuration);
     else if (rule[0].apply_on === 'file') {
-      const post = cache.getTableData('Posts', { field: 'post_id', value: report[0].post_id });
-
-      const fileToBeDeleted = post[0].file.file_id;
-
-      const Post = require('./Post');
-      Post.procId = this.procId;
-      Post.schema.text.required = false;
-
-      Post.update({ post_id: post[0].post_id, file_id: VANISHED_FILE_ID });
-
-      const fileToBeBanned = cache.getTableData('Files', { field: 'hash', value: fileToBeDeleted });
+      const fileToBeBanned = cache.getTableData('Files', { field: 'hash', value: post[0].file.file_id });
 
       cache.setBannedFile(fileToBeBanned[0].name, banDuration);
+
       const File = require('./File');
       File.procId = this.procId;
-      File.delete(fileToBeDeleted);
+      File.delete(post[0].file.file_id);
     }
+
+    const Post = require('./Post');
+    Post.procId = this.procId;
+    Post.schema.text.required = false;
+
+    Post.update({ post_id: post[0].post_id, file_id: VANISHED_FILE_ID, has_ban: 1 });
 
     const Report = require('./Report');
     Report.procId = this.procId;

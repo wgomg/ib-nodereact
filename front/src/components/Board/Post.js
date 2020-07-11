@@ -58,9 +58,11 @@ const Post = ({
     <Fragment>
       {postInfo}
 
-      <p className='file-info-post'>
-        <FileDownload post={post} />
-      </p>
+      {!post.has_ban && (
+        <p className='file-info-post'>
+          <FileDownload post={post} />
+        </p>
+      )}
 
       <div className='post-file'>
         <PostFile post={post} />
@@ -90,7 +92,10 @@ const Post = ({
       {...referenceProp}
       id={'p' + post.post_id}
       key={post.post_id}>
-      <div className={'post card card-post' + (isReferenced ? ' hashed' : '')}>
+      <div
+        className={
+          'post card card-post' + (isReferenced ? ' hashed' : '') + (post.has_ban ? ' vanished' : '')
+        }>
         <ButtonLink
           text={`[${postHideState ? '+' : '-'}]`}
           extraClass='hide'

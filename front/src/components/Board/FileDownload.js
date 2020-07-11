@@ -47,13 +47,17 @@ const FileDownload = ({ post, getFileBlob, files }) => {
     setFileId(postFileId);
   };
 
+  const fileSize = post.file ? prettyBytes(post.file.size) : null;
+
   return (
     <span className='small'>
       {' '}
       {post.file && (
         <Fragment>
           <ButtonLink
-            text={`File: ${post.file.name}.${post.file.extension} (${prettyBytes(post.file.size)})`}
+            text={`File: ${post.file.name}.${post.file.extension}${
+              fileSize ? ' (' + fileSize + ')' : ''
+            }`}
             onClick={() => downloadFile(post.file.file_id)}
           />
         </Fragment>

@@ -23,6 +23,7 @@ function Post() {
     name: { type: 'alphanum', length: 10 },
     file_id: { type: 'table' },
     file_url: { type: 'fileurl', length: 500 },
+    has_ban: { type: 'bool' },
   };
 
   this.save = async (body) => {
@@ -210,7 +211,7 @@ function Post() {
       File.procId = this.procId;
       const file = await File.get(body.file_id);
 
-      cache.updateTableData(this.table, { file, [this.idField]: idValue }, false);
+      cache.updateTableData(this.table, { has_ban: body.has_ban, file, [this.idField]: idValue }, false);
       post = await this.get(idValue);
     }
 
