@@ -87,6 +87,12 @@ const isValidType = (value, type) => {
         value
       );
 
+    case 'list': {
+      const options = type.split('|')[1].split(',');
+
+      return options.includes(value);
+    }
+
     default:
       return false;
   }

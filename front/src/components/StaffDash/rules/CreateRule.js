@@ -14,6 +14,7 @@ const CreateRule = ({ createRule, board_id, rules: { error } }) => {
     board_id: null,
     text: '',
     ban_duration: '',
+    apply_on: 'post',
     details: '',
   });
 
@@ -32,7 +33,20 @@ const CreateRule = ({ createRule, board_id, rules: { error } }) => {
       );
   }, [error]);
 
-  const { text, ban_duration } = formData;
+  const { text, ban_duration, apply_on } = formData;
+
+  const applyOnOptions = [
+    {
+      value: 'post',
+      text: 'Post',
+      checked: 'post' === apply_on,
+    },
+    {
+      value: 'file',
+      text: 'Archivo',
+      checked: 'file' === apply_on,
+    },
+  ];
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -53,6 +67,13 @@ const CreateRule = ({ createRule, board_id, rules: { error } }) => {
       component: 'text',
       name: 'details',
       label: 'Detalles',
+      onChange: (e) => onChange(e),
+    },
+    {
+      component: 'radio',
+      name: 'apply_on',
+      options: applyOnOptions,
+      label: 'Aplicar en',
       onChange: (e) => onChange(e),
     },
     {

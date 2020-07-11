@@ -17,6 +17,7 @@ function Rule() {
     board_id: { type: 'table' },
     text: { type: 'alphanum', length: 45, required: true },
     ban_duration: { type: 'num', required: true },
+    apply_on: { type: 'list|post,file', required: true },
     details: { type: 'string', length: 250 },
   };
 

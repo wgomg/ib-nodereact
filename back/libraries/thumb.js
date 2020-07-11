@@ -47,10 +47,13 @@ const videoCmd = (filePath, thumbPath) =>
 const pdfCmd = (filePath, thumbPath) =>
   `convert ${filePath}[0] -auto-orient -thumbnail 280x280 -unsharp 0x.5 -background white +smush 20 -bordercolor white -border 10 ${thumbPath}`;
 
-const get = async (name, ext) =>
-  fs.existsSync(`${thumbDir}/${name}.${getThumbExt(ext)}`)
+const get = async (name, ext, folder) => {
+  if (folder === 'default') return `default/${name}.${ext}`;
+
+  return fs.existsSync(`${thumbDir}/${name}.${getThumbExt(ext)}`)
     ? `${config.dir}/thumbs/${name}.${getThumbExt(ext)}`
     : 'not-found';
+};
 
 const getThumbExt = (ext) =>
   ext === 'pdf' || ext === 'mp4' || ext === 'm4v' || ext === 'webm' ? 'png' : ext;

@@ -138,6 +138,7 @@ CREATE TABLE IF NOT EXISTS `Rules` (
   `board_id` bigint(20) unsigned DEFAULT NULL,
   `text` varchar(45) NOT NULL,
   `ban_duration` int(10) unsigned DEFAULT 0,
+  `apply_on` enum('post','file') NOT NULL DEFAULT 'post',
   `details` varchar(250) DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`rule_id`),
@@ -227,7 +228,7 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-08 22:20:51
+-- Dump completed on 2020-07-10 21:20:07
 
 --
 --
@@ -270,7 +271,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-08 22:20:54
+-- Dump completed on 2020-07-10 21:20:10
 -- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: imageboard
@@ -305,7 +306,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-08 22:20:56
+-- Dump completed on 2020-07-10 21:20:13
 -- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: imageboard
@@ -329,7 +330,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `Rules` WRITE;
 /*!40000 ALTER TABLE `Rules` DISABLE KEYS */;
-INSERT INTO `Rules` VALUES (1,NULL,'Archivo no permitido',0,NULL,'2020-07-08 22:58:30');
+INSERT INTO `Rules` VALUES (1,NULL,'Archivo no permitido',0,'file',NULL,'2020-07-08 22:58:30');
 /*!40000 ALTER TABLE `Rules` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -341,7 +342,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-08 22:20:59
+-- Dump completed on 2020-07-10 21:20:15
 -- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: imageboard
@@ -365,7 +366,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `Files` WRITE;
 /*!40000 ALTER TABLE `Files` DISABLE KEYS */;
-INSERT INTO `Files` VALUES (1,'image/gif','vanished','gif',494234,'default','2020-07-09 01:51:11');
+INSERT INTO `Files` VALUES (1,'image/gif','vanished','gif',0,'default','2020-07-09 01:51:11');
 /*!40000 ALTER TABLE `Files` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -377,4 +378,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-08 22:21:01
+-- Dump completed on 2020-07-10 21:20:18

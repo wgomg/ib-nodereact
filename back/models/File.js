@@ -73,7 +73,8 @@ function File() {
 
     if (file.length > 0) {
       file = file[0];
-      file.thumb = await thumb.get(file.name, file.extension);
+      file.thumb = await thumb.get(file.name, file.extension, file.folder);
+
       cache.addTableData(this.table, file);
       file = cache.getTableData(this.table, { field: this.idField, value: file_id });
 
@@ -113,7 +114,7 @@ function File() {
     if (files.length > 0)
       files = await Promise.all(
         files.map(async (file) => {
-          file.thumb = await thumb.get(file.name, file.extension);
+          file.thumb = await thumb.get(file.name, file.extension, file.folder);
           return file;
         })
       );
@@ -122,9 +123,20 @@ function File() {
     return cache.getTable(this.table);
   };
 
+  this.delete = async (file_id) => {
+    const cachedId = cache.getIdFromHash(this.table, file_id);
+    if (!/^[0-9]+$/i.test(cachedId)) return { errors: { file: 'Invalid ID' } };
+
+    const res = await db.remove({ id: { field: this.idField, value: cachedId }, table: this.table });
+
+    if (res.affectedRows > 0) cache.removeFromTable(this.table, file_id);
+
+    return res;
+  };
+
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'getAll', 'get', 'save'];
+    const excluded = ['getFunctions', 'getAll', 'get', 'save', 'delete'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

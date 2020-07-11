@@ -93,7 +93,7 @@ const setTable = (table, values, hashId = true) => {
   );
 };
 
-const updateTableData = (table, value) => {
+const updateTableData = (table, value, hashId = true) => {
   let cachedTable = cache.get(table) || [];
 
   if (cachedTable.length > 0)
@@ -104,7 +104,7 @@ const updateTableData = (table, value) => {
       return entry;
     });
 
-  setTable(table, cachedTable);
+  setTable(table, cachedTable, hashId);
 };
 
 const removeFromTable = (table, hash) => {
@@ -121,14 +121,14 @@ const setBannedUser = (user, banTTL = 0) => {
   const found = findBannedUser(user);
 
   if (!found) {
-    let bannedList = getBannedList();
+    let bannedList = getBannedUsersList();
     bannedList.push(user);
-    cache.set('banned', bannedList, 0);
+    cache.set('bannedusers', bannedList, 0);
   }
 };
 
 const findBannedUser = (user) => {
-  const bannedList = getBannedList();
+  const bannedList = getBannedUsersList();
 
   const found = bannedList.filter(
     (banned) => banned.ipaddress === user.ipaddress || banned.fingerprint === user.fingerprint
@@ -137,13 +137,42 @@ const findBannedUser = (user) => {
   return found.length > 0;
 };
 
-const getBannedList = () => {
-  let bannedList = cache.get('banned');
+const getBannedUsersList = () => {
+  let bannedList = cache.get('bannedusers');
 
   bannedList = bannedList
     ? bannedList.filter((user) => cache.get(user.ipaddress + '__' + user.fingerprint))
     : [];
-  cache.set('banned', bannedList, 0);
+  cache.set('bannedusers', bannedList, 0);
+
+  return bannedList;
+};
+
+const setBannedFile = (fileMd5, banTTL = 0) => {
+  cache.set(fileMd5, { md5: fileMd5, date: Date.now() }, banTTL * HOUR);
+
+  const found = findBannedFile(fileMd5);
+
+  if (!found) {
+    let bannedList = getBannedFilesList();
+    bannedList.push({ md5: fileMd5 });
+    cache.set('bannedfiles', bannedList, 0);
+  }
+};
+
+const findBannedFile = (fileMd5) => {
+  const bannedList = getBannedFilesList();
+
+  const found = bannedList.filter((file) => file.md5 === fileMd5);
+
+  return found.length > 0;
+};
+
+const getBannedFilesList = () => {
+  let bannedList = cache.get('bannedfiles');
+
+  bannedList = bannedList ? bannedList.filter((file) => cache.get(file.md5)) : [];
+  cache.set('bannedfiles', bannedList, 0);
 
   return bannedList;
 };
@@ -205,7 +234,10 @@ module.exports = {
   removeFromTable,
   setBannedUser,
   findBannedUser,
-  getBannedList,
+  getBannedUsersList,
+  setBannedFile,
+  findBannedFile,
+  getBannedFilesList,
   setPostUser,
   getPostUser,
   init,

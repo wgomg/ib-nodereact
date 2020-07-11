@@ -24,12 +24,12 @@ const ReportsList = ({
   }, [getAllReports, getReports, board_id]);
 
   const onBanClick = (report) => {
-    const newBan = {
+    const userBan = {
       staff_id: staff.staff_id,
       report_id: report.report_id,
     };
 
-    const res = applyBan(newBan);
+    const res = applyBan(userBan);
 
     if (res) alert('Ban applied');
   };

@@ -43,6 +43,10 @@ function Post() {
 
       const files = Object.values(body.files).filter((file) => file.size > 0);
       File.procId = this.procId;
+
+      const fileBanned = await Ban.isFileBanned(files[0].md5);
+      if (fileBanned) return { errors: { file: 'File is banned' } };
+
       file = await File.save(files[0]);
     }
 
@@ -192,9 +196,30 @@ function Post() {
     return cache.getTable(this.table);
   };
 
+  this.update = async (body) => {
+    const idValue = body[this.idField];
+    delete body[this.idField];
+
+    const errors = validate(body, this.schema);
+    if (errors) return { errors };
+
+    let post = await db.update({ body, table: this.table, id: { field: this.idField, value: idValue } });
+
+    if (post.changedRows > 0) {
+      const File = require('./File');
+      File.procId = this.procId;
+      const file = await File.get(body.file_id);
+
+      cache.updateTableData(this.table, { file, [this.idField]: idValue }, false);
+      post = await this.get(idValue);
+    }
+
+    return post;
+  };
+
   this.getFunctions = () => {
     const FN_ARGS = /([^\s,]+)/g;
-    const excluded = ['getFunctions', 'get', 'getFile', 'getAll', 'find'];
+    const excluded = ['getFunctions', 'get', 'getFile', 'getAll', 'find', 'update'];
 
     const functions = Object.entries(this)
       .filter(([key, val]) => typeof val === 'function' && !excluded.includes(key))

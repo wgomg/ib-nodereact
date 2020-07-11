@@ -150,7 +150,6 @@ function Report() {
     const Post = require('./Post');
     Post.procId = this.procId;
 
-    console.log(filters);
     filters.forEach((filter) => {
       const cached = cache.getTableData(this.table, { ...filter });
 

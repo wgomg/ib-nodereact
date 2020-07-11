@@ -53,12 +53,9 @@ const PostHeader = ({
 
   const reportButton =
     rules.length > 0 && post.user ? (
-      <Fragment>
-        <Link to={`/${post.board[0].uri}/t${thread.thread_id}#rp${post.post_id}`} {...onReportClickProp}>
-          {' '}
-          [!!!]
-        </Link>
-      </Fragment>
+      <Link to={`/${post.board[0].uri}/t${thread.thread_id}#rp${post.post_id}`} {...onReportClickProp}>
+        [reportar]
+      </Link>
     ) : (
       ''
     );
@@ -67,7 +64,7 @@ const PostHeader = ({
     <Fragment>
       <Link to={`/${post.board[0].uri}/t${thread.thread_id}#p${post.post_id}`}>No. </Link>
       {quoteButton}
-      {!isThread && op && <Link to={`/${post.board[0].uri}/t${thread.thread_id}`}> [reply]</Link>}
+      {!isThread && op && <Link to={`/${post.board[0].uri}/t${thread.thread_id}`}> [responder]</Link>}
     </Fragment>
   ) : (
     ''
@@ -90,8 +87,7 @@ const PostHeader = ({
       {threadSubject}
       {postName}
       {postCreationDate}
-      {postInfo}
-      {reportButton}
+      {postInfo} {reportButton}
       {postUser}
     </div>
   );

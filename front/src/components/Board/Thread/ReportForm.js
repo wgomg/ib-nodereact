@@ -37,7 +37,6 @@ const ReportForm = ({ formData, setFormData, rules: { rules }, createReport }) =
       component: 'radio',
       name: 'rule_id',
       options: [{ value: '0', text: 'Ninguno...', checked: rule_id === '0' }, ...rulesOptions],
-      label: 'Regla',
       onChange: (e) => onChange(e),
     },
     {
