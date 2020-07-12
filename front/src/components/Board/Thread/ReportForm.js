@@ -1,20 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { Form } from '../../common';
 
 import { createReport } from '../../../actions/reports';
+import { useState } from 'react';
 
-const ReportForm = ({ formData, setFormData, rules: { rules }, createReport }) => {
+const ReportForm = ({ formData, setFormData, rules: { rules }, threads: { thread }, createReport }) => {
   const { report } = formData;
-  const { rule_id } = report;
+  const { rule_id, post_id } = report;
 
-  const rulesOptions = rules.map((rule) => ({
-    value: rule.rule_id,
-    text: rule.text,
-    checked: rule.rule_id === rule_id,
-  }));
+  const [postUser, setPostUser] = useState(true);
+
+  useEffect(() => {
+    if (thread)
+      setPostUser(thread.posts.filter((post) => post.post_id === post_id && post.user).length > 0);
+  }, [thread, post_id]);
+
+  let rulesOptions = (postUser ? rules : rules.filter((rule) => rule.apply_on === 'file')).map(
+    (rule) => ({
+      value: rule.rule_id,
+      text: rule.text,
+      checked: rule.rule_id === rule_id,
+    })
+  );
 
   const onChange = (e) => {
     setFormData({ ...formData, report: { ...report, rule_id: e.target.value } });
@@ -53,11 +63,13 @@ ReportForm.propTypes = {
   formData: PropTypes.object.isRequired,
   setFormData: PropTypes.func.isRequired,
   rules: PropTypes.object.isRequired,
+  threads: PropTypes.object.isRequired,
   createReport: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   rules: state.rules,
+  threads: state.threads,
 });
 
 export default connect(mapStateToProps, { createReport })(ReportForm);

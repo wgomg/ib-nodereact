@@ -5,6 +5,7 @@ import {
   CREATE_THREAD,
   GET_THREAD,
   CREATE_POST,
+  UPDATE_POST,
   POST_ERROR,
 } from '../actions/types';
 
@@ -38,6 +39,17 @@ export default function (state = initState, action) {
       return {
         ...state,
         thread: { ...state.thread, posts: [...state.thread.posts, payload] },
+        loading: false,
+        error: null,
+      };
+
+    case UPDATE_POST:
+      return {
+        ...state,
+        thread: {
+          ...state.thread,
+          posts: state.thread.posts.map((post) => (post.post_id === payload.post_id ? payload : post)),
+        },
         loading: false,
         error: null,
       };

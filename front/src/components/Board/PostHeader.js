@@ -52,7 +52,7 @@ const PostHeader = ({
   );
 
   const reportButton =
-    rules.length > 0 && post.user ? (
+    rules.length > 0 && (post.user || post.file) ? (
       <Link to={`/${post.board[0].uri}/t${thread.thread_id}#rp${post.post_id}`} {...onReportClickProp}>
         [reportar]
       </Link>

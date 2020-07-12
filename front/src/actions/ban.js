@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { APPLY_BAN, BAN_ERROR } from './types';
+import { APPLY_BAN, UPDATE_POST, BAN_ERROR } from './types';
 
 export const applyBan = (newBan) => async (dispatch) => {
   try {
@@ -10,8 +10,15 @@ export const applyBan = (newBan) => async (dispatch) => {
 
     dispatch({
       type: APPLY_BAN,
-      payload: res.data ? newBan.report_id : null,
+      payload: res.data.length > 0 ? newBan.report_id : null,
     });
+
+    dispatch({
+      type: UPDATE_POST,
+      payload: res.data.length > 0 ? res.data[0] : {},
+    });
+
+    return res.data.length > 0;
   } catch (error) {
     dispatch({
       type: BAN_ERROR,

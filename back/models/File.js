@@ -129,7 +129,22 @@ function File() {
 
     const res = await db.remove({ id: { field: this.idField, value: cachedId }, table: this.table });
 
-    if (res.affectedRows > 0) cache.removeFromTable(this.table, file_id);
+    if (res.affectedRows > 0) {
+      const file = cache.getTableData(this.table, { field: this.idField, value: cachedId });
+
+      cache.removeFromTable(this.table, file_id);
+
+      const rootDir = __dirname.split('/').slice(0, -1).join('/');
+      const dataDir = `${rootDir}/public/${file[0].folder}/${file[0].name}.${file[0].extension}`;
+      const thumbDir = `${rootDir}/public/${file[0].thumb}`;
+
+      fs.unlink(dataDir, (err) => {
+        if (err) throw err;
+      });
+      fs.unlink(thumbDir, (err) => {
+        if (err) throw err;
+      });
+    }
 
     return res;
   };

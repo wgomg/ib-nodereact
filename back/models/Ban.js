@@ -31,16 +31,17 @@ function Ban() {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const report = cache.getTableData('Reports', { field: 'hash', value: body.report_id });
+
     if (report.errors) return { errors: report.errors };
     if (report.length === 0) return false;
 
     const user = cache.getPostUser(report[0].post_id);
 
-    if (!user) return false;
-
     const rule = cache.getTableData('Rules', { field: 'hash', value: report[0].rule_id });
     if (rule.errors) return { errors: rule.errors };
     if (rule.length === 0) return false;
+
+    if (!user && rule[0].apply_on === 'post') return false;
 
     let schema = this.schema.post;
 
@@ -54,6 +55,8 @@ function Ban() {
     if (rule[0].apply_on === 'file') {
       const post = cache.getTableData('Posts', { field: 'post_id', value: report[0].post_id });
       const file = cache.getTableData('Files', { field: 'hash', value: post[0].file.file_id });
+
+      console.log(file);
 
       body = {
         staff_id: body.staff_id,
@@ -70,6 +73,16 @@ function Ban() {
     const banDuration = rule[0].ban_duration;
     const post = cache.getTableData('Posts', { field: 'post_id', value: report[0].post_id });
 
+    const Post = require('./Post');
+    Post.procId = this.procId;
+    Post.schema.text.required = false;
+
+    const updatedPost = await Post.update({
+      post_id: post[0].post_id,
+      file_id: VANISHED_FILE_ID,
+      has_ban: 1,
+    });
+
     if (rule[0].apply_on === 'post') cache.setBannedUser(user, banDuration);
     else if (rule[0].apply_on === 'file') {
       const fileToBeBanned = cache.getTableData('Files', { field: 'hash', value: post[0].file.file_id });
@@ -81,18 +94,12 @@ function Ban() {
       File.delete(post[0].file.file_id);
     }
 
-    const Post = require('./Post');
-    Post.procId = this.procId;
-    Post.schema.text.required = false;
-
-    Post.update({ post_id: post[0].post_id, file_id: VANISHED_FILE_ID, has_ban: 1 });
-
     const Report = require('./Report');
     Report.procId = this.procId;
 
     await Report.updateSolved({ report_id: report[0].report_id });
 
-    return true;
+    return updatedPost;
   };
 
   this.isUserBanned = async (user) => {

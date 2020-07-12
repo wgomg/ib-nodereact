@@ -23,13 +23,13 @@ const ReportsList = ({
     else getAllReports();
   }, [getAllReports, getReports, board_id]);
 
-  const onBanClick = (report) => {
+  const onBanClick = async (report) => {
     const userBan = {
       staff_id: staff.staff_id,
       report_id: report.report_id,
     };
 
-    const res = applyBan(userBan);
+    const res = await applyBan(userBan);
 
     if (res) alert('Ban applied');
   };

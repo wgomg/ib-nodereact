@@ -59,7 +59,8 @@ function Report() {
       cachedReports = await Promise.all(
         cachedReports
           .filter(async (report) => {
-            if (cache.getPostUser(report.post_id)) return true;
+            const rule = cache.getTableData('Rules', { field: 'hash', value: report.rule_id });
+            if (cache.getPostUser(report.post_id) || rule[0].apply_on === 'file') return true;
 
             this.updateSolved({ report_id: report.report_id });
 
