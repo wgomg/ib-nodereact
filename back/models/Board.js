@@ -88,7 +88,7 @@ function Board() {
         thread.posts = posts.slice(Math.max(posts.length - 5, 1));
         thread.posts.unshift(posts[0]);
 
-        thread.hiddenPosts = postsCount - 6;
+        thread.hiddenPosts = postsCount > 6 ? postsCount - 6 : null;
 
         return thread;
       })
