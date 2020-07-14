@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS `Banners` (
   `file_id` bigint(20) unsigned NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`banner_id`),
+  UNIQUE KEY `unique_file_id` (`file_id`),
   KEY `board_id` (`board_id`),
   KEY `file_id` (`file_id`),
   CONSTRAINT `Banners_ibfk_1` FOREIGN KEY (`board_id`) REFERENCES `Boards` (`board_id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -81,7 +82,8 @@ CREATE TABLE IF NOT EXISTS `Files` (
   `size` int(10) unsigned NOT NULL,
   `folder` varchar(20) NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`file_id`)
+  PRIMARY KEY (`file_id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -184,7 +186,9 @@ CREATE TABLE IF NOT EXISTS `Tags` (
   `cl_replacer` varchar(50) NOT NULL,
   `css` varchar(250) DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`tag_id`)
+  PRIMARY KEY (`tag_id`),
+  UNIQUE KEY `tag` (`tag`),
+  UNIQUE KEY `op_replacer` (`op_replacer`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -199,7 +203,8 @@ CREATE TABLE IF NOT EXISTS `Themes` (
   `name` varchar(10) NOT NULL,
   `css` varchar(10000) NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`theme_id`)
+  PRIMARY KEY (`theme_id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -229,7 +234,7 @@ CREATE TABLE IF NOT EXISTS `Threads` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-11 17:36:46
+-- Dump completed on 2020-07-14 17:14:10
 
 --
 --
@@ -272,7 +277,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-11 17:36:46
+-- Dump completed on 2020-07-14 17:14:10
 -- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: imageboard
@@ -295,7 +300,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `Tags` WRITE;
 /*!40000 ALTER TABLE `Tags` DISABLE KEYS */;
-INSERT INTO `Tags` VALUES (1,'\'\'\'','bold','<strong>','</strong>',NULL,'2020-05-07 00:45:43'),(2,'==','scream','<span class=\'scream\'>','</span>','.scream { font-size: 1.25rem; color: #AF0A0F; font-weight: bold; }','2020-05-07 20:40:37'),(4,'~~','strike','<s>','</s>','','2020-05-08 23:31:21'),(6,'**','spoiler','<spoiler class=\'spoiler\'>','</spoiler>','.spoiler {\r\n  background: black;\r\n  color: black;\r\n  padding: 0 4px;\r\n  transition: color .125s ease-in-out;\r\n}\r\n\r\n.spoiler:hover {\r\n  color: white;\r\n}','2020-05-08 23:46:53'),(7,'__','underline','<u>','</u>','','2020-05-09 00:00:02');
+INSERT INTO `Tags` VALUES (1,'\'\'\'','bold','<strong>','</strong>',NULL,'2020-05-07 00:45:43'),(2,'==','scream','<span class=\'scream\'>','</span>','.scream { font-size: 1.25rem; color: #AF0A0F; font-weight: bold; }','2020-05-07 20:40:37'),(3,'~~','strike','<s>','</s>','','2020-05-08 23:31:21'),(4,'**','spoiler','<spoiler class=\'spoiler\'>','</spoiler>','.spoiler {\n  background: black;\n  color: black;\n  padding: 0 4px;\n  transition: color .125s ease-in-out;\n}\n\n.spoiler:hover {\n  color: white;\n}','2020-05-08 23:46:53'),(5,'__','underline','<u>','</u>','','2020-05-09 00:00:02');
 /*!40000 ALTER TABLE `Tags` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -307,7 +312,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-11 17:36:46
+-- Dump completed on 2020-07-14 17:14:10
 -- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: imageboard
@@ -343,7 +348,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-11 17:36:46
+-- Dump completed on 2020-07-14 17:14:10
 -- MariaDB dump 10.17  Distrib 10.4.13-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: imageboard
@@ -379,4 +384,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-11 17:36:46
+-- Dump completed on 2020-07-14 17:14:10

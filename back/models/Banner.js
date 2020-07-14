@@ -24,6 +24,10 @@ function Banner() {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
     const images = Object.values(body.files).filter((file) => file.size > 0);
+
+    const cachedFile = cache.getTableData('Files', { field: 'name', value: images[0].md5 });
+    if (cachedFile.length > 0) return { errors: { file: 'A banner with this file already exists' } };
+
     File.procId = this.procId;
     File.genThumb = false;
     const image = await File.save(images[0]);

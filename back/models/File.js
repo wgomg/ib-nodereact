@@ -33,6 +33,9 @@ function File() {
   this.save = async (file) => {
     logger.debug({ name: `${this.name}.save()`, data: file }, this.procId, 'method');
 
+    const cachedFile = cache.getTableData(this.table, { field: 'name', value: file.md5 });
+    if (cachedFile.length > 0) return cachedFile[0];
+
     const allowed = new AllowedFile(file);
 
     if (allowed.error) return { errors: { file: allowed.error } };

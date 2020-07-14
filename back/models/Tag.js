@@ -15,8 +15,8 @@ function Tag() {
 
   this.schema = {
     tag: { type: 'tag', length: 3, required: true },
-    name: { type: 'alpha', length: 10, minLength: 2, required: true },
-    op_replacer: { type: 'string', length: 50, required: true },
+    name: { type: 'alpha', length: 10, minLength: 2, required: true, unique: true },
+    op_replacer: { type: 'string', length: 50, required: true, unique: true },
     cl_replacer: { type: 'string', length: 50, required: true },
     css: { type: 'css', length: 250 },
   };
@@ -24,7 +24,7 @@ function Tag() {
   this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
-    const errors = validate(body, this.schema);
+    const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };
 
     let tag = await db.insert({ body, table: this.table }, this.procId);
@@ -49,7 +49,7 @@ function Tag() {
     const idValue = body[this.idField];
     delete body[this.idField];
 
-    const errors = validate(body, this.schema);
+    const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };
 
     const cachedId = cache.getIdFromHash(this.table, idValue);

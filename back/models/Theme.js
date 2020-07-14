@@ -14,14 +14,14 @@ function Theme() {
   this.procId = null;
 
   this.schema = {
-    name: { type: 'alpha', length: 10, minLength: 2, required: true },
+    name: { type: 'alpha', length: 10, minLength: 2, required: true, unique: true },
     css: { type: 'css', length: 10000, required: true },
   };
 
   this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
-    const errors = validate(body, this.schema);
+    const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };
 
     let theme = await db.insert({ body, table: this.table }, this.procId);
@@ -46,7 +46,7 @@ function Theme() {
     const idValue = body[this.idField];
     delete body[this.idField];
 
-    const errors = validate(body, this.schema);
+    const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };
 
     const cachedId = cache.getIdFromHash(this.table, idValue);

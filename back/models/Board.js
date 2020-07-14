@@ -14,7 +14,7 @@ function Board() {
   this.procId = null;
 
   this.schema = {
-    name: { type: 'alpha', length: 45, required: true },
+    name: { type: 'alpha', length: 45, required: true, unique: true },
     uri: { type: 'boarduri', length: 4, required: true },
     description: { type: 'alphanum', length: 250 },
   };
@@ -22,7 +22,7 @@ function Board() {
   this.save = async (body) => {
     logger.debug({ name: `${this.name}.save()`, data: body }, this.procId, 'method');
 
-    const errors = validate(body, this.schema);
+    const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };
 
     let board = await db.insert({ body, table: this.table });
@@ -38,7 +38,7 @@ function Board() {
     const idValue = body[this.idField];
     delete body[this.idField];
 
-    const errors = validate(body, this.schema);
+    const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };
 
     const cachedId = cache.getIdFromHash(this.table, idValue);

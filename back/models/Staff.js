@@ -19,7 +19,7 @@ function Staff() {
 
   this.schema = {
     board_id: { type: 'table' },
-    name: { type: 'alpha', length: 15, required: true },
+    name: { type: 'alpha', length: 15, required: true, unique: true },
     password: { type: 'alphanum', length: 20 },
     admin: { type: 'bool' },
     disabled: { type: 'bool' },
@@ -35,7 +35,7 @@ function Staff() {
       board_id: cache.getIdFromHash('Boards', body.board_id),
     };
 
-    const errors = validate(body, this.schema);
+    const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };
 
     body = {
@@ -177,7 +177,7 @@ function Staff() {
     const idValue = body[this.idField];
     body = { name: body.name };
 
-    const errors = validate(body, this.schema);
+    const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };
 
     const cachedId = cache.getIdFromHash(this.table, idValue);
@@ -204,7 +204,7 @@ function Staff() {
     const idValue = body[this.idField];
     body = { password: body.password };
 
-    const errors = validate(body, this.schema);
+    const errors = validate(body, this.schema,this.table);
     if (errors) return { errors };
 
     const cachedId = cache.getIdFromHash(this.table, idValue);
@@ -233,7 +233,7 @@ function Staff() {
     const idValue = body[this.idField];
     body = { password: body.name };
 
-    const errors = validate(body, this.schema);
+    const errors = validate(body, this.schema,this.table);
     if (errors) return { errors };
 
     body = { password: bcrypt.hashSync(body.password, 10) };

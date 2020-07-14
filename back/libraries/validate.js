@@ -1,10 +1,10 @@
 'use strict';
 
 const css = require('css');
-
 const ip = require('./ip');
+const cache = require('./cache');
 
-const validate = (entry, schema) => {
+const validate = (entry, schema, table) => {
   if (Object.keys(entry).length === 0) return { msg: 'Invalid' };
 
   const schemaFields = Object.keys(schema);
@@ -18,6 +18,12 @@ const validate = (entry, schema) => {
     }
 
     if (schema[field].required && isEmpty(value)) errors[field] = 'Is required';
+
+    if (schema[field].unique) {
+      const found = cache.getTableData(table, { field, value: value.toLowerCase() });
+      if (found.length > 0)
+        errors[field] = `Unique field, already exists an entry with this value ("${value}")`;
+    }
 
     if (!isEmpty(value)) {
       if (!isValidType(value, schema[field].type)) errors[field] = 'Invalid value';
