@@ -7,6 +7,8 @@ import { createRule } from '../../../actions/rules';
 
 import { Form } from '../../common';
 
+import alertError from '../../../utils/alertError';
+
 const CreateRule = ({ createRule, board_id, rules: { error } }) => {
   let history = useHistory();
 
@@ -25,12 +27,7 @@ const CreateRule = ({ createRule, board_id, rules: { error } }) => {
   }, [board_id]);
 
   useEffect(() => {
-    if (error)
-      alert(
-        Object.keys(error)
-          .map((field) => `${field}: ${error[field]}`)
-          .join('\n')
-      );
+    alertError(error);
   }, [error]);
 
   const { text, ban_duration, apply_on } = formData;

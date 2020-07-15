@@ -7,6 +7,8 @@ import { createTag } from '../../../../actions/tags';
 
 import { Form } from '../../../common';
 
+import alertError from '../../../../utils/alertError';
+
 const CreateTag = ({ createTag, tags: { error } }) => {
   let history = useHistory();
 
@@ -19,12 +21,7 @@ const CreateTag = ({ createTag, tags: { error } }) => {
   });
 
   useEffect(() => {
-    if (error)
-      alert(
-        Object.keys(error)
-          .map((field) => `${field}: ${error[field]}`)
-          .join('\n')
-      );
+    alertError(error);
   }, [error]);
 
   const { tag, name, op_replacer, cl_replacer, css } = formData;

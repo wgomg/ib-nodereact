@@ -3,15 +3,19 @@ import { withRouter, useHistory, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { editBoard } from '../../../../actions/boards';
+import { createBoard, editBoard } from '../../../../actions/boards';
 
 import { Form } from '../../../common';
 
-const EditBoard = ({ boards: { boards, error, loading }, editBoard }) => {
+import alertError from '../../../../utils/alertError';
+
+const BoardForm = ({ boards: { boards, error }, editBoard, createBoard, mode }) => {
   let history = useHistory();
   let { board_uri } = useParams();
+  if (mode === 'create') board_uri = null;
 
-  const [board, setBoard] = useState(null);
+  const board = board_uri ? boards.filter((board) => board.uri === board_uri)[0] : null;
+
   const [formData, setFormData] = useState({
     board_id: '',
     name: '',
@@ -20,28 +24,15 @@ const EditBoard = ({ boards: { boards, error, loading }, editBoard }) => {
   });
 
   useEffect(() => {
-    if (!loading) {
-      const board = boards.filter((board) => board.uri === board_uri);
-
-      if (board.length > 0) setBoard(board[0]);
-    }
-  }, [boards, loading, board_uri]);
-
-  useEffect(() => {
     setFormData((formData) => {
-      return !board || loading
+      return !board
         ? formData
         : { board_id: board.board_id, name: board.name, uri: board.uri, description: board.description };
     });
-  }, [board, loading]);
+  }, [board]);
 
   useEffect(() => {
-    if (error)
-      alert(
-        Object.keys(error)
-          .map((field) => `${field}: ${error[field]}`)
-          .join('\n')
-      );
+    alertError(error);
   }, [error]);
 
   const { name, uri, description } = formData;
@@ -73,7 +64,7 @@ const EditBoard = ({ boards: { boards, error, loading }, editBoard }) => {
     {
       component: 'btn',
       type: 'submit',
-      text: 'Editar Board',
+      text: (mode === 'edit' ? 'Editar' : 'Nuevo') + ' Board',
     },
   ];
 
@@ -81,13 +72,19 @@ const EditBoard = ({ boards: { boards, error, loading }, editBoard }) => {
     e.preventDefault();
 
     if (name === '' || uri === '' || description === '') alert('Todos los campos son obligatorios');
-    else editBoard(formData, history);
+    else {
+      if (mode === 'edit') editBoard(formData, history);
+      else {
+        delete formData.board_id;
+        createBoard(formData, history);
+      }
+    }
   };
 
   return (
     <Fragment>
       <div className='container centered'>
-        <h2 className='centered title'>Editar Board</h2>
+        <h2 className='centered title'>{mode === 'edit' ? 'Editar' : 'Nuevo'} Board</h2>
       </div>
       <div className='container centered'>
         <Form onSubmit={onSubmit} elements={elements} />
@@ -96,13 +93,15 @@ const EditBoard = ({ boards: { boards, error, loading }, editBoard }) => {
   );
 };
 
-EditBoard.propTypes = {
+BoardForm.propTypes = {
+  createBoard: PropTypes.func.isRequired,
   editBoard: PropTypes.func.isRequired,
   boards: PropTypes.object.isRequired,
+  mode: PropTypes.string.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   boards: state.boards,
 });
 
-export default connect(mapStateToProps, { editBoard })(withRouter(EditBoard));
+export default connect(mapStateToProps, { createBoard, editBoard })(withRouter(BoardForm));

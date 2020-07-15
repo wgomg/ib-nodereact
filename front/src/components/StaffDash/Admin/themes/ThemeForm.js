@@ -1,30 +1,38 @@
 import React, { Fragment, useState, useEffect } from 'react';
-import { withRouter, useHistory } from 'react-router-dom';
+import { withRouter, useHistory, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { createTheme } from '../../../../actions/themes';
+import { editTheme, createTheme } from '../../../../actions/themes';
 
 import { Form } from '../../../common';
 
-const CreateTheme = ({ createTheme, themes: { error } }) => {
+import alertError from '../../../../utils/alertError';
+
+const ThemeForm = ({ themes: { themes, error }, createTheme, editTheme, mode }) => {
   let history = useHistory();
-  
+  let { name } = useParams();
+  if (mode === 'create') name = null;
+
+  const theme = name ? themes.filter((theme) => theme.name === name)[0] : null;
+
   const [formData, setFormData] = useState({
+    theme_id: '0',
     name: '',
     css: '',
   });
 
   useEffect(() => {
-    if (error)
-      alert(
-        Object.keys(error)
-          .map((field) => `${field}: ${error[field]}`)
-          .join('\n')
-      );
+    setFormData((formData) =>
+      !theme ? formData : { theme_id: theme.theme_id, name: theme.name, css: theme.css }
+    );
+  }, [theme]);
+
+  useEffect(() => {
+    alertError(error);
   }, [error]);
 
-  const { name, css } = formData;
+  const { css } = formData;
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -47,7 +55,7 @@ const CreateTheme = ({ createTheme, themes: { error } }) => {
     {
       component: 'btn',
       type: 'submit',
-      text: 'Nuevo Tema',
+      text: (mode === 'edit' ? 'Editar' : 'Nuevo') + ' Tema',
     },
   ];
 
@@ -56,16 +64,18 @@ const CreateTheme = ({ createTheme, themes: { error } }) => {
 
     if (name === '' || css === '') alert('Hay campos requeridos sin llenar');
     else {
-      let newTheme = { ...formData };
-
-      createTheme(newTheme, history);
+      if (mode === 'edit') editTheme(formData, history);
+      else {
+        delete formData.theme_id;
+        createTheme(formData, history);
+      }
     }
   };
 
   return (
     <Fragment>
       <div className='container centered'>
-        <h2 className='centered title'>Nuevo Tema</h2>
+        <h2 className='centered title'>{mode === 'edit' ? 'Editar' : 'Nuevo'} Tema</h2>
       </div>
       <div className='container centered'>
         <Form onSubmit={onSubmit} elements={elements} />
@@ -74,13 +84,15 @@ const CreateTheme = ({ createTheme, themes: { error } }) => {
   );
 };
 
-CreateTheme.propTypes = {
+ThemeForm.propTypes = {
   createTheme: PropTypes.func.isRequired,
-  tags: PropTypes.object.isRequired,
+  editTheme: PropTypes.func.isRequired,
+  themes: PropTypes.object.isRequired,
+  mode: PropTypes.string.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   themes: state.themes,
 });
 
-export default connect(mapStateToProps, { createTheme })(withRouter(CreateTheme));
+export default connect(mapStateToProps, { createTheme, editTheme })(withRouter(ThemeForm));

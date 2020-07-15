@@ -16,18 +16,15 @@ import ReportForm from './ReportForm';
 
 import { getThread } from '../../../actions/threads';
 
+import alertError from '../../../utils/alertError';
+
 const Thread = ({ board, thread_id, threads: { thread, loading, error }, getThread }) => {
   useEffect(() => {
     getThread(thread_id);
   }, [thread_id, getThread]);
 
   useEffect(() => {
-    if (error)
-      alert(
-        Object.keys(error)
-          .map((field) => `${field}: ${error[field]}`)
-          .join('\n')
-      );
+    alertError(error);
   }, [error]);
 
   const [formData, setFormData] = useState({

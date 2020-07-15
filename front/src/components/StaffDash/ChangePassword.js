@@ -7,6 +7,8 @@ import { changePassword } from '../../actions/staffs';
 
 import { Form } from '../common';
 
+import alertError from '../../utils/alertError';
+
 const ChangePassword = ({ staffs: { staffs, error }, auth: { staff: loggedStaff }, changePassword }) => {
   let history = useHistory();
 
@@ -30,12 +32,7 @@ const ChangePassword = ({ staffs: { staffs, error }, auth: { staff: loggedStaff 
   }, [staff]);
 
   useEffect(() => {
-    if (error)
-      alert(
-        Object.keys(error)
-          .map((field) => `${field}: ${error[field]}`)
-          .join('\n')
-      );
+    alertError(error);
   }, [error]);
 
   const { password, password2 } = formData;

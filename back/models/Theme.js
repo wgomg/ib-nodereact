@@ -45,6 +45,7 @@ function Theme() {
 
     const idValue = body[this.idField];
     delete body[this.idField];
+    delete body.name;
 
     const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };

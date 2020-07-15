@@ -6,6 +6,8 @@ import { createThread } from '../../../actions/threads';
 
 import { Form } from '../../common';
 
+import alertError from './../../../utils/alertError';
+
 const NewThreadForm = ({ board, createThread, error }) => {
   const [formData, setFormData] = useState({
     board_id: 0,
@@ -21,12 +23,7 @@ const NewThreadForm = ({ board, createThread, error }) => {
   }, [board]);
 
   useEffect(() => {
-    if (error)
-      alert(
-        Object.keys(error)
-          .map((field) => `${field}: ${error[field]}`)
-          .join('\n')
-      );
+    alertError(error);
   }, [error]);
 
   const [file, setFile] = useState(null);

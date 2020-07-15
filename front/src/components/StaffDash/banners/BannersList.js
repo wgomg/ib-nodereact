@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { Card, Loading } from '../../common';
+import { Card, Loading, Image } from '../../common';
 import { getAllBanners, deleteBanner, getBanners } from '../../../actions/banners';
 
 import prettyBytes from '../../../utils/prettyBytes';
@@ -28,22 +28,20 @@ const BannersList = ({
             borrar
           </Link>
         );
-        const editBanner = <Link to={`dash/edit-banner/${banner.banner_id}`}>editar</Link>;
 
         const actions = (
-          <div className='col-2'>
-            <span className='small'>
-              [ {delBanner} | {editBanner} ]
-            </span>
+          <div className='col-1'>
+            <span className='small'>[ {delBanner} ]</span>
           </div>
         );
 
         const name = (
           <div className='col'>
-            <Link
-              to={'/' + banner.image.folder + '/' + banner.image.name + '.' + banner.image.extension}>
-              {banner.image.name}.{banner.image.extension}
-            </Link>
+            <Image
+              className='banner mini centered'
+              src={'/' + banner.image.folder + '/' + banner.image.name + '.' + banner.image.extension}
+              onClick={() => null}
+            />
           </div>
         );
 

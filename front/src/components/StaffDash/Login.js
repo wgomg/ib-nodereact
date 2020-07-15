@@ -7,16 +7,13 @@ import { Form, Loading } from '../common';
 
 import { login } from '../../actions/auth';
 
+import alertError from '../../utils/alertError';
+
 const Login = ({ login, auth: { loading, logged, error } }) => {
   const [formData, setFormData] = useState({ name: '', password: '' });
 
   useEffect(() => {
-    if (error && error.constructor.name === 'Object')
-      alert(
-        Object.keys(error)
-          .map((field) => `${field}: ${error[field]}`)
-          .join('\n')
-      );
+    alertError(error);
   }, [error]);
 
   let loginForm = <Loading />;
