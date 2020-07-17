@@ -1,6 +1,6 @@
 'use strict';
 
-const db = require('../db');
+const db = require('../libraries/db');
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
 

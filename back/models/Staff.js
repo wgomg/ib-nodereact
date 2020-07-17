@@ -2,7 +2,7 @@
 
 const bcrypt = require('bcrypt');
 
-const db = require('../db');
+const db = require('../libraries/db');
 
 const logger = require('../libraries/logger');
 const validate = require('../libraries/validate');
@@ -204,7 +204,7 @@ function Staff() {
     const idValue = body[this.idField];
     body = { password: body.password };
 
-    const errors = validate(body, this.schema,this.table);
+    const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };
 
     const cachedId = cache.getIdFromHash(this.table, idValue);
@@ -233,7 +233,7 @@ function Staff() {
     const idValue = body[this.idField];
     body = { password: body.name };
 
-    const errors = validate(body, this.schema,this.table);
+    const errors = validate(body, this.schema, this.table);
     if (errors) return { errors };
 
     body = { password: bcrypt.hashSync(body.password, 10) };
