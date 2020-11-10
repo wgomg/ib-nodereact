@@ -3,7 +3,6 @@ node_modules
 config/db.json
 config/files.json
 config/jwt.json
-config/logger.json
 config/cache.json
 config/server.json
 

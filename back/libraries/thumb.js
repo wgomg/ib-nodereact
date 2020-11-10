@@ -2,8 +2,6 @@
 
 const config = require('../config/files.json').data;
 
-const logger = require('../libraries/logger');
-
 const fs = require('fs');
 
 const util = require('util');
@@ -29,14 +27,15 @@ const make = async ({ name, ext }) => {
       let cmd = `convert ${filePath} -define jpeg:size=500x500 -auto-orient -thumbnail ${thumbsize} -unsharp 0x.5 ${thumbPath}`;
 
       if (ext === 'pdf') cmd = pdfCmd(filePath, thumbPath);
-      if (ext === 'mp4' || ext === 'm4v' || ext === 'webm') cmd = videoCmd(filePath, thumbPath);
+      if (ext === 'mp4' || ext === 'm4v' || ext === 'webm')
+        cmd = videoCmd(filePath, thumbPath);
 
       await spawn(cmd);
     }
 
     return true;
   } catch (error) {
-    logger.debug(error);
+    console.error(error);
     return false;
   }
 };
@@ -56,6 +55,8 @@ const get = async (name, ext, folder) => {
 };
 
 const getThumbExt = (ext) =>
-  ext === 'pdf' || ext === 'mp4' || ext === 'm4v' || ext === 'webm' ? 'png' : ext;
+  ext === 'pdf' || ext === 'mp4' || ext === 'm4v' || ext === 'webm'
+    ? 'png'
+    : ext;
 
 module.exports = { make, get };
