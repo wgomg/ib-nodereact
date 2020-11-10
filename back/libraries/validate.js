@@ -4,35 +4,41 @@ const css = require('css');
 const ip = require('./ip');
 const cache = require('./cache');
 
-const validate = (entry, schema, table) => {
-  if (Object.keys(entry).length === 0) return { msg: 'Invalid' };
+const validate = (body, Model) => {
+  if (Object.keys(body).length === 0) return { msg: 'Invalid' };
 
-  const schemaFields = Object.keys(schema);
+  const { schema, dbTable } = Model;
+
+  for (let field in body) if (!(field in schema)) delete body[field];
 
   let errors = {};
 
-  for (let [field, value] of Object.entries(entry)) {
-    if (!schemaFields.includes(field)) {
-      delete errors[field];
-      errors[field] = 'Not expected';
-    }
+  for (let [field, value] of Object.entries(schema)) {
+    if (value.required && isEmpty(body[field])) errors[field] = 'Is required';
 
-    if (schema[field].required && isEmpty(value)) errors[field] = 'Is required';
+    if (value.unique) {
+      const found = cache.getTable(dbTable, [
+        {
+          field,
+          value: body[field],
+        },
+      ]);
 
-    if (schema[field].unique) {
-      const found = cache.getTableData(table, { field, value: value.toLowerCase() });
       if (found.length > 0)
-        errors[field] = `Unique field, already exists an entry with this value ("${value}")`;
+        errors[
+          field
+        ] = `Unique field, already exists an entry with this value ('${body[field]}')`;
     }
 
-    if (!isEmpty(value)) {
-      if (!isValidType(value, schema[field].type)) errors[field] = 'Invalid value';
+    if (!isEmpty(body[field])) {
+      if (!isValidType(body[field], value.type))
+        errors[field] = 'Invalid value';
 
-      if (schema[field].length && entry[field].length > schema[field].length)
-        errors[field] = `Value exceeds max. length (${schema[field].length})`;
+      if (value.length && body[field].length > value.length)
+        errors[field] = `Value exceeds max. length (${value.length})`;
 
-      if (schema[field].minLength && entry[field].length < schema[field].minLength)
-        errors[field] = `Value es below min. length (${schema[field].minLength})`;
+      if (value.minLength && body[field].length < value.minLength)
+        errors[field] = `Value es below min. length (${value.minLength})`;
     }
   }
 
@@ -95,7 +101,6 @@ const isValidType = (value, type) => {
 
     case 'list': {
       const options = type.split('|')[1].split(',');
-
       return options.includes(value);
     }
 

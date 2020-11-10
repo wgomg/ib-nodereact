@@ -65,7 +65,7 @@ const applyTags = async (text, splitMarker, procId) => {
 };
 
 const getTags = async (procId) => {
-  const Tag = require('../models/Tag');
+  const Tag = require('../models/Tag-old');
   Tag.procId = procId;
 
   return await Tag.getAll();

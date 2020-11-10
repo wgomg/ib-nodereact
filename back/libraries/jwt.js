@@ -4,14 +4,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config').jwt;
 
 const set = (staff) => {
-  const payload = {
-    staff: {
-      staff_id: staff.staff_id,
-      admin: staff.admin,
-      board_id: staff.board_id,
-      disabled: staff.disabled,
-    },
-  };
+  const payload = staff.staff_id;
 
   return jwt.sign(payload, config.secret, { expiresIn: config.expiration });
 };

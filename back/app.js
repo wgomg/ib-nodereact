@@ -2,20 +2,21 @@
 
 const express = require('express');
 const fileupload = require('express-fileupload');
-const compression = require('compression');
-const morgan = require('morgan');
-const path = require('path');
 const Fingerprint = require('express-fingerprint');
-
-const config = require('./config').logger;
-const logger = require('./libraries/logger');
+const compression = require('compression');
+const path = require('path');
+const crypto = require('crypto');
+const morganBody = require('morgan-body');
+const shortid = require('shortid');
 
 const cache = require('./libraries/cache');
 
 const app = express();
 const trustProxy = require('./config').server.trustProxy;
 
-app.use(express.json({ extended: false }));
+app.use(express.json());
+
+//////////////////////////////////////////////////////////////////////////////////
 app.use(
   fileupload({
     createParentPath: true,
@@ -24,25 +25,63 @@ app.use(
     preserveExtension: 4,
   })
 );
+// append files object as array to req.body or empty array if no file uploaded
+app.use((req, res, next) => {
+  req.body.files = req.files ? Object.values(req.files) : [];
+  next();
+});
+// replace fileupload md5 checksum with sha512 checksum
+app.use((req, res, next) => {
+  req.body.files = req.body.files.map((file) => {
+    delete file.md5;
+    return {
+      ...file,
+      checksum: crypto.createHash('sha512').update(file.data).digest('hex'),
+    };
+  });
+
+  next();
+});
+//////////////////////////////////////////////////////////////////////////////////
 
 app.use(compression());
 
-morgan.token('procId', (req, res) => req.procId);
-app.use(
-  morgan('[:procId] Response :method :status :url :response-time ms - :res[content-length]', {
-    stream: logger.stream,
-  })
-);
-
 app.use(express.static(__dirname + '/public'));
 
+app.set('trust proxy', trustProxy);
+
+//////////////////////////////////////////////////////////////////////////////////
 app.use(
   Fingerprint({
-    parameters: [Fingerprint.useragent, Fingerprint.acceptHeaders, Fingerprint.geoip],
+    parameters: [
+      Fingerprint.useragent,
+      Fingerprint.acceptHeaders,
+      Fingerprint.geoip,
+    ],
   })
 );
+// add fingerprint prop to body
+app.use((req, res, next) => {
+  req.body.user = {
+    ipaddress: req.ip,
+    fingerprint: req.fingerprint.hash,
+  };
 
-app.set('trust proxy', trustProxy);
+  next();
+});
+//////////////////////////////////////////////////////////////////////////////////
+
+app.use((req, res, next) => {
+  req.id = shortid.generate();
+  next();
+});
+
+morganBody(app, {
+  logReqHeaderList: ['x-auth-token', 'x-parent-collection'],
+  logRequestId: true,
+  theme: 'darkened',
+  logIP: false,
+});
 
 require('./routes')(app);
 
@@ -53,10 +92,6 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-if (config.logRoutes)
-  logger.debug(app._router.stack.filter((s) => s.name === 'bound dispatch').map((s) => s.route));
-
-logger.info('Initializing cache', 'CACHE');
 cache.init();
 
 module.exports = app;

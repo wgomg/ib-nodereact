@@ -3,18 +3,22 @@
 const fs = require('fs');
 const path = require('path');
 
-let models = {};
+let controllers = [];
 
 fs.readdirSync(__dirname).forEach((file) => {
   if (
     file.includes(path.basename(__filename)) ||
-    file.includes('BaseModel') ||
-    file.includes('-old')
+    file.includes('BaseController')
   )
     return;
 
   const fileName = path.basename(file, path.extname(file));
-  models[fileName] = require('./' + fileName);
+
+  try {
+    controllers.push(require('./' + fileName));
+  } catch (error) {
+    console.error(error);
+  }
 });
 
-module.exports = models;
+module.exports = controllers;

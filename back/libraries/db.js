@@ -16,6 +16,7 @@ const insert = (queryData) => {
   const fields = Object.keys(body)
     .map((field) => field)
     .join(', ');
+
   const values = Object.values(body).map((v) =>
     allowHtmlTags.includes(table) || typeof v !== 'string' ? v : tagger.strip(v)
   );
@@ -41,7 +42,9 @@ const update = (queryData) => {
     .map((field) => `${field} = ?`)
     .join(', ');
 
-  const sql = `Update ${table} SET ${placeholders} WHERE ${id.field} = ${pool.escape(id.value)}`;
+  const sql = `Update ${table} SET ${placeholders} WHERE ${
+    id.field
+  } = ${pool.escape(id.value)}`;
 
   return query(sql, values);
 };
@@ -49,15 +52,21 @@ const update = (queryData) => {
 const select = (queryData) => {
   let { fields, filters, table, orderBy } = queryData;
 
-  let sql = `SELECT ${fields ? fields.map((field) => field).join(', ') : '*'} FROM ${table}`;
+  let sql = `SELECT ${
+    fields ? fields.map((field) => field).join(', ') : '*'
+  } FROM ${table}`;
 
   let filtersValues = null;
-  if (filters) {
+  if (filters.length > 0) {
     let filtersFields = filters
-      .map((filter) => filter.field + (filter.value === null ? ' IS NULL' : ' = ?'))
+      .map(
+        (filter) => filter.field + (filter.value === null ? ' IS NULL' : ' = ?')
+      )
       .join(' OR ');
 
-    filtersValues = filters.filter((filter) => filter.value !== null).map((filter) => filter.value);
+    filtersValues = filters
+      .filter((filter) => filter.value !== null)
+      .map((filter) => filter.value);
 
     sql += ` WHERE ${filtersFields}`;
   }
@@ -70,7 +79,9 @@ const select = (queryData) => {
 const remove = (queryData) => {
   const { id, table } = queryData;
 
-  const sql = `DELETE FROM ${table} WHERE ${id.field} = ${pool.escape(id.value)}`;
+  const sql = `DELETE FROM ${table} WHERE ${id.field} = ${pool.escape(
+    id.value
+  )}`;
 
   return query(sql);
 };

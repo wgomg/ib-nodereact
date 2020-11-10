@@ -16,26 +16,30 @@ const ttl = {
   dbData: config.dbDataTTL * DAY,
 };
 
-const addTableData = (table, value, hashId = true) => {
+const addTableData = (table, entry, hashId = true) => {
   let cachedTable = cache.get(table) || [];
 
-  if (hashId) value = { ...value, hash: shortid() };
+  if (hashId) entry = { ...entry, hash: shortid() };
 
   const cachedValue = cachedTable.filter(
     (cached) =>
       cached[table.toLowerCase().slice(0, -1) + '_id'] ===
-      value[table.toLowerCase().slice(0, -1) + '_id']
+      entry[table.toLowerCase().slice(0, -1) + '_id']
   );
 
-  if (cachedValue.length === 0) setTable(table, [...cachedTable, value], hashId);
+  if (cachedValue.length === 0)
+    setTable(table, [...cachedTable, entry], hashId);
 };
 
 const getIdFromHash = (table, hash) => {
+  if (/^[0-9]+$/i.test(hash)) return hash;
+
   const cachedTable = cache.get(table) || [];
 
   const entry = cachedTable.filter((entry) => entry.hash === hash);
 
-  if (entry.length > 0) return entry[0][table.toLowerCase().slice(0, -1) + '_id'];
+  if (entry.length > 0)
+    return entry[0][table.toLowerCase().slice(0, -1) + '_id'];
 
   return null;
 };
@@ -43,42 +47,55 @@ const getIdFromHash = (table, hash) => {
 const getHash = (table, id) => {
   const cachedTable = cache.get(table) || [];
 
-  const entry = cachedTable.filter((entry) => entry[table.toLowerCase().slice(0, -1) + '_id'] === id);
+  const entry = cachedTable.filter(
+    (entry) => entry[table.toLowerCase().slice(0, -1) + '_id'] === id
+  );
 
   if (entry.length > 0) return entry[0].hash;
 
   return null;
 };
 
-const getTableData = (table, { field, value }) => {
-  const cachedTable = cache.get(table) || [];
-
-  return cachedTable
-    .filter((entry) => entry[field] === value)
-    .map((entry) => {
-      if (entry.hash) {
-        entry = { ...entry, [table.toLowerCase().slice(0, -1) + '_id']: entry.hash };
-        delete entry.hash;
-      }
-
-      return entry;
-    });
-};
-
-const getTable = (table) => {
+const getTable = (table, filters, fields) => {
   let cachedTable = cache.get(table) || [];
 
-  if (cachedTable.length > 0)
-    cachedTable = cachedTable.map((entry) => {
-      if (entry.hash) {
-        entry = { ...entry, [table.toLowerCase().slice(0, -1) + '_id']: entry.hash };
-        delete entry.hash;
+  if (filters.length > 0) {
+    cachedTable = cachedTable.filter(
+      (entry) =>
+        filters.filter((filter) => {
+          if (typeof entry[filter.field] !== typeof filter.value) return true;
+          else {
+            if (typeof filter.value === 'string')
+              return (
+                entry[filter.field].toLowerCase() !== filter.value.toLowerCase()
+              );
+            else return entry[filter.field] !== filter.value;
+          }
+        }).length === 0
+    );
+  }
+
+  return cachedTable.map((entry) => {
+    if (entry.hash) {
+      entry = {
+        ...entry,
+        [table.toLowerCase().slice(0, -1) + '_id']: entry.hash,
+      };
+      delete entry.hash;
+    }
+
+    if (fields) {
+      const nonSelectedFields = Object.keys(entry).filter(
+        (field) => !fields.includes(field)
+      );
+
+      if (nonSelectedFields.length > 0) {
+        for (let field of nonSelectedFields) delete entry[field];
       }
+    }
 
-      return entry;
-    });
-
-  return cachedTable;
+    return entry;
+  });
 };
 
 const setTable = (table, values, hashId = true) => {
@@ -110,13 +127,18 @@ const updateTableData = (table, value, hashId = true) => {
 const removeFromTable = (table, hash) => {
   let cachedTable = cache.get(table) || [];
 
-  if (cachedTable.length > 0) cachedTable = cachedTable.filter((entry) => entry.hash !== hash);
+  if (cachedTable.length > 0)
+    cachedTable = cachedTable.filter((entry) => entry.hash !== hash);
 
   setTable(table, cachedTable);
 };
 
 const setBannedUser = (user, banTTL = 0) => {
-  cache.set(user.ipaddress + '__' + user.fingerprint, { ...user, date: Date.now() }, banTTL * HOUR);
+  cache.set(
+    user.ipaddress + '__' + user.fingerprint,
+    { ...user, date: Date.now() },
+    banTTL * HOUR
+  );
 
   const found = findBannedUser(user);
 
@@ -131,7 +153,9 @@ const findBannedUser = (user) => {
   const bannedList = getBannedUsersList();
 
   const found = bannedList.filter(
-    (banned) => banned.ipaddress === user.ipaddress || banned.fingerprint === user.fingerprint
+    (banned) =>
+      banned.ipaddress === user.ipaddress ||
+      banned.fingerprint === user.fingerprint
   );
 
   return found.length > 0;
@@ -141,7 +165,9 @@ const getBannedUsersList = () => {
   let bannedList = cache.get('bannedusers');
 
   bannedList = bannedList
-    ? bannedList.filter((user) => cache.get(user.ipaddress + '__' + user.fingerprint))
+    ? bannedList.filter((user) =>
+        cache.get(user.ipaddress + '__' + user.fingerprint)
+      )
     : [];
   cache.set('bannedusers', bannedList, 0);
 
@@ -171,7 +197,9 @@ const findBannedFile = (fileMd5) => {
 const getBannedFilesList = () => {
   let bannedList = cache.get('bannedfiles');
 
-  bannedList = bannedList ? bannedList.filter((file) => cache.get(file.md5)) : [];
+  bannedList = bannedList
+    ? bannedList.filter((file) => cache.get(file.md5))
+    : [];
   cache.set('bannedfiles', bannedList, 0);
 
   return bannedList;
@@ -185,35 +213,29 @@ const getPostUser = (post_id) => cache.get(post_id);
 
 // TODO: simplificar esto
 const init = async () => {
-  const Board = require('../models/Board');
-  await Board.getAll();
+  const Boards = new (require('../models/Boards'))();
+  await Boards.get();
 
-  const Staff = require('../models/Staff');
-  await Staff.getAll();
+  const Threads = new (require('../models/Threads'))();
+  await Threads.get();
 
-  const Rule = require('../models/Rule');
-  await Rule.getAll();
+  const Files = new (require('../models/Files'))();
+  await Files.get();
 
-  const File = require('../models/File');
-  await File.getAll();
+  const Posts = new (require('../models/Posts'))();
+  await Posts.get();
 
-  const Banner = require('../models/Banner');
-  Banner.getAll();
+  const Rules = new (require('../models/Rules'))();
+  await Rules.get();
 
-  const Report = require('../models/Report');
-  Report.getAll();
+  const Reports = new (require('../models/Reports'))();
+  await Reports.get();
 
-  const Tag = require('../models/Tag');
-  Tag.getAll();
+  const Banners = new (require('../models/Banners'))();
+  await Banners.get();
 
-  const Theme = require('../models/Theme');
-  Theme.getAll();
-
-  const Thread = require('../models/Thread');
-  Thread.getAll();
-
-  const Post = require('../models/Post');
-  Post.getAll();
+  const Bans = new (require('../models/Bans'))();
+  await Bans.get();
 };
 
 const close = () => {
@@ -227,7 +249,6 @@ module.exports = {
   addTableData,
   getIdFromHash,
   getHash,
-  getTableData,
   getTable,
   setTable,
   updateTableData,
