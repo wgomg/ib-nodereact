@@ -69,11 +69,17 @@ Threads.prototype.newPosts = BaseController.prototype.routeFunction(
     if (Bans.isUserBanned(user))
       return { data: { errors: { user: 'User is banned' } } };
 
-    if (!files && files.length === 0) {
+    if (files && files.length > 0) {
       const Files = new (require('../models/Files'))();
       const file = await Files.save(files[0]);
 
-      if (file && file[0].errors) return { data: file[0] };
+      if (file && file.errors) return { data: file };
+
+      postBody = {
+        ...postBody,
+        file_id: Files.getEntryId(file[0]),
+        thread_id,
+      };
     }
 
     const Posts = new (require('../models/Posts'))();
