@@ -1,13 +1,7 @@
 node_modules
-
-config/db.json
-config/files.json
-config/jwt.json
-config/cache.json
-config/server.json
-
 logs
+public
 
-.sync-exclude.lst
+.env
 
 .eslintrc.json

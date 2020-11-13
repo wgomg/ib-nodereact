@@ -2,8 +2,6 @@
 
 const shortid = require('shortid');
 
-const config = require('../config').cache;
-
 const NodeCache = require('node-cache');
 
 const cache = new NodeCache();
@@ -12,8 +10,8 @@ const HOUR = 60 * 60;
 const DAY = 24 * HOUR;
 
 const ttl = {
-  userId: config.userIdTTL * DAY,
-  dbData: config.dbDataTTL * DAY,
+  userId: process.env.CACHE_USERID_TTL * DAY,
+  dbData: process.env.CACHE_DBDATA_TTL * DAY,
 };
 
 const addTableData = (table, entry, hashId = true) => {

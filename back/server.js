@@ -1,10 +1,11 @@
 'use strict';
 
+require('dotenv').config();
+
 const app = require('./app');
 const cache = require('./libraries/cache');
-const config = require('./config').server;
 
-const PORT = config.port;
+const PORT = process.env.SERVER_PORT;
 const server = app.listen(PORT, () =>
   console.info(`Server started on port ${PORT}`, 'server')
 );

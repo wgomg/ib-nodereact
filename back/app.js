@@ -12,7 +12,6 @@ const shortid = require('shortid');
 const cache = require('./libraries/cache');
 
 const app = express();
-const trustProxy = require('./config').server.trustProxy;
 
 app.use(express.json());
 
@@ -48,7 +47,7 @@ app.use(compression());
 
 app.use(express.static(__dirname + '/public'));
 
-app.set('trust proxy', trustProxy);
+app.set('trust proxy', process.env.APP_TRUSTPROXY);
 
 //////////////////////////////////////////////////////////////////////////////////
 app.use(

@@ -1,9 +1,16 @@
 'use strict';
 
 const mysql = require('mysql');
-const config = require('../config');
 const util = require('util');
-const pool = mysql.createPool(config.db);
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  charset: process.env.DB_CHARSET,
+  connectionLimit: process.env.DB_CONNLIMIT,
+  debug: process.env.DB_DEBUG,
+});
 const query = util.promisify(pool.query).bind(pool);
 
 const tagger = require('./tagger');

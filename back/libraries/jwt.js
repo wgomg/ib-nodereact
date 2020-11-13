@@ -1,16 +1,17 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
-const config = require('../config').jwt;
 
 const set = (staff) => {
   const payload = staff.staff_id;
 
-  return jwt.sign(payload, config.secret, { expiresIn: config.expiration });
+  return jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.EXPIRATION,
+  });
 };
 
 const decode = (token) => {
-  const decoded = jwt.verify(token, config.secret);
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
   return decoded.staff;
 };

@@ -61,8 +61,9 @@ Files.prototype.save = async function (file) {
     }
   }
 
-  if (file.truncated || !this.fileSignatures.get(fileHeader))
-    return { errors: 'Invalid File' };
+  if (file.truncated) return { errors: 'File size too big' };
+
+  if (!this.fileSignatures.get(fileHeader)) return { errors: 'Invalid File' };
 
   if (!this.fileSignatures.get(fileHeader).extensions.includes(fileExtension))
     fileExtension = fileExtension[0];
@@ -72,7 +73,7 @@ Files.prototype.save = async function (file) {
     name: file.checksum,
     extension: fileExtension,
     size: file.size,
-    dir: 'data',
+    dir: process.env.USERFILES,
   };
 
   let errors = validate(fileBody, this);
@@ -80,8 +81,7 @@ Files.prototype.save = async function (file) {
 
   try {
     const rootDir = __dirname.split('/').slice(0, -1).join('/');
-    const dataDir = `${rootDir}/public/data/`;
-    const fileAbsolutePath = `${dataDir}/${file.name}.${file.extension}`;
+    const fileAbsolutePath = `${rootDir}/${process.env.USERFILES}/${fileBody.name}.${fileBody.extension}`;
 
     await file.mv(fileAbsolutePath);
   } catch (error) {

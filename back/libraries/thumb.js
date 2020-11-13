@@ -1,7 +1,5 @@
 'use strict';
 
-const config = require('../config/files.json').data;
-
 const fs = require('fs');
 
 const util = require('util');
@@ -10,8 +8,7 @@ const child_process = require('child_process');
 const spawn = util.promisify(child_process.exec);
 
 const rootDir = __dirname.split('/').slice(0, -1).join('/');
-const dataDir = `${rootDir}/public/${config.dir}`;
-const thumbDir = `${dataDir}/thumbs`;
+const thumbDir = `${rootDir}/${process.env.THUMBFILES}`;
 
 const make = async ({ name, ext }) => {
   if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir);
@@ -20,7 +17,7 @@ const make = async ({ name, ext }) => {
   if (ext === 'gif') thumbsize = '150x150';
 
   try {
-    let filePath = `${dataDir}/${name}.${ext}`;
+    let filePath = `${process.env.USERFILES}/${name}.${ext}`;
     const thumbPath = `${thumbDir}/${name}.${getThumbExt(ext)}`;
 
     if (!fs.existsSync(thumbPath)) {
@@ -50,7 +47,7 @@ const get = async (name, ext, folder) => {
   if (folder === 'default') return `default/${name}.${ext}`;
 
   return fs.existsSync(`${thumbDir}/${name}.${getThumbExt(ext)}`)
-    ? `${config.dir}/thumbs/${name}.${getThumbExt(ext)}`
+    ? `${thumbDir}/thumbs/${name}.${getThumbExt(ext)}`
     : 'not-found';
 };
 
