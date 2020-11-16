@@ -26,7 +26,7 @@ Threads.prototype.save = BaseController.prototype.routeFunction(
     const Files = new (require('../models/Files'))();
     const file = await Files.save(files[0]);
 
-    if (file && file[0].errors) return { data: file[0] };
+    if (file && file.errors) return { data: file };
 
     const threadBody = {
       board_id: body.board_id,

@@ -8,7 +8,7 @@
     "front": "npm start --prefix front",
     "back": "npm run dev --prefix back",
     "dev": "concurrently \"npm run back\" \"npm run front\"",
-    "start": "NODE_ENV=production node back/server.js"
+    "start": "node back/server.js"
   },
   "repository": {
     "type": "git",
