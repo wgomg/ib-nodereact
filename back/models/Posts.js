@@ -1,5 +1,6 @@
 'use strict';
 
+const markdown = require('../libraries/markdown');
 const BaseModel = require('./BaseModel');
 
 function Posts() {
@@ -22,12 +23,15 @@ Posts.prototype.constructor = Posts;
 Posts.prototype.get = async function (filters, fields) {
   let posts = await BaseModel.prototype.get.call(this, filters, fields);
 
-  const Files = new (require('./Files'))();
+  const Tags = new (require('./Tags'))();
+  const tags = await Tags.get();
 
   return await Promise.all(
     posts.map(async (post) => {
-      post.file = await Files.get([{ field: 'file_id', value: post.file_id }]);
+      post.file = await this.getFile(post.file_id);
       delete post.file_id;
+
+      post.text = markdown.tags(post.text, tags);
 
       return post;
     })
@@ -42,7 +46,24 @@ Posts.prototype.getLatests = async function () {
       `ORDER BY created_on DESC LIMIT 10`
   );
 
-  return latests;
+  const Tags = new (require('./Tags'))();
+  const tags = await Tags.get();
+
+  return await Promise.all(
+    latests.map(async (post) => {
+      post.file = await this.getFile(post.file_id);
+      delete post.file_id;
+
+      post.text = markdown.tags(post.text, tags);
+
+      return post;
+    })
+  );
+};
+
+Posts.prototype.getFile = async function (file_id) {
+  const Files = new (require('./Files'))();
+  return await Files.get([{ field: 'file_id', value: file_id }]);
 };
 
 module.exports = Posts;

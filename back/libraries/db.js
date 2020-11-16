@@ -13,10 +13,6 @@ const pool = mysql.createPool({
 });
 const query = util.promisify(pool.query).bind(pool);
 
-const tagger = require('./tagger');
-
-const allowHtmlTags = ['Tags'];
-
 const insert = (queryData) => {
   const { body, table } = queryData;
 
@@ -24,9 +20,7 @@ const insert = (queryData) => {
     .map((field) => field)
     .join(', ');
 
-  const values = Object.values(body).map((v) =>
-    allowHtmlTags.includes(table) || typeof v !== 'string' ? v : tagger.strip(v)
-  );
+  const values = Object.values(body);
 
   let placeholders = fields
     .split(',')
@@ -41,9 +35,7 @@ const insert = (queryData) => {
 const update = (queryData) => {
   const { body, table, id } = queryData;
 
-  const values = Object.values(body).map((v) =>
-    allowHtmlTags.includes(table) || typeof v !== 'string' ? v : tagger.strip(v)
-  );
+  const values = Object.values(body);
 
   const placeholders = Object.keys(body)
     .map((field) => `${field} = ?`)
