@@ -60,48 +60,13 @@ const tags = (post, tags) => {
   return result;
 };
 
-const genSplitMarker = () => `$${Math.random().toString(20).substr(2, 10)}$`;
-
-// const setQuotes = async (replacedText, splitMarker) => {
-//   let quotes = new Map();
-
-//   let quotedPosts = replacedText.match(/(>{2}(\d+))/g);
-//   let quotedIds = [];
-
-//   if (quotedPosts)
-//     for (const qp of quotedPosts) {
-//       const post_id = qp.replace('>>', '');
-//       quotedIds.push(post_id);
-
-//       quotes.set(
-//         qp,
-//         `${splitMarker}<a href='/${post.board[0].uri}/t${post.thread_id}#p${post_id}'>${qp}</a>${splitMarker}`
-//       );
-//     }
-
-//   let linkedBoard = replacedText.match(/(>{3}((\/\w+\/)))/g);
-//   if (linkedBoard)
-//     for (const lb of linkedBoard) {
-//       const board_uri = lb.replace('>>>', '');
-
-//       quotes.set(
-//         lb,
-//         `${splitMarker}<a href='${board_uri}'>${lb}</a>${splitMarker}`
-//       );
-//     }
-
-//   if (quotes.size > 0)
-//     for (const [quoted, quote] of quotes)
-//       replacedText = replacedText.replace(quoted, quote);
-
-//   return { textWq: replacedText, quotedIds };
-// };
-
 // const setLinks = (replacedText) =>
 //   replacedText.replace(
 //     /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi,
 //     (match, string, offset) =>
 //       `<a target='_blank' href='https://${match}'>${match}</a>`
 //   );
+
+const genSplitMarker = () => `$${Math.random().toString(20).substr(2, 10)}$`;
 
 module.exports = { tags };
