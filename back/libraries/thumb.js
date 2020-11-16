@@ -13,22 +13,15 @@ const thumbDir = `${rootDir}/${process.env.THUMBFILES}`;
 const make = async ({ name, ext }) => {
   if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir);
 
-  let thumbsize = '280x280';
-  if (ext === 'gif') thumbsize = '150x150';
+  let thumbsize =
+    ext === 'gif' ? process.env.GIF_THUMB_SIZE : process.env.FILE_THUMB_SIZE;
 
   try {
     let filePath = `${process.env.USERFILES}/${name}.${ext}`;
     const thumbPath = `${thumbDir}/${name}.${getThumbExt(ext)}`;
 
-    if (!fs.existsSync(thumbPath)) {
-      let cmd = `convert ${filePath} -define jpeg:size=500x500 -auto-orient -thumbnail ${thumbsize} -unsharp 0x.5 ${thumbPath}`;
-
-      if (ext === 'pdf') cmd = pdfCmd(filePath, thumbPath);
-      if (ext === 'mp4' || ext === 'm4v' || ext === 'webm')
-        cmd = videoCmd(filePath, thumbPath);
-
-      await spawn(cmd);
-    }
+    if (!fs.existsSync(thumbPath))
+      await spawn(getCmd(ext, filePath, thumbPath, thumbsize));
 
     return true;
   } catch (error) {
@@ -37,18 +30,27 @@ const make = async ({ name, ext }) => {
   }
 };
 
-const videoCmd = (filePath, thumbPath) =>
-  `ffmpeg -ss 1 -i ${filePath} -vframes 1 -filter:v 'yadif,scale=-1:240' ${thumbPath}`;
-
-const pdfCmd = (filePath, thumbPath) =>
-  `convert ${filePath}[0] -auto-orient -thumbnail 280x280 -unsharp 0x.5 -background white +smush 20 -bordercolor white -border 10 ${thumbPath}`;
-
 const get = async (name, ext, folder) => {
   if (folder === 'default') return `default/${name}.${ext}`;
 
   return fs.existsSync(`${thumbDir}/${name}.${getThumbExt(ext)}`)
     ? `${thumbDir}/thumbs/${name}.${getThumbExt(ext)}`
     : 'not-found';
+};
+
+const getCmd = (ext, filePath, thumbPath, thumbSize) => {
+  switch (ext) {
+    case 'pdf':
+      return `convert ${filePath}[0] -auto-orient -thumbnail ${thumbSize} -unsharp 0x.5 -background white +smush 20 -bordercolor white -border 10 ${thumbPath}`;
+
+    case 'mp4':
+    case 'm4v':
+    case 'webm':
+      return `ffmpeg -ss 1 -i ${filePath} -vframes 1 -filter:v 'yadif,scale=-1:240' ${thumbPath}`;
+
+    default:
+      return `convert ${filePath} -define jpeg:size=500x500 -auto-orient -thumbnail ${thumbSize} -unsharp 0x.5 ${thumbPath}`;
+  }
 };
 
 const getThumbExt = (ext) =>
