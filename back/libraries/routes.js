@@ -1,9 +1,9 @@
 'use strict';
 
-const authentication = require('./middlware/auth');
+const authentication = require('../middlware/auth');
 
-const controllers = require('./controllers');
-const Staffs = require('./models/Staffs');
+const controllers = require('../controllers');
+const Staffs = require('../models/Staffs');
 
 const baseRoute = '/_back/api';
 

@@ -10,6 +10,7 @@ const morganBody = require('morgan-body');
 const shortid = require('shortid');
 
 const cache = require('./libraries/cache');
+const routes = require('./libraries/routes');
 
 const app = express();
 
@@ -82,7 +83,7 @@ morganBody(app, {
   logIP: false,
 });
 
-require('./routes')(app);
+routes(app);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '..', 'front', 'build')));
