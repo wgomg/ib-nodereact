@@ -11,6 +11,13 @@ const pool = mysql.createPool({
   connectionLimit: process.env.DB_CONNLIMIT,
   debug: process.env.DB_DEBUG,
 });
+
+const testConnection = () => {
+  pool.getConnection((error) => {
+    if (error) throw new Error(error);
+  });
+};
+
 const query = util.promisify(pool.query).bind(pool);
 
 const insert = (queryData) => {
@@ -87,10 +94,4 @@ const remove = (queryData) => {
 
 const rawQuery = (sql) => query(sql);
 
-module.exports = {
-  insert,
-  select,
-  update,
-  remove,
-  rawQuery,
-};
+module.exports = { testConnection, insert, select, update, remove, rawQuery };

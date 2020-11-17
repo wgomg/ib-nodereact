@@ -10,6 +10,7 @@ const shortid = require('shortid');
 
 const cache = require('./libraries/cache');
 const routes = require('./libraries/routes');
+const db = require('./libraries/db');
 
 const fileupload = require('./middlware/fileupload');
 const fingerprint = require('./middlware/fingerprint');
@@ -33,7 +34,7 @@ app.use((req, res, next) => {
 });
 /*******************************************************/
 
-app.use(compression());
+db.testConnection();
 
 const app = express();
 
