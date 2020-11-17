@@ -4,6 +4,11 @@ const fs = require('fs');
 
 const crypto = require('crypto');
 
+const util = require('util');
+const child_process = require('child_process');
+
+const spawn = util.promisify(child_process.exec);
+
 const FILE_SIGNATURES = new Map([
   ['89504e47', { mimetype: 'image/png', extensions: ['png'] }],
   ['47494638', { mimetype: 'image/gif', extensions: ['gif'] }],
@@ -54,6 +59,22 @@ const saveToDisk = async (file, ext) => {
 };
 
 const getMimetype = (file) => FILE_SIGNATURES.get(getFileHeader(file)).mimetype;
+
+const purgeMetadata = async (name, ext) => {
+  const rootDir = __dirname.split('/').slice(0, -1).join('/');
+  const fileAbsolutePath = `${rootDir}/${process.env.USERFILES}/${name}.${ext}`;
+
+  if (!fs.existsSync(fileAbsolutePath))
+    throw new Error(`File doesn't exists: ${fileAbsolutePath}`);
+
+  try {
+    await spawn(`mat2 --inplace ${fileAbsolutePath}`);
+  } catch (error) {
+    throw new Error(error);
+  }
+
+  return true;
+};
 
 const getSize = (name, ext) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
@@ -111,6 +132,7 @@ module.exports = {
   check,
   getExtension,
   saveToDisk,
+  purgeMetadata,
   getSize,
   getName,
   getMimetype,
