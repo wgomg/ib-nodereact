@@ -1,5 +1,9 @@
 'use strict';
 
+const fs = require('fs');
+
+const crypto = require('crypto');
+
 const FILE_SIGNATURES = new Map([
   ['89504e47', { mimetype: 'image/png', extensions: ['png'] }],
   ['47494638', { mimetype: 'image/gif', extensions: ['gif'] }],
@@ -36,7 +40,53 @@ const getExtension = (file) => {
   return fileExtension;
 };
 
+const saveToDisk = async (file, ext) => {
+  try {
+    const rootDir = __dirname.split('/').slice(0, -1).join('/');
+    const fileAbsolutePath = `${rootDir}/${process.env.USERFILES}/${file.md5}.${ext}`;
+
+    await file.mv(fileAbsolutePath);
+  } catch (error) {
+    return { errors: error.message };
+  }
+
+  return false;
+};
+
 const getMimetype = (file) => FILE_SIGNATURES.get(getFileHeader(file)).mimetype;
+
+const getSize = (name, ext) => {
+  const rootDir = __dirname.split('/').slice(0, -1).join('/');
+  const fileAbsolutePath = `${rootDir}/${process.env.USERFILES}/${name}.${ext}`;
+
+  if (!fs.existsSync(fileAbsolutePath))
+    throw new Error(`File doesn't exists: ${fileAbsolutePath}`);
+
+  const fileStats = fs.statSync(fileAbsolutePath);
+
+  return fileStats.size;
+};
+
+const getName = (currName, ext, checksum) => {
+  const rootDir = __dirname.split('/').slice(0, -1).join('/');
+  const fileCurrPath = `${rootDir}/${process.env.USERFILES}/${currName}.${ext}`;
+
+  if (!fs.existsSync(fileCurrPath))
+    throw new Error(`File doesn't exists: ${fileCurrPath}`);
+
+  const fileBuffer = fs.readFileSync(fileCurrPath);
+  const newName = crypto.createHash(checksum).update(fileBuffer).digest('hex');
+
+  const fileNewPath = fileCurrPath.replace(currName, newName);
+
+  try {
+    fs.renameSync(fileCurrPath, fileNewPath);
+  } catch (error) {
+    throw new Error(error);
+  }
+
+  return newName;
+};
 
 const getFileHeader = (file) => {
   let fileExtension = file.name.split('.').pop().toLowerCase();
@@ -57,4 +107,11 @@ const getFileHeader = (file) => {
   }
 };
 
-module.exports = { check, getExtension, getMimetype };
+module.exports = {
+  check,
+  getExtension,
+  saveToDisk,
+  getSize,
+  getName,
+  getMimetype,
+};

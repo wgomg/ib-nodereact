@@ -26,27 +26,28 @@ Files.prototype.save = async function (newFile) {
   let errors = file.check(newFile);
   if (errors) return { errors };
 
-  const fileBody = {
+  const fileExtension = file.getExtension(newFile);
+
+  errors = await file.saveToDisk(newFile, fileExtension);
+  if (errors) return { errors };
+
+  const newFileSize = await file.getSize(newFile.md5, fileExtension);
+  const newFileName = await file.getName(
+    newFile.md5,
+    fileExtension,
+    process.env.USERFILES_CHECKSUM
+  );
+
+  let fileBody = {
     mimetype: file.getMimetype(newFile),
-    name: newFile.checksum,
-    extension: file.getExtension(newFile),
-    size: newFile.size,
+    size: newFileSize,
+    name: newFileName,
     dir: process.env.USERFILES,
+    extension: fileExtension,
   };
 
   errors = validate(fileBody, this);
   if (errors) return [{ errors }];
-
-  try {
-    const rootDir = __dirname.split('/').slice(0, -1).join('/');
-    const fileAbsolutePath = `${rootDir}/${process.env.USERFILES}/${fileBody.name}.${fileBody.extension}`;
-
-    await newFile.mv(fileAbsolutePath);
-  } catch (error) {
-    errors = error.message;
-  }
-
-  if (errors) return { errors };
 
   const fileThumb = await thumb.make({
     name: fileBody.name,

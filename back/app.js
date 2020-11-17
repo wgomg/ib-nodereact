@@ -5,7 +5,6 @@ const fileupload = require('express-fileupload');
 const Fingerprint = require('express-fingerprint');
 const compression = require('compression');
 const path = require('path');
-const crypto = require('crypto');
 const morganBody = require('morgan-body');
 const shortid = require('shortid');
 
@@ -28,18 +27,6 @@ app.use(
 // append files object as array to req.body or empty array if no file uploaded
 app.use((req, res, next) => {
   req.body.files = req.files ? Object.values(req.files) : [];
-  next();
-});
-// replace fileupload md5 checksum with sha512 checksum
-app.use((req, res, next) => {
-  req.body.files = req.body.files.map((file) => {
-    delete file.md5;
-    return {
-      ...file,
-      checksum: crypto.createHash('sha512').update(file.data).digest('hex'),
-    };
-  });
-
   next();
 });
 /*******************************************************/
