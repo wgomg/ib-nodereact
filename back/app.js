@@ -11,7 +11,9 @@ const shortid = require('shortid');
 const cache = require('./libraries/cache');
 const routes = require('./libraries/routes');
 
-const app = express();
+const fileupload = require('./middlware/fileupload');
+const fingerprint = require('./middlware/fingerprint');
+const requestId = require('./middlware/requestId');
 
 app.use(express.json());
 
@@ -33,19 +35,18 @@ app.use((req, res, next) => {
 
 app.use(compression());
 
-app.use(express.static(__dirname + '/public'));
+const app = express();
 
 app.set('trust proxy', process.env.APP_TRUSTPROXY);
 
 /**************** FINGERPRINT *************************/
 app.use(
-  Fingerprint({
-    parameters: [
-      Fingerprint.useragent,
-      Fingerprint.acceptHeaders,
-      Fingerprint.geoip,
-    ],
-  })
+  express.json(),
+  compression(),
+  express.static(__dirname + '/public'),
+  fileupload,
+  fingerprint,
+  requestId
 );
 // add fingerprint prop to body
 app.use((req, res, next) => {
@@ -73,6 +74,8 @@ morganBody(app, {
 /*************************************************/
 
 routes(app);
+
+app.set('trust proxy', process.env.APP_TRUSTPROXY);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '..', 'front', 'build')));
