@@ -48,7 +48,7 @@ const getExtension = (file) => {
 const saveToDisk = async (file, ext) => {
   try {
     const rootDir = __dirname.split('/').slice(0, -1).join('/');
-    const fileAbsolutePath = `${rootDir}/${process.env.USERFILES}/${file.md5}.${ext}`;
+    const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${file.md5}.${ext}`;
 
     await file.mv(fileAbsolutePath);
   } catch (error) {
@@ -62,7 +62,7 @@ const getMimetype = (file) => FILE_SIGNATURES.get(getFileHeader(file)).mimetype;
 
 const purgeMetadata = async (name, ext) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
-  const fileAbsolutePath = `${rootDir}/${process.env.USERFILES}/${name}.${ext}`;
+  const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
 
   if (!fs.existsSync(fileAbsolutePath))
     throw new Error(`File doesn't exists: ${fileAbsolutePath}`);
@@ -78,7 +78,7 @@ const purgeMetadata = async (name, ext) => {
 
 const getSize = (name, ext) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
-  const fileAbsolutePath = `${rootDir}/${process.env.USERFILES}/${name}.${ext}`;
+  const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
 
   if (!fs.existsSync(fileAbsolutePath))
     throw new Error(`File doesn't exists: ${fileAbsolutePath}`);
@@ -90,7 +90,7 @@ const getSize = (name, ext) => {
 
 const getName = (currName, ext, checksum) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
-  const fileCurrPath = `${rootDir}/${process.env.USERFILES}/${currName}.${ext}`;
+  const fileCurrPath = `${rootDir}/${process.env.FILES_STOREPATH}/${currName}.${ext}`;
 
   if (!fs.existsSync(fileCurrPath))
     throw new Error(`File doesn't exists: ${fileCurrPath}`);

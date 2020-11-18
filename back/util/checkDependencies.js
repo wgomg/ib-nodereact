@@ -10,6 +10,6 @@ module.exports = () => {
   if (!commandExistsSync('convert'))
     throw new Error('convert is not installed');
 
-  if (process.env.DELETE_FILE_METADATA && !commandExistsSync('mat2'))
+  if (process.env.FILES_PURGE_METADATA && !commandExistsSync('mat2'))
     throw new Error('matt2 is not installed');
 };

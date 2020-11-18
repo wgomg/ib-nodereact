@@ -10,8 +10,8 @@ const HOUR = 60 * 60;
 const DAY = 24 * HOUR;
 
 const ttl = {
-  userId: process.env.CACHE_USERID_TTL * DAY,
-  dbData: process.env.CACHE_DBDATA_TTL * DAY,
+  userId: process.env.CACHE_USERID_TTL_DAYS * DAY,
+  dbData: process.env.CACHE_DBDATA_TTL_DAYS * DAY,
 };
 
 const addTableData = (table, entry, hashId = true) => {

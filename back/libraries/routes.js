@@ -5,8 +5,6 @@ const authentication = require('../middlware/auth');
 const controllers = require('../controllers');
 const Staffs = require('../models/Staffs');
 
-const baseRoute = '/_back/api';
-
 const routes = (app) => {
   for (let Controller of controllers) {
     const controllerRoutes = Controller.getRoutes();
@@ -16,7 +14,7 @@ const routes = (app) => {
 
       console.log(http + ': :' + route + ': :' + func);
 
-      let appRouteArgs = [baseRoute + route];
+      let appRouteArgs = [process.env.API_BASEURI + route];
 
       if (auth.required) appRouteArgs.push(authentication(auth.access, Staffs));
 

@@ -8,16 +8,18 @@ const child_process = require('child_process');
 const spawn = util.promisify(child_process.exec);
 
 const rootDir = __dirname.split('/').slice(0, -1).join('/');
-const thumbDir = `${rootDir}/${process.env.THUMBFILES}`;
+const thumbDir = `${rootDir}/${process.env.FILES_THUMB_STOREPATH}`;
 
 const make = async ({ name, ext }) => {
   if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir);
 
   let thumbsize =
-    ext === 'gif' ? process.env.GIF_THUMB_SIZE : process.env.FILE_THUMB_SIZE;
+    ext === 'gif'
+      ? process.env.FILES_THUMB_GIF_DIM
+      : process.env.FILES_THUMB_DIM;
 
   try {
-    let filePath = `${process.env.USERFILES}/${name}.${ext}`;
+    let filePath = `${process.env.FILES_STOREPATH}/${name}.${ext}`;
     const thumbPath = `${thumbDir}/${name}.${getThumbExt(ext)}`;
 
     if (!fs.existsSync(thumbPath))

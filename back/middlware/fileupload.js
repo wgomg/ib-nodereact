@@ -5,7 +5,7 @@ const fileupload = require('express-fileupload');
 module.exports = [
   fileupload({
     createParentPath: true,
-    limits: { fileSize: 5 * 1024 * 1024 },
+    limits: { fileSize: process.env.FILES_MAXSIZE_MB * 1024 * 1024 },
     safeFileNames: true,
     preserveExtension: 4,
   }),
