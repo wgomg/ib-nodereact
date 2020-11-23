@@ -39,7 +39,7 @@ morganBody(app, {
 
 routes(app);
 
-app.set('trust proxy', process.env.APP_TRUSTPROXY);
+app.set('trust proxy', process.env.APP_TRUSTPROXY === 'true');
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '..', 'front', 'build')));

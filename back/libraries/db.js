@@ -9,7 +9,7 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   charset: process.env.DB_CHARSET,
   connectionLimit: process.env.DB_CONNLIMIT,
-  debug: process.env.DB_DEBUG,
+  debug: process.env.DB_DEBUG === 'true',
 });
 
 const testConnection = () => {

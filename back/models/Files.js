@@ -31,7 +31,7 @@ Files.prototype.save = async function (newFile) {
   errors = await file.saveToDisk(newFile, fileExtension);
   if (errors) return { errors };
 
-  if (process.env.FILES_PURGE_METADATA)
+  if (process.env.FILES_PURGE_METADATA === 'true')
     errors = await file.purgeMetadata(newFile.md5, fileExtension);
 
   const newFileSize = await file.getSize(newFile.md5, fileExtension);
