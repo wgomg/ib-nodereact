@@ -4,11 +4,7 @@ const Fingerprint = require('express-fingerprint');
 
 module.exports = [
   Fingerprint({
-    parameters: [
-      Fingerprint.useragent,
-      Fingerprint.acceptHeaders,
-      Fingerprint.geoip,
-    ],
+    parameters: [Fingerprint.useragent, Fingerprint.acceptHeaders],
   }),
   // add fingerprint prop to body
   (req, res, next) => {

@@ -1,11 +1,15 @@
 'use strict';
 
 const fs = require('fs');
-
 const crypto = require('crypto');
-
 const util = require('util');
 const child_process = require('child_process');
+
+const fileExists = util.promisify(fs.access);
+const fileStat = util.promisify(fs.stat);
+const readFile = util.promisify(fs.readFile);
+const renameFile = util.promisify(fs.rename);
+const deleteFile = util.promisify(fs.rm);
 
 const spawn = util.promisify(child_process.exec);
 
@@ -52,10 +56,9 @@ const saveToDisk = async (file, ext) => {
 
     await file.mv(fileAbsolutePath);
   } catch (error) {
-    return { errors: error.message };
+    console.error(error);
+    throw error;
   }
-
-  return false;
 };
 
 const getMimetype = (file) => FILE_SIGNATURES.get(getFileHeader(file)).mimetype;
@@ -64,49 +67,52 @@ const purgeMetadata = async (name, ext) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
   const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
 
-  if (!fs.existsSync(fileAbsolutePath))
-    throw new Error(`File doesn't exists: ${fileAbsolutePath}`);
-
   try {
+    // await fileExists(fileAbsolutePath);
     await spawn(`mat2 --inplace ${fileAbsolutePath}`);
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw error;
   }
-
-  return true;
 };
 
-const getSize = (name, ext) => {
+const getSize = async (name, ext) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
   const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
 
-  if (!fs.existsSync(fileAbsolutePath))
-    throw new Error(`File doesn't exists: ${fileAbsolutePath}`);
+  try {
+    // await fileExists(fileAbsolutePath, fs.constants.F_OK);
+    const size = (await fileStat(fileAbsolutePath)).size;
 
-  const fileStats = fs.statSync(fileAbsolutePath);
-
-  return fileStats.size;
+    return size;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
-const getName = (currName, ext, checksum) => {
+const getName = async (name, ext, checksum) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
-  const fileCurrPath = `${rootDir}/${process.env.FILES_STOREPATH}/${currName}.${ext}`;
-
-  if (!fs.existsSync(fileCurrPath))
-    throw new Error(`File doesn't exists: ${fileCurrPath}`);
-
-  const fileBuffer = fs.readFileSync(fileCurrPath);
-  const newName = crypto.createHash(checksum).update(fileBuffer).digest('hex');
-
-  const fileNewPath = fileCurrPath.replace(currName, newName);
+  const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
 
   try {
-    fs.renameSync(fileCurrPath, fileNewPath);
-  } catch (error) {
-    throw new Error(error);
-  }
+    // await fileExists(fileAbsolutePath, fs.constants.F_OK);
 
-  return newName;
+    const fileBuffer = await readFile(fileAbsolutePath);
+    const newName = crypto
+      .createHash(checksum)
+      .update(fileBuffer)
+      .digest('hex');
+
+    const fileNewPath = fileAbsolutePath.replace(name, newName);
+
+    await renameFile(fileAbsolutePath, fileNewPath);
+
+    return newName;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 const getFileHeader = (file) => {
@@ -128,6 +134,19 @@ const getFileHeader = (file) => {
   }
 };
 
+const removeFromDisk = async (name, ext) => {
+  const rootDir = __dirname.split('/').slice(0, -1).join('/');
+  const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
+
+  try {
+    const exists = await fileExists(fileAbsolutePath);
+
+    if (exists) await deleteFile(fileAbsolutePath);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 module.exports = {
   check,
   getExtension,
@@ -136,4 +155,5 @@ module.exports = {
   getSize,
   getName,
   getMimetype,
+  removeFromDisk,
 };

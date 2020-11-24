@@ -27,19 +27,26 @@ Files.prototype.save = async function (newFile) {
   if (errors) return { errors };
 
   const fileExtension = file.getExtension(newFile);
+  let newFileSize = null;
+  let newFileName = null;
 
-  errors = await file.saveToDisk(newFile, fileExtension);
-  if (errors) return { errors };
+  try {
+    errors = await file.saveToDisk(newFile, fileExtension);
 
-  if (process.env.FILES_PURGE_METADATA === 'true')
-    errors = await file.purgeMetadata(newFile.md5, fileExtension);
+    if (process.env.FILES_PURGE_METADATA === 'true')
+      await file.purgeMetadata(newFile.md5, fileExtension);
 
-  const newFileSize = await file.getSize(newFile.md5, fileExtension);
-  const newFileName = await file.getName(
-    newFile.md5,
-    fileExtension,
-    process.env.FILES_CHECKSUM_ALG
-  );
+    newFileSize = await file.getSize(newFile.md5, fileExtension);
+    newFileName = await file.getName(
+      newFile.md5,
+      fileExtension,
+      process.env.FILES_CHECKSUM_ALG,
+    );
+  } catch (error) {
+    file.removeFromDisk(newFileName ? newFileName : newFile.md5, fileExtension);
+
+    return { error: 'Could not save file' };
+  }
 
   let fileBody = {
     mimetype: file.getMimetype(newFile),
