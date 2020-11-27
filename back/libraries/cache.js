@@ -22,7 +22,7 @@ const addTableData = (table, entry, hashId = true) => {
   const cachedValue = cachedTable.filter(
     (cached) =>
       cached[table.toLowerCase().slice(0, -1) + '_id'] ===
-      entry[table.toLowerCase().slice(0, -1) + '_id']
+      entry[table.toLowerCase().slice(0, -1) + '_id'],
   );
 
   if (cachedValue.length === 0)
@@ -46,10 +46,13 @@ const getHash = (table, id) => {
   const cachedTable = cache.get(table) || [];
 
   const entry = cachedTable.filter(
-    (entry) => entry[table.toLowerCase().slice(0, -1) + '_id'] === id
+    (entry) => entry[table.toLowerCase().slice(0, -1) + '_id'] === id,
   );
 
-  if (entry.length > 0) return entry[0].hash;
+  if (entry.length > 0)
+    return entry[0].hash
+      ? entry[0].hash
+      : entry[0][table.toLowerCase().slice(0, -1) + '_id'];
 
   return null;
 };
@@ -69,7 +72,7 @@ const getTable = (table, filters, fields) => {
               );
             else return entry[filter.field] !== filter.value;
           }
-        }).length === 0
+        }).length === 0,
     );
   }
 
@@ -84,7 +87,7 @@ const getTable = (table, filters, fields) => {
 
     if (fields) {
       const nonSelectedFields = Object.keys(entry).filter(
-        (field) => !fields.includes(field)
+        (field) => !fields.includes(field),
       );
 
       if (nonSelectedFields.length > 0) {
@@ -104,7 +107,7 @@ const setTable = (table, values, hashId = true) => {
 
       return value;
     }),
-    ttl.dbData
+    ttl.dbData,
   );
 };
 
@@ -135,7 +138,7 @@ const setBannedUser = (user, banTTL = 0) => {
   cache.set(
     user.ipaddress + '__' + user.fingerprint,
     { ...user, date: Date.now() },
-    banTTL * HOUR
+    banTTL * HOUR,
   );
 
   const found = findBannedUser(user);
@@ -153,7 +156,7 @@ const findBannedUser = (user) => {
   const found = bannedList.filter(
     (banned) =>
       banned.ipaddress === user.ipaddress ||
-      banned.fingerprint === user.fingerprint
+      banned.fingerprint === user.fingerprint,
   );
 
   return found.length > 0;
@@ -164,7 +167,7 @@ const getBannedUsersList = () => {
 
   bannedList = bannedList
     ? bannedList.filter((user) =>
-        cache.get(user.ipaddress + '__' + user.fingerprint)
+        cache.get(user.ipaddress + '__' + user.fingerprint),
       )
     : [];
   cache.set('bannedusers', bannedList, 0);

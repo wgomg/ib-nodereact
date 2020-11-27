@@ -18,6 +18,12 @@ BaseModel.prototype.validate = function (body) {
   return validate(body, this);
 };
 
+BaseModel.prototype.replaceHashIdFieldsWithDbId = function ({ field, value }) {
+  if (field.includes('_id')) value = parseInt(this.getEntryId(value));
+
+  return { field, value };
+};
+
 BaseModel.prototype.save = async function (body) {
   let res = await db.insert({ body, table: this.dbTable });
 
@@ -56,8 +62,30 @@ BaseModel.prototype.get = async function (filters = [], fields) {
   let cached = cache.getTable(this.dbTable, filters, fields);
   if (cached.length > 0) return cached;
 
-  let res = await db.select({ table: this.dbTable, filters: [] });
-  if (res.length > 0) cache.setTable(this.dbTable, res, this.hashId);
+  filters = filters.map((filter) => {
+    if (filter.value) filter = this.replaceHashIdFieldsWithDbId(filter);
+
+    return filter;
+  });
+
+  let res = await db.select({ table: this.dbTable, filters });
+  if (res.length > 0) {
+    res = res.map((entry) => {
+      Object.entries(entry).forEach(([field, value]) => {
+        if (field !== this.idField && field.includes('_id')) {
+          const table =
+            field.slice(0, 1).toUpperCase() +
+            field.slice(1).replace('_id', 's');
+
+          entry[field] = cache.getHash(table, value);
+        }
+      });
+
+      return entry;
+    });
+
+    cache.setTable(this.dbTable, res, this.hashId);
+  }
 
   return cache.getTable(this.dbTable, filters, fields);
 };
