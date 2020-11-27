@@ -1,8 +1,8 @@
--- MariaDB dump 10.17  Distrib 10.5.5-MariaDB, for Linux (x86_64)
+-- MariaDB dump 10.18  Distrib 10.5.8-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: imageboard
 -- ------------------------------------------------------
--- Server version	10.5.5-MariaDB
+-- Server version	10.5.8-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -22,7 +22,6 @@ GRANT ALL PRIVILEGES ON imageboard.* TO 'imageboard'@'localhost';
 FLUSH PRIVILEGES;
 
 USE `imageboard`;
-
 
 --
 -- Table structure for table `Banners`
@@ -66,10 +65,8 @@ CREATE TABLE `Boards` (
   `uri` varchar(4) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`board_id`),
-  UNIQUE KEY `Boards_UN` (`name`),
-  UNIQUE KEY `Boards_UN_1` (`uri`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  PRIMARY KEY (`board_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -78,6 +75,8 @@ CREATE TABLE `Boards` (
 
 LOCK TABLES `Boards` WRITE;
 /*!40000 ALTER TABLE `Boards` DISABLE KEYS */;
+INSERT INTO `Boards` VALUES (1,'Random','b','Random','2020-11-01 01:47:32');
+INSERT INTO `Boards` VALUES (2,'Comics','c','Comics','2020-11-01 17:57:38');
 /*!40000 ALTER TABLE `Boards` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -97,7 +96,7 @@ CREATE TABLE `Files` (
   `dir` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`file_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,7 +105,7 @@ CREATE TABLE `Files` (
 
 LOCK TABLES `Files` WRITE;
 /*!40000 ALTER TABLE `Files` DISABLE KEYS */;
-INSERT INTO `Files` VALUES (1,'image/gif','vanished','gif',0,'default','2020-07-09 05:51:11');
+INSERT INTO `Files` VALUES (1,'image/gif','vanished','gif',0,'public/default','2020-07-09 05:51:11');
 /*!40000 ALTER TABLE `Files` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -123,15 +122,14 @@ CREATE TABLE `Posts` (
   `text` varchar(3000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `name` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `file_id` bigint(20) unsigned DEFAULT NULL,
-  `file_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `has_ban` tinyint(1) DEFAULT 0,
+  `hasBan` tinyint(1) DEFAULT 0,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`post_id`),
   KEY `Posts_FK` (`thread_id`),
   KEY `Posts_FK_1` (`file_id`),
   CONSTRAINT `Posts_FK` FOREIGN KEY (`thread_id`) REFERENCES `Threads` (`thread_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `Posts_FK_1` FOREIGN KEY (`file_id`) REFERENCES `Files` (`file_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -208,6 +206,33 @@ INSERT INTO `Rules` VALUES (1,NULL,'Archivo no permitido',0,'file',NULL,'2020-07
 UNLOCK TABLES;
 
 --
+-- Table structure for table `Settings`
+--
+
+DROP TABLE IF EXISTS `Settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Settings` (
+  `setting_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(25) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`setting_id`),
+  UNIQUE KEY `Settings_UN` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `Settings`
+--
+
+LOCK TABLES `Settings` WRITE;
+/*!40000 ALTER TABLE `Settings` DISABLE KEYS */;
+INSERT INTO `Settings` VALUES (1,'fe_uri_format','/[board_uri]/t[thread_id]#p[post_id]','2020-11-24 22:05:32');
+/*!40000 ALTER TABLE `Settings` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `Staffs`
 --
 
@@ -251,14 +276,15 @@ CREATE TABLE `Tags` (
   `tag_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `tag` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `position` enum('start','end','both') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'both',
   `prefix_replacer` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `postfix_replace` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `postfix_replacer` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `css` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`tag_id`),
   UNIQUE KEY `Tags_UN_1` (`tag`),
   UNIQUE KEY `Tags_UN_2` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -267,7 +293,12 @@ CREATE TABLE `Tags` (
 
 LOCK TABLES `Tags` WRITE;
 /*!40000 ALTER TABLE `Tags` DISABLE KEYS */;
-INSERT INTO `Tags` VALUES (1,'\'\'\'','bold','<strong>','</strong>',NULL,'2020-05-07 04:45:43'),(2,'==','scream','<span class=\'scream\'>','</span>','.scream { font-size: 1.25rem; color: #AF0A0F; font-weight: bold; }','2020-05-08 00:40:37'),(3,'~~','strike','<s>','</s>','','2020-05-09 03:31:21'),(4,'**','spoiler','<spoiler class=\'spoiler\'>','</spoiler>','.spoiler {\n  background: black;\n  color: black;\n  padding: 0 4px;\n  transition: color .125s ease-in-out;\n}\n\n.spoiler:hover {\n  color: white;\n}','2020-05-09 03:46:53'),(5,'__','underline','<u>','</u>','','2020-05-09 04:00:02');
+INSERT INTO `Tags` VALUES (1,'\'\'\'','bold','both','<strong>','</strong>',NULL,'2020-05-07 04:45:43');
+INSERT INTO `Tags` VALUES (2,'==','scream','both','<span class=\'scream\'>','</span>','.scream { font-size: 1.25rem; color: #AF0A0F; font-weight: bold; }','2020-05-08 00:40:37');
+INSERT INTO `Tags` VALUES (3,'~~','strike','both','<s>','</s>','','2020-05-09 03:31:21');
+INSERT INTO `Tags` VALUES (4,'**','spoiler','both','<spoiler class=\'spoiler\'>','</spoiler>','.spoiler {\n  background: black;\n  color: black;\n  padding: 0 4px;\n  transition: color .125s ease-in-out;\n}\n\n.spoiler:hover {\n  color: white;\n}','2020-05-09 03:46:53');
+INSERT INTO `Tags` VALUES (5,'__','underline','both','<u>','</u>','','2020-05-09 04:00:02');
+INSERT INTO `Tags` VALUES (6,'>','greentext','start','<span class=\'greentext\'>>','</span>','span.greentext { color: var(--greentext);}','2020-11-15 23:53:53');
 /*!40000 ALTER TABLE `Tags` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -313,7 +344,7 @@ CREATE TABLE `Threads` (
   PRIMARY KEY (`thread_id`),
   KEY `Threads_FK` (`board_id`),
   CONSTRAINT `Threads_FK` FOREIGN KEY (`board_id`) REFERENCES `Boards` (`board_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -338,4 +369,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-10-31 19:37:36
+-- Dump completed on 2020-11-24 19:07:40
