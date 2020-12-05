@@ -20,8 +20,8 @@ const validate = (body, Model) => {
       const found = cache.getTable(dbTable, [
         {
           field,
-          value: body[field],
-        },
+          value: body[field]
+        }
       ]);
 
       if (found.length > 0)

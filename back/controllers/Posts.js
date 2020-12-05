@@ -12,7 +12,7 @@ Posts.prototype.constructor = Posts;
 Posts.prototype.getLatests = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: false },
+    auth: { required: false }
   },
   async function () {
     const Posts = this.model;

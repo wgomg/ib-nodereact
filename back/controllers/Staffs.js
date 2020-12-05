@@ -18,7 +18,7 @@ Staffs.prototype.save = BaseController.prototype.routeFunction(
     Object.entries(body).forEach(([field, value]) => {
       ({ field, value } = this.replaceHashIdFieldsWithDbId({
         field,
-        value,
+        value
       }));
 
       body[field] = value;
@@ -31,12 +31,12 @@ Staffs.prototype.save = BaseController.prototype.routeFunction(
 
     body = {
       ...body,
-      password: bcrypt.hashSync(body.password, 10),
+      password: bcrypt.hashSync(body.password, 10)
     };
 
     const staff = await Staffs.save(body);
 
-    return { data: staff ? staff[0] : null };
+    return { data: { staff } };
   }
 );
 
@@ -45,7 +45,7 @@ Staffs.prototype.getAll = BaseController.prototype.routeFunction(
   async function () {
     let staffs = await this.get();
 
-    staffs = staffs.map((staff) => {
+    staffs = staffs?.data.map((staff) => {
       delete staff.password;
       return staff;
     });
@@ -57,7 +57,7 @@ Staffs.prototype.getAll = BaseController.prototype.routeFunction(
 Staffs.prototype.changePassword = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: false },
+    auth: { required: false }
   },
   async function (staff_id, body) {
     let staff = await this.get([{ field: 'name', value: body.name }]);
@@ -68,7 +68,7 @@ Staffs.prototype.changePassword = BaseController.prototype.routeFunction(
     Object.entries(body).forEach(([field, value]) => {
       ({ field, value } = this.replaceHashIdFieldsWithDbId({
         field,
-        value,
+        value
       }));
 
       body[field] = value;
@@ -90,12 +90,12 @@ Staffs.prototype.changePassword = BaseController.prototype.routeFunction(
 
     body = {
       ...body,
-      password: bcrypt.hashSync(body.password, 10),
+      password: bcrypt.hashSync(body.password, 10)
     };
 
     staff = await Staffs.update(body);
 
-    return { data: staff ? staff[0] : null };
+    return { data: { staff } };
   }
 );
 
@@ -114,14 +114,14 @@ Staffs.prototype.newLogin = BaseController.prototype.routeFunction(
 
     body = {
       ...body,
-      last_login: now(tzoffset).slice(0, 19).replace('T', ' '),
+      last_login: now(tzoffset).slice(0, 19).replace('T', ' ')
     };
 
     staff = await this.update(body);
 
     if (!staff)
       return {
-        data: { error: { login: 'Something went wrong, please try again' } },
+        data: { error: { login: 'Something went wrong, please try again' } }
       };
 
     staff = await this.get([{ field: 'staff_id', value: staff[0].staff_id }]);
@@ -140,7 +140,7 @@ Staffs.prototype.getAuth = BaseController.prototype.routeFunction(
     delete staff.password;
     delete staff.created_on;
 
-    return { data: staff };
+    return { data: { staff } };
   }
 );
 

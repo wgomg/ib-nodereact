@@ -5,7 +5,7 @@ const BaseModel = require('./BaseModel');
 function Banners() {
   BaseModel.call(this, {
     board_id: { type: 'table' },
-    file_id: { type: 'table', required: true },
+    file_id: { type: 'table', required: true }
   });
 }
 

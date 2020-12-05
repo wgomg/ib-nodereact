@@ -20,24 +20,24 @@ Threads.prototype.save = BaseController.prototype.routeFunction(
     if (Bans.isUserBanned(user))
       return { data: { errors: { user: 'User is banned' } } };
 
-    if (!files || (files && files.length === 0))
+    if (!files || files?.length === 0)
       return { data: { errors: { file: 'A file is required' } } };
 
     const Files = new (require('../models/Files'))();
     const file = await Files.save(files[0]);
 
-    if (file && file.errors) return { data: file };
+    if (file?.errors) return { data: file };
 
     const threadBody = {
       board_id: body.board_id,
-      subject: body.subject,
+      subject: body.subject
     };
 
     const Threads = this.model;
 
     let thread = await Threads.save(threadBody);
 
-    if (thread && thread[0].errors) return { data: thread[0] };
+    if (thread?.errors) return { data: thread.errors };
 
     thread = thread[0];
     delete thread.board_id;
@@ -45,16 +45,16 @@ Threads.prototype.save = BaseController.prototype.routeFunction(
     const postBody = {
       thread_id: thread.thread_id,
       ...body.post,
-      file_id: file[0].file_id,
+      file_id: file[0].file_id
     };
 
     const Posts = new (require('../models/Posts'))();
 
     const post = await Posts.save(postBody);
 
-    if (post && post[0].errors) return { data: post[0] };
+    if (post?.errors) return { data: post.errors };
 
-    return { data: thread };
+    return { data: { thread } };
   }
 );
 
@@ -69,16 +69,16 @@ Threads.prototype.newPosts = BaseController.prototype.routeFunction(
     if (Bans.isUserBanned(user))
       return { data: { errors: { user: 'User is banned' } } };
 
-    if (files && files.length > 0) {
+    if (files?.length > 0) {
       const Files = new (require('../models/Files'))();
       const file = await Files.save(files[0]);
 
-      if (file && file.errors) return { data: file };
+      if (file?.errors) return { data: file.errors };
 
       postBody = {
         ...postBody,
         file_id: Files.getEntryId(file[0]),
-        thread_id,
+        thread_id
       };
     }
 
@@ -86,14 +86,14 @@ Threads.prototype.newPosts = BaseController.prototype.routeFunction(
 
     const post = await Posts.save({ thread_id, ...postBody });
 
-    return { data: post ? post[0] : null };
+    return { data: { post } };
   }
 );
 
 Threads.prototype.getPosts = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: false },
+    auth: { required: false }
   },
   async function (thread_id) {
     const Threads = this.model;

@@ -9,7 +9,7 @@ function Staffs() {
     password: { type: 'alphanum', length: 20 },
     admin: { type: 'bool' },
     disabled: { type: 'bool' },
-    last_login: { type: 'timestamp' },
+    last_login: { type: 'timestamp' }
   });
 }
 

@@ -9,12 +9,12 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   charset: process.env.DB_CHARSET,
   connectionLimit: process.env.DB_CONNLIMIT,
-  debug: process.env.DB_DEBUG === 'true',
+  debug: process.env.DB_DEBUG === 'true'
 });
 
 const testConnection = () => {
   pool.getConnection((error) => {
-    if (error) throw new Error(error);
+    if (error) throw error;
   });
 };
 

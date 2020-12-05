@@ -2,6 +2,9 @@
 
 require('dotenv').config();
 
+process.on('SIGTERM', shutDown);
+process.on('SIGINT', shutDown);
+
 const app = require('./app');
 const cache = require('./libraries/cache');
 
@@ -9,9 +12,6 @@ const PORT = process.env.SERVER_PORT;
 const server = app.listen(PORT, () =>
   console.info(`Server started on port ${PORT}`, 'server')
 );
-
-process.on('SIGTERM', shutDown);
-process.on('SIGINT', shutDown);
 
 let connections = [];
 

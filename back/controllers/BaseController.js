@@ -38,7 +38,7 @@ BaseController.prototype.routeFunction = function ({ http, auth = {} }, func) {
 
   func.routeParams = {
     http,
-    auth,
+    auth
   };
 
   return func;
@@ -46,7 +46,7 @@ BaseController.prototype.routeFunction = function ({ http, auth = {} }, func) {
 
 BaseController.prototype.replaceHashIdFieldsWithDbId = function ({
   field,
-  value,
+  value
 }) {
   if (field.includes('_id')) {
     const model =
@@ -68,7 +68,7 @@ BaseController.prototype.save = BaseController.prototype.routeFunction(
     Object.entries(body).forEach(([field, value]) => {
       ({ field, value } = BaseController.prototype.replaceHashIdFieldsWithDbId({
         field,
-        value,
+        value
       }));
 
       body[field] = value;
@@ -81,7 +81,7 @@ BaseController.prototype.save = BaseController.prototype.routeFunction(
 
     const data = await Model.save(body);
 
-    return { data: data ? data[0] : null };
+    return { data: data[0] ?? null };
   }
 );
 
@@ -98,7 +98,7 @@ BaseController.prototype.update = BaseController.prototype.routeFunction(
     Object.entries(body).forEach(([field, value]) => {
       ({ field, value } = BaseController.prototype.replaceHashIdFieldsWithDbId({
         field,
-        value,
+        value
       }));
       body[field] = value;
     });
@@ -120,11 +120,11 @@ BaseController.prototype.update = BaseController.prototype.routeFunction(
     });
 
     const errors = Model.validate(body);
-    if (errors) return [{ errors }];
+    if (errors) return { errors };
 
     const data = await Model.update(body);
 
-    return { data: data ? data[0] : null };
+    return { data: data[0] ?? null };
   }
 );
 
@@ -165,7 +165,7 @@ BaseController.prototype.getRoutes = function () {
 
   const routes = Object.entries({
     ...baseControllerPrototype,
-    ...childPrototype,
+    ...childPrototype
   })
     .filter(
       ([propName, propVal]) =>
@@ -198,7 +198,7 @@ BaseController.prototype.getRoutes = function () {
 
       const routeNouns = [
         this.constructor.name.toLowerCase(),
-        ...(subRoutes ? subRoutes : []),
+        ...(subRoutes ? subRoutes : [])
       ];
 
       const route =
@@ -222,7 +222,7 @@ BaseController.prototype.getRoutes = function () {
         ...func.routeParams,
         func: funcName,
         reqProps: funcArgs,
-        route,
+        route
       };
     });
 

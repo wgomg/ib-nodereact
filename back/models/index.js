@@ -6,11 +6,7 @@ const path = require('path');
 let models = {};
 
 fs.readdirSync(__dirname).forEach((file) => {
-  if (
-    file.includes(path.basename(__filename)) ||
-    file.includes('BaseModel') ||
-    file.includes('-old')
-  )
+  if (file.includes(path.basename(__filename)) || file.includes('BaseModel'))
     return;
 
   const fileName = path.basename(file, path.extname(file));

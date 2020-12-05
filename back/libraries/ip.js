@@ -46,5 +46,5 @@ module.exports = {
   isV4,
   isV6,
   hashV4,
-  hashV6,
+  hashV6
 };

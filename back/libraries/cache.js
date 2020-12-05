@@ -11,7 +11,7 @@ const DAY = 24 * HOUR;
 
 const ttl = {
   userId: process.env.CACHE_USERID_TTL_DAYS * DAY,
-  dbData: process.env.CACHE_DBDATA_TTL_DAYS * DAY,
+  dbData: process.env.CACHE_DBDATA_TTL_DAYS * DAY
 };
 
 const addTableData = (table, entry, hashId = true) => {
@@ -22,7 +22,7 @@ const addTableData = (table, entry, hashId = true) => {
   const cachedValue = cachedTable.filter(
     (cached) =>
       cached[table.toLowerCase().slice(0, -1) + '_id'] ===
-      entry[table.toLowerCase().slice(0, -1) + '_id'],
+      entry[table.toLowerCase().slice(0, -1) + '_id']
   );
 
   if (cachedValue.length === 0)
@@ -46,7 +46,7 @@ const getHash = (table, id) => {
   const cachedTable = cache.get(table) || [];
 
   const entry = cachedTable.filter(
-    (entry) => entry[table.toLowerCase().slice(0, -1) + '_id'] === id,
+    (entry) => entry[table.toLowerCase().slice(0, -1) + '_id'] === id
   );
 
   if (entry.length > 0)
@@ -72,7 +72,7 @@ const getTable = (table, filters, fields) => {
               );
             else return entry[filter.field] !== filter.value;
           }
-        }).length === 0,
+        }).length === 0
     );
   }
 
@@ -80,14 +80,14 @@ const getTable = (table, filters, fields) => {
     if (entry.hash) {
       entry = {
         ...entry,
-        [table.toLowerCase().slice(0, -1) + '_id']: entry.hash,
+        [table.toLowerCase().slice(0, -1) + '_id']: entry.hash
       };
       delete entry.hash;
     }
 
     if (fields) {
       const nonSelectedFields = Object.keys(entry).filter(
-        (field) => !fields.includes(field),
+        (field) => !fields.includes(field)
       );
 
       if (nonSelectedFields.length > 0) {
@@ -107,7 +107,7 @@ const setTable = (table, values, hashId = true) => {
 
       return value;
     }),
-    ttl.dbData,
+    ttl.dbData
   );
 };
 
@@ -138,7 +138,7 @@ const setBannedUser = (user, banTTL = 0) => {
   cache.set(
     user.ipaddress + '__' + user.fingerprint,
     { ...user, date: Date.now() },
-    banTTL * HOUR,
+    banTTL * HOUR
   );
 
   const found = findBannedUser(user);
@@ -156,7 +156,7 @@ const findBannedUser = (user) => {
   const found = bannedList.filter(
     (banned) =>
       banned.ipaddress === user.ipaddress ||
-      banned.fingerprint === user.fingerprint,
+      banned.fingerprint === user.fingerprint
   );
 
   return found.length > 0;
@@ -167,7 +167,7 @@ const getBannedUsersList = () => {
 
   bannedList = bannedList
     ? bannedList.filter((user) =>
-        cache.get(user.ipaddress + '__' + user.fingerprint),
+        cache.get(user.ipaddress + '__' + user.fingerprint)
       )
     : [];
   cache.set('bannedusers', bannedList, 0);
@@ -214,6 +214,9 @@ const getPostUser = (post_id) => cache.get(post_id);
 
 // TODO: simplificar esto
 const init = async () => {
+  const Settings = new (require('../models/Settings'))();
+  await Settings.get();
+
   const Boards = new (require('../models/Boards'))();
   await Boards.get();
 
@@ -264,5 +267,5 @@ module.exports = {
   getPostUser,
   init,
   close,
-  stats,
+  stats
 };

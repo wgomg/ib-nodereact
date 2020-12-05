@@ -5,7 +5,6 @@ const crypto = require('crypto');
 const util = require('util');
 const child_process = require('child_process');
 
-const fileExists = util.promisify(fs.access);
 const fileStat = util.promisify(fs.stat);
 const readFile = util.promisify(fs.readFile);
 const renameFile = util.promisify(fs.rename);
@@ -26,7 +25,7 @@ const FILE_SIGNATURES = new Map([
   ['6674797069736f6d', { mimetype: 'video/mp4', extensions: ['mp4'] }],
   ['667479706d703432', { mimetype: 'video/mp4', extensions: ['m4v', 'mp4'] }],
   ['1a45dfa3', { mimetype: 'video/webm', extensions: ['webm'] }],
-  ['5249464657454250', { mimetype: 'image/webp', extensions: ['webp'] }],
+  ['5249464657454250', { mimetype: 'image/webp', extensions: ['webp'] }]
 ]);
 
 const check = (file) => {
@@ -68,7 +67,6 @@ const purgeMetadata = async (name, ext) => {
   const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
 
   try {
-    // await fileExists(fileAbsolutePath);
     await spawn(`mat2 --inplace ${fileAbsolutePath}`);
   } catch (error) {
     console.error(error);
@@ -81,7 +79,6 @@ const getSize = async (name, ext) => {
   const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
 
   try {
-    // await fileExists(fileAbsolutePath, fs.constants.F_OK);
     const size = (await fileStat(fileAbsolutePath)).size;
 
     return size;
@@ -96,8 +93,6 @@ const getName = async (name, ext, checksum) => {
   const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
 
   try {
-    // await fileExists(fileAbsolutePath, fs.constants.F_OK);
-
     const fileBuffer = await readFile(fileAbsolutePath);
     const newName = crypto
       .createHash(checksum)
@@ -139,11 +134,10 @@ const removeFromDisk = async (name, ext) => {
   const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
 
   try {
-    const exists = await fileExists(fileAbsolutePath);
-
-    if (exists) await deleteFile(fileAbsolutePath);
+    await deleteFile(fileAbsolutePath);
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };
 
@@ -155,5 +149,5 @@ module.exports = {
   getSize,
   getName,
   getMimetype,
-  removeFromDisk,
+  removeFromDisk
 };

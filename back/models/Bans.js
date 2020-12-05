@@ -12,13 +12,13 @@ function Bans() {
       staff_id: { type: 'table', required: true },
       report_id: { type: 'table', required: true },
       ipaddress: { type: 'ipaddr', required: true },
-      fingerprint: { type: 'string', required: true },
+      fingerprint: { type: 'string', required: true }
     },
     file: {
       staff_id: { type: 'table', required: true },
       report_id: { type: 'table', required: true },
-      file_name: { type: 'alphanum', required: true },
-    },
+      file_name: { type: 'alphanum', required: true }
+    }
   };
 }
 
@@ -28,16 +28,14 @@ Bans.prototype.isUserBanned = function (user) {
 
 Bans.prototype.get = function (filters = [], fields) {
   filters = filters.map((filter) => {
-    if (filter.value) {
-      if (filter.field.includes('_id')) {
-        const model =
-          filter.field.slice(0, 1).toUpperCase() +
-          filter.field.slice(1, filter.field.length - 3) +
-          's';
-        const Model = new (require('./' + model))();
+    if (filter.value && filter.field.includes('_id')) {
+      const model =
+        filter.field.slice(0, 1).toUpperCase() +
+        filter.field.slice(1, filter.field.length - 3) +
+        's';
+      const Model = new (require('./' + model))();
 
-        filter.value = parseInt(Model.getEntryId(filter.value));
-      }
+      filter.value = parseInt(Model.getEntryId(filter.value));
     }
 
     return filter;

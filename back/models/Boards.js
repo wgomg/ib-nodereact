@@ -20,7 +20,7 @@ Boards.prototype.getThreads = async function (board_id) {
     (thread) => {
       delete thread.board_id;
       return thread;
-    }
+    },
   );
 };
 

@@ -3,10 +3,14 @@
 const BaseModel = require('./BaseModel');
 
 function Threads() {
-  BaseModel.call(this, {
-    board_id: { type: 'table', required: true },
-    subject: { type: 'alphanum', length: 45, required: true },
-  }, false);
+  BaseModel.call(
+    this,
+    {
+      board_id: { type: 'table', required: true },
+      subject: { type: 'alphanum', length: 45, required: true }
+    },
+    false
+  );
 }
 
 Threads.prototype = Object.create(BaseModel.prototype);

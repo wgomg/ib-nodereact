@@ -9,9 +9,9 @@ function Themes() {
       length: 10,
       minLength: 2,
       required: true,
-      unique: true,
+      unique: true
     },
-    css: { type: 'css', length: 10000, required: true },
+    css: { type: 'css', length: 10000, required: true }
   });
 }
 

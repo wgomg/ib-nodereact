@@ -7,7 +7,7 @@ function Reports() {
     post_id: { type: 'table', required: true },
     board_id: { type: 'table', required: true },
     rule_id: { type: 'table', required: true },
-    solved: { type: 'bool' },
+    solved: { type: 'bool' }
   });
 }
 

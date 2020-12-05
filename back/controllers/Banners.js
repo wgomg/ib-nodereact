@@ -12,37 +12,37 @@ Banners.prototype.constructor = Banners;
 Banners.prototype.save = BaseController.prototype.routeFunction(
   {
     http: 'POST',
-    auth: { required: true, access: 'staff' },
+    auth: { required: true, access: 'staff' }
   },
   async function (body) {
     const { files } = body;
     delete body.files;
 
-    if (!files || (files && files.length === 0))
+    if (!files || files?.length === 0)
       return { data: { errors: { file: 'A file is required' } } };
 
     const Files = new (require('../models/Files'))();
     const file = await Files.save(files[0]);
 
-    if (file && file[0].errors) return { data: file[0] };
+    if (file?.errors) return { data: file.errors };
 
     const reportBody = {
       board_id: body.board_id,
-      file_id: file[0].file_id,
+      file_id: file[0].file_id
     };
 
     const Banners = this.model;
 
     let banner = await Banners.save(reportBody);
 
-    return { data: banner[0] };
+    return { data: { banner } };
   }
 );
 
 Banners.prototype.getAll = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: false },
+    auth: { required: false }
   },
   async function () {
     return await this.get();

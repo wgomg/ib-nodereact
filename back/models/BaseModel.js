@@ -25,37 +25,47 @@ BaseModel.prototype.replaceHashIdFieldsWithDbId = function ({ field, value }) {
 };
 
 BaseModel.prototype.save = async function (body) {
-  let res = await db.insert({ body, table: this.dbTable });
+  let res = null;
 
-  if (res.insertId) {
-    res = await this.get([{ field: this.idField, value: res.insertId }]);
-    cache.addTableData(this.dbTable, res, this.hashId);
-
-    return res;
+  try {
+    res = await db.insert({ body, table: this.dbTable });
+  } catch (error) {
+    console.error({ ...error, body, stack: error.stack });
+    throw error;
   }
 
-  return null;
+  if (res?.insertId) {
+    res = await this.get([{ field: this.idField, value: res.insertId }]);
+    cache.addTableData(this.dbTable, res, this.hashId);
+  }
+
+  return res;
 };
 
 BaseModel.prototype.update = async function (body) {
-  let res = await db.update({
-    body,
-    table: this.dbTable,
-    id: { field: this.idField, value: body[this.idField] }
-  });
+  let res = null;
 
-  if (res.changedRows > 0) {
+  try {
+    res = await db.update({
+      body,
+      table: this.dbTable,
+      id: { field: this.idField, value: body[this.idField] }
+    });
+  } catch (error) {
+    console.error({ ...error, body, stack: error.stack });
+    throw error;
+  }
+
+  if (res?.changedRows > 0) {
     res = await this.get([
       { field: this.idField, value: body[this.idField] },
       ...Object.entries(body).map(([field, value]) => ({ field, value }))
     ]);
 
     cache.updateTableData(this.dbTable, res, this.hashId);
-
-    return res;
   }
 
-  return null;
+  return res;
 };
 
 BaseModel.prototype.get = async function (filters = [], fields) {
@@ -68,7 +78,7 @@ BaseModel.prototype.get = async function (filters = [], fields) {
   let cached = cache.getTable(this.dbTable, filters, fields);
   if (cached.length > 0) return cached;
 
-  let res = [];
+  let res = null;
 
   try {
     res = await db.select({ table: this.dbTable, filters });
@@ -77,7 +87,7 @@ BaseModel.prototype.get = async function (filters = [], fields) {
     throw error;
   }
 
-  if (res.length > 0) {
+  if (res?.length > 0) {
     res = res.map((entry) => {
       Object.entries(entry).forEach(([field, value]) => {
         if (field !== this.idField && field.includes('_id')) {
@@ -101,14 +111,21 @@ BaseModel.prototype.get = async function (filters = [], fields) {
 BaseModel.prototype.delete = async function (entryId) {
   entryId = this.getEntryId(entryId);
 
-  if (!entryId) return [{ errors: { [this.name]: 'Invalid ID' } }];
+  if (!entryId) return { errors: { [this.name]: 'Invalid ID' } };
 
-  let res = await db.remove({
-    table: this.dbTable,
-    id: { field: this.idField, value: entryId }
-  });
+  let res = null;
 
-  if (res.affectedRows > 0) res.deleteId = entryId;
+  try {
+    res = await db.remove({
+      table: this.dbTable,
+      id: { field: this.idField, value: entryId }
+    });
+  } catch (error) {
+    console.error({ ...error, entryId, stack: error.stack });
+    throw error;
+  }
+
+  if (res?.affectedRows > 0) res.deleteId = entryId;
 
   return res;
 };
@@ -120,7 +137,15 @@ BaseModel.prototype.getEntryId = function (val) {
 };
 
 BaseModel.prototype.rawQuery = async function (rawQuery) {
-  return await db.rawQuery(rawQuery);
+  let res = null;
+
+  try {
+    res = await db.rawQuery(rawQuery);
+  } catch (error) {
+    console.error({ ...error, rawQuery, stack: error.stack });
+    throw error;
+  }
+  return res;
 };
 
 module.exports = BaseModel;

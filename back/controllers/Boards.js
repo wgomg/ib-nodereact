@@ -12,7 +12,7 @@ Boards.prototype.constructor = Boards;
 Boards.prototype.getAll = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: false },
+    auth: { required: false }
   },
   async function () {
     return await this.get();
@@ -22,7 +22,7 @@ Boards.prototype.getAll = BaseController.prototype.routeFunction(
 Boards.prototype.getThreads = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: false },
+    auth: { required: false }
   },
   async function (board_id) {
     const Boards = this.model;
@@ -36,7 +36,7 @@ Boards.prototype.getThreads = BaseController.prototype.routeFunction(
 Boards.prototype.getReports = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: true, access: 'staff' },
+    auth: { required: true, access: 'staff' }
   },
   async function (board_id) {
     const Boards = this.model;
@@ -67,7 +67,7 @@ Boards.prototype.getReports = BaseController.prototype.routeFunction(
 Boards.prototype.getRules = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: false },
+    auth: { required: false }
   },
   async function (board_id) {
     const Boards = this.model;
@@ -81,7 +81,7 @@ Boards.prototype.getRules = BaseController.prototype.routeFunction(
 Boards.prototype.getBanners = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: false },
+    auth: { required: false }
   },
   async function (board_id) {
     const Boards = this.model;

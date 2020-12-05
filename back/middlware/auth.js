@@ -5,14 +5,14 @@ const jwt = require('../libraries/jwt');
 const auth = (access, Staffs) => {
   return async (req, res, next) => {
     const authToken = req.header('x-auth-token');
+
     if (access === 'none' || !authToken)
       return res.status(401).json('Access denied');
 
     try {
       req.staff_id = jwt.decode(authToken);
-
-      // usar header x-parent-collection con el hash del board
       req.parentBoard = req.header('x-parent-collection');
+
       if (!isStaffAuthorized(req, access, Staffs))
         return res.status(401).json('Unauthorized');
 

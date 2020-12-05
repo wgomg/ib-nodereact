@@ -12,7 +12,7 @@ Rules.prototype.constructor = Rules;
 Rules.prototype.getAll = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: false },
+    auth: { required: false }
   },
   async function () {
     return await this.get();

@@ -12,7 +12,7 @@ function Files() {
     name: { type: 'alphanum', length: 164, required: true },
     extension: { type: 'ext', length: 4, required: true },
     size: { type: 'num', required: true },
-    dir: { type: 'dir', length: 20, required: true },
+    dir: { type: 'dir', length: 20, required: true }
   });
 }
 
@@ -40,7 +40,7 @@ Files.prototype.save = async function (newFile) {
     newFileName = await file.getName(
       newFile.md5,
       fileExtension,
-      process.env.FILES_CHECKSUM_ALG,
+      process.env.FILES_CHECKSUM_ALG
     );
   } catch (error) {
     file.removeFromDisk(newFileName ? newFileName : newFile.md5, fileExtension);
@@ -53,15 +53,15 @@ Files.prototype.save = async function (newFile) {
     size: newFileSize,
     name: newFileName,
     dir: process.env.FILES_STOREPATH,
-    extension: fileExtension,
+    extension: fileExtension
   };
 
   errors = validate(fileBody, this);
-  if (errors) return [{ errors }];
+  if (errors) return { errors };
 
   const fileThumb = await thumb.make({
     name: fileBody.name,
-    ext: fileBody.extension,
+    ext: fileBody.extension
   });
   if (!fileThumb) return { errors: 'Could not generate thumb' };
 

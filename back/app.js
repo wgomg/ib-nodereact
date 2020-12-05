@@ -34,7 +34,7 @@ morganBody(app, {
   logReqHeaderList: ['x-auth-token', 'x-parent-collection'],
   logRequestId: true,
   theme: 'darkened',
-  logIP: false,
+  logIP: false
 });
 
 routes(app);

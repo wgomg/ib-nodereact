@@ -12,7 +12,7 @@ Reports.prototype.constructor = Reports;
 Reports.prototype.getAll = BaseController.prototype.routeFunction(
   {
     http: 'GET',
-    auth: { required: true, access: 'staff' },
+    auth: { required: true, access: 'staff' }
   },
   async function () {
     const Reports = this.model;
@@ -30,7 +30,7 @@ Reports.prototype.getAll = BaseController.prototype.routeFunction(
 
         const Board = new Boards();
         rep.board = await Board.get([
-          { field: 'board_id', value: rep.board_id },
+          { field: 'board_id', value: rep.board_id }
         ]);
         delete rep.board_id;
 

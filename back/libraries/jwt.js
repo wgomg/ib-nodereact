@@ -6,7 +6,7 @@ const set = (staff) => {
   const payload = staff.staff_id;
 
   return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.EXPIRATION,
+    expiresIn: process.env.EXPIRATION
   });
 };
 
@@ -18,5 +18,5 @@ const decode = (token) => {
 
 module.exports = {
   set,
-  decode,
+  decode
 };
