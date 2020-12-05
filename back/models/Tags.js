@@ -10,16 +10,17 @@ function Tags() {
       length: 10,
       minLength: 2,
       required: true,
-      unique: true,
+      unique: true
     },
     prefix_replacer: {
       type: 'string',
       length: 50,
       required: true,
-      unique: true,
+      unique: true
     },
     postfix_replacer: { type: 'string', length: 50, required: true },
     css: { type: 'css', length: 250 },
+    full_line: { type: 'bool' }
   });
 }
 

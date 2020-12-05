@@ -41,13 +41,13 @@ BaseModel.prototype.update = async function (body) {
   let res = await db.update({
     body,
     table: this.dbTable,
-    id: { field: this.idField, value: body[this.idField] },
+    id: { field: this.idField, value: body[this.idField] }
   });
 
   if (res.changedRows > 0) {
     res = await this.get([
       { field: this.idField, value: body[this.idField] },
-      ...Object.entries(body).map(([field, value]) => ({ field, value })),
+      ...Object.entries(body).map(([field, value]) => ({ field, value }))
     ]);
 
     cache.updateTableData(this.dbTable, res, this.hashId);
@@ -59,16 +59,24 @@ BaseModel.prototype.update = async function (body) {
 };
 
 BaseModel.prototype.get = async function (filters = [], fields) {
-  let cached = cache.getTable(this.dbTable, filters, fields);
-  if (cached.length > 0) return cached;
-
   filters = filters.map((filter) => {
     if (filter.value) filter = this.replaceHashIdFieldsWithDbId(filter);
 
     return filter;
   });
 
-  let res = await db.select({ table: this.dbTable, filters });
+  let cached = cache.getTable(this.dbTable, filters, fields);
+  if (cached.length > 0) return cached;
+
+  let res = [];
+
+  try {
+    res = await db.select({ table: this.dbTable, filters });
+  } catch (error) {
+    console.error({ ...error, filters, fields, stack: error.stack });
+    throw error;
+  }
+
   if (res.length > 0) {
     res = res.map((entry) => {
       Object.entries(entry).forEach(([field, value]) => {
@@ -97,7 +105,7 @@ BaseModel.prototype.delete = async function (entryId) {
 
   let res = await db.remove({
     table: this.dbTable,
-    id: { field: this.idField, value: entryId },
+    id: { field: this.idField, value: entryId }
   });
 
   if (res.affectedRows > 0) res.deleteId = entryId;

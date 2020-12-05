@@ -11,7 +11,7 @@ function Posts() {
       text: { type: 'string', length: 3000, required: true },
       name: { type: 'alphanum', length: 10 },
       file_id: { type: 'table' },
-      has_ban: { type: 'bool' },
+      has_ban: { type: 'bool' }
     },
     false
   );
@@ -23,19 +23,43 @@ Posts.prototype.constructor = Posts;
 Posts.prototype.get = async function (filters, fields) {
   let posts = await BaseModel.prototype.get.call(this, filters, fields);
 
+  const Threads = require('./Threads');
+  const Boards = require('./Boards');
+
   const Tags = new (require('./Tags'))();
   const tags = await Tags.get();
 
-  return await Promise.all(
+  const Settings = new (require('./Settings'))();
+  const settings = await Settings.get([
+    { field: 'name', value: 'fe_uri_format' }
+  ]);
+
+  posts = await Promise.all(
     posts.map(async (post) => {
       post.file = await this.getFile(post.file_id);
       delete post.file_id;
 
+      const Thread = new Threads();
+      const thread = await Thread.get([
+        { field: 'thread_id', value: post.thread_id }
+      ]);
+
+      const Board = new Boards();
+      const board = await Board.get([
+        { field: 'board_id', value: thread[0].board_id }
+      ]);
+
+      delete thread[0].board_id;
+      delete post.thread_id;
+
+      post.text = markdown.ibLinks(post, settings, board[0], thread[0]);
       post.text = markdown.tags(post.text, tags);
 
       return post;
     })
   );
+
+  return posts;
 };
 
 Posts.prototype.getLatests = async function () {
@@ -59,12 +83,12 @@ Posts.prototype.getLatests = async function () {
 
       const Thread = new Threads();
       const thread = await Thread.get([
-        { field: 'thread_id', value: post.thread_id },
+        { field: 'thread_id', value: post.thread_id }
       ]);
 
       const Board = new Boards();
       const board = await Board.get([
-        { field: 'board_id', value: thread[0].board_id },
+        { field: 'board_id', value: thread[0].board_id }
       ]);
 
       delete thread[0].board_id;
