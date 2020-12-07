@@ -66,6 +66,15 @@ const tags = (post, tags) => {
       return { regex: new RegExp(regexString, 'g'), tag };
     });
 
+  const linksRegex = new RegExp(
+    '[(http(s)?):\\/\\/(www\\.)?a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)',
+    'gi'
+  );
+
+  regexTags.push({ regex: linksRegex, tag: null });
+
+  console.log(regexTags);
+
   const tagsPrefixes = tags.map((tag) => tag.prefix_replacer);
   const tagsPostfixes = tags.map((tag) => tag.postfix_replacer);
 
@@ -75,14 +84,22 @@ const tags = (post, tags) => {
     let taggedText = text;
 
     regexTags.forEach(({ regex, tag }) => {
-      taggedText = taggedText.replace(
-        regex,
-        (match, string) =>
-          tag.prefix_replacer +
-          splitMarker +
-          string +
-          splitMarker +
-          tag.postfix_replacer
+      taggedText = taggedText.replace(regex, (match, string) =>
+        tag
+          ? splitMarker +
+            tag.prefix_replacer +
+            splitMarker +
+            string +
+            splitMarker +
+            tag.postfix_replacer +
+            splitMarker
+          : splitMarker +
+            `<a href='${match}'>` +
+            splitMarker +
+            match +
+            splitMarker +
+            '</a>' +
+            splitMarker
       );
     });
 
@@ -90,7 +107,10 @@ const tags = (post, tags) => {
       .replace(/(&#62;)/g, '>')
       .split(splitMarker)
       .map((e) =>
-        tagsPrefixes.includes(e) || tagsPostfixes.includes(e)
+        tagsPrefixes.includes(e) ||
+        tagsPostfixes.includes(e) ||
+        /^<a .+?>$/g.test(e) ||
+        /^<\/a>$/g.test(e)
           ? { html: true, text: e }
           : { html: false, text: e }
       );
@@ -101,15 +121,18 @@ const tags = (post, tags) => {
   taggedPost = [];
   let tmp = { ...taggedPostFlattened[0] };
 
-  let index = 1;
+  let index = 0;
   while (index <= taggedPostFlattened.length) {
-    if (tmp.html && taggedPostFlattened[index]?.html)
+    index++;
+    if (!tmp.text || tmp.text === '') {
+      tmp = { ...taggedPostFlattened[index] };
+      continue;
+    } else if (tmp.html && taggedPostFlattened[index]?.html)
       tmp.text += taggedPostFlattened[index].text;
     else {
       taggedPost.push(tmp);
       tmp = { ...taggedPostFlattened[index] };
     }
-    index++;
   }
 
   return taggedPost;
