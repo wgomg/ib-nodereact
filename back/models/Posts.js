@@ -52,8 +52,10 @@ Posts.prototype.get = async function (filters, fields) {
       delete thread[0].board_id;
       delete post.thread_id;
 
+      post.text = markdown.sanitizeInPostHTML(post.text);
       post.text = markdown.ibLinks(post, settings, board[0], thread[0]);
       post.text = markdown.tags(post.text, tags);
+      post.text = markdown.restoreInPostHTML(post.text);
 
       return post;
     })
