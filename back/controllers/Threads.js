@@ -1,5 +1,6 @@
 'use strict';
 
+const cache = require('../libraries/cache');
 const BaseController = require('./BaseController');
 
 function Threads() {
@@ -24,19 +25,20 @@ Threads.prototype.save = BaseController.prototype.routeFunction(
       return { data: { errors: { file: 'A file is required' } } };
 
     const Files = new (require('../models/Files'))();
-    const file = await Files.save(files[0]);
-
+    const fileBody = await Files.preprocess(files[0]);
+    let errors = Files.validate(fileBody);
+    if (errors) return { errors };
+    const file = await Files.save(fileBody);
     if (file?.errors) return { data: file };
 
     const threadBody = {
       board_id: body.board_id,
       subject: body.subject
     };
-
     const Threads = this.model;
-
+    errors = Threads.validate(threadBody);
+    if (errors) return { errors };
     let thread = await Threads.save(threadBody);
-
     if (thread?.errors) return { data: thread.errors };
 
     thread = thread[0];
@@ -47,12 +49,13 @@ Threads.prototype.save = BaseController.prototype.routeFunction(
       ...body.post,
       file_id: file[0].file_id
     };
-
     const Posts = new (require('../models/Posts'))();
-
+    errors = Posts.validate(postBody);
+    if (errors) return { errors };
     const post = await Posts.save(postBody);
-
     if (post?.errors) return { data: post.errors };
+
+    cache.setPostUser(post[0].post_id, user);
 
     return { data: { thread } };
   }
@@ -69,24 +72,33 @@ Threads.prototype.newPosts = BaseController.prototype.routeFunction(
     if (Bans.isUserBanned(user))
       return { data: { errors: { user: 'User is banned' } } };
 
+    let errors = null;
+
     if (files?.length > 0) {
       const Files = new (require('../models/Files'))();
-      const file = await Files.save(files[0]);
-
-      if (file?.errors) return { data: file.errors };
+      const fileBody = await Files.preprocess(files[0]);
+      errors = Files.validate(fileBody);
+      if (errors) return { errors };
+      const file = await Files.save(fileBody);
+      if (file?.errors) return { data: file };
 
       postBody = {
         ...postBody,
-        file_id: Files.getEntryId(file[0]),
-        thread_id
+        file_id: Files.getEntryId(file[0])
       };
     }
 
+    postBody = { thread_id, ...postBody };
+
     const Posts = new (require('../models/Posts'))();
+    errors = Posts.validate(postBody);
+    if (errors) return { errors };
+    const post = await Posts.save(postBody);
+    if (post?.errors) return { data: post.errors };
 
-    const post = await Posts.save({ thread_id, ...postBody });
+    cache.setPostUser(post[0].post_id, user);
 
-    return { data: { post } };
+    return { data: { ...post[0], user: cache.getPostUser(post[0].post_id) } };
   }
 );
 

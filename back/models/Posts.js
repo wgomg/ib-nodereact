@@ -1,5 +1,6 @@
 'use strict';
 
+const cache = require('../libraries/cache');
 const markdown = require('../libraries/markdown');
 const BaseModel = require('./BaseModel');
 
@@ -57,7 +58,7 @@ Posts.prototype.get = async function (filters, fields) {
       post.text = markdown.tags(post.text, tags);
       post.text = markdown.restoreInPostHTML(post.text);
 
-      return post;
+      return { ...post, user: cache.getPostUser(post.post_id) ?? 'expired' };
     })
   );
 

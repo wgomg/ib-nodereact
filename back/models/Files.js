@@ -19,7 +19,7 @@ function Files() {
 Files.prototype = Object.create(BaseModel.prototype);
 Files.prototype.constructor = Files;
 
-Files.prototype.save = async function (newFile) {
+Files.prototype.preprocess = async function (newFile) {
   const fileExists = this.get([{ field: 'name', value: newFile.checksum }]);
   if (fileExists.length > 0) return fileExists[0];
 
@@ -48,17 +48,16 @@ Files.prototype.save = async function (newFile) {
     return { error: 'Could not save file' };
   }
 
-  let fileBody = {
+  return {
     mimetype: file.getMimetype(newFile),
     size: newFileSize,
     name: newFileName,
     dir: process.env.FILES_STOREPATH,
     extension: fileExtension
   };
+};
 
-  errors = validate(fileBody, this);
-  if (errors) return { errors };
-
+Files.prototype.save = async function (fileBody) {
   const fileThumb = await thumb.make({
     name: fileBody.name,
     ext: fileBody.extension

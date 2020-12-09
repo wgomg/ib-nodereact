@@ -206,8 +206,8 @@ const getBannedFilesList = () => {
   return bannedList;
 };
 
-const setPostUser = (post, user) => {
-  cache.set(post, user, ttl.userId);
+const setPostUser = (post_id, user) => {
+  cache.set(post_id, user, ttl.userId);
 };
 
 const getPostUser = (post_id) => cache.get(post_id);
