@@ -2,6 +2,7 @@
 
 const cache = require('../libraries/cache');
 const markdown = require('../libraries/markdown');
+const thumb = require('../libraries/thumb');
 const BaseModel = require('./BaseModel');
 
 function Posts() {
@@ -106,7 +107,11 @@ Posts.prototype.getLatests = async function () {
 
 Posts.prototype.getFile = async function (file_id) {
   const Files = new (require('./Files'))();
-  return await Files.get([{ field: 'file_id', value: file_id }]);
+  let file = await Files.get([{ field: 'file_id', value: file_id }]);
+
+  if (file.length > 0) file[0].thumbDir = process.env.FILES_THUMB_STOREPATH;
+
+  return file;
 };
 
 module.exports = Posts;

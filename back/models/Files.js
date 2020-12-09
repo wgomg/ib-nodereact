@@ -1,6 +1,5 @@
 'use strict';
 
-const validate = require('../libraries/validate');
 const file = require('../libraries/file');
 const thumb = require('../libraries/thumb');
 

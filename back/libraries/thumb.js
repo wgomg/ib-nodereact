@@ -1,14 +1,15 @@
 'use strict';
 
 const fs = require('fs');
+const path = require('path');
 
 const util = require('util');
-const child_process = require('child_process');
+const { execFile } = require('child_process');
 
-const spawn = util.promisify(child_process.exec);
+const spawn = util.promisify(execFile);
 
 const rootDir = __dirname.split('/').slice(0, -1).join('/');
-const thumbDir = `${rootDir}/${process.env.FILES_THUMB_STOREPATH}`;
+const thumbDir = path.join(rootDir, process.env.FILES_THUMB_STOREPATH);
 
 const make = async ({ name, ext }) => {
   if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir);
@@ -19,11 +20,11 @@ const make = async ({ name, ext }) => {
       : process.env.FILES_THUMB_DIM;
 
   try {
-    let filePath = `${process.env.FILES_STOREPATH}/${name}.${ext}`;
-    const thumbPath = `${thumbDir}/${name}.${getThumbExt(ext)}`;
+    let filePath = path.join(process.env.FILES_STOREPATH, `${name}.${ext}`);
+    const thumbPath = path.join(thumbDir, `${name}.${getThumbExt(ext)}`);
 
     if (!fs.existsSync(thumbPath))
-      await spawn(getCmd(ext, filePath, thumbPath, thumbsize));
+      await spawn(...getCmd(ext, filePath, thumbPath, thumbsize));
 
     return true;
   } catch (error) {
@@ -32,26 +33,51 @@ const make = async ({ name, ext }) => {
   }
 };
 
-const get = async (name, ext, folder) => {
-  if (folder === 'default') return `default/${name}.${ext}`;
-
-  return fs.existsSync(`${thumbDir}/${name}.${getThumbExt(ext)}`)
-    ? `${thumbDir}/thumbs/${name}.${getThumbExt(ext)}`
-    : 'not-found';
-};
-
 const getCmd = (ext, filePath, thumbPath, thumbSize) => {
   switch (ext) {
     case 'pdf':
-      return `convert ${filePath}[0] -auto-orient -thumbnail ${thumbSize} -unsharp 0x.5 -background white +smush 20 -bordercolor white -border 10 ${thumbPath}`;
+      return [
+        'convert',
+        [
+          `${filePath}[0]`,
+          '-auto-orient',
+          '-thumbnail',
+          thumbSize,
+          '-unsharp 0x.5',
+          '-background white',
+          '+smush 20',
+          '-bordercolor white',
+          '-border 10',
+          thumbPath
+        ]
+      ];
 
     case 'mp4':
     case 'm4v':
     case 'webm':
-      return `ffmpeg -ss 1 -i ${filePath} -vframes 1 -filter:v 'yadif,scale=-1:240' ${thumbPath}`;
+      return [
+        'ffmpeg',
+        [
+          '-ss 1',
+          `-i ${filePath}`,
+          '-vframes 1',
+          `-filter:v 'yadif,scale=-1:240'`,
+          thumbPath
+        ]
+      ];
 
     default:
-      return `convert ${filePath} -define jpeg:size=500x500 -auto-orient -thumbnail ${thumbSize} -unsharp 0x.5 ${thumbPath}`;
+      return [
+        'convert',
+        [
+          filePath,
+          '-define jpeg:size=500x500',
+          '-auto-orient',
+          `-thumbnail ${thumbSize}`,
+          '-unsharp 0x.5',
+          thumbPath
+        ]
+      ];
   }
 };
 
@@ -60,4 +86,4 @@ const getThumbExt = (ext) =>
     ? 'png'
     : ext;
 
-module.exports = { make, get };
+module.exports = { make };
