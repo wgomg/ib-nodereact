@@ -29,6 +29,8 @@ Files.prototype.preprocess = async function (newFile) {
   let newFileSize = null;
   let newFileName = null;
 
+  let ret = null;
+
   try {
     errors = await file.saveToDisk(newFile, fileExtension);
 
@@ -41,28 +43,31 @@ Files.prototype.preprocess = async function (newFile) {
       fileExtension,
       process.env.FILES_CHECKSUM_ALG
     );
+
+    const fileBody = {
+      mimetype: file.getMimetype(newFile),
+      size: newFileSize,
+      name: newFileName,
+      dir: process.env.FILES_STOREPATH,
+      extension: fileExtension
+    };
+
+    await thumb.make({
+      name: fileBody.name,
+      ext: fileBody.extension
+    });
+
+    ret = { ...fileBody };
   } catch (error) {
     file.removeFromDisk(newFileName ? newFileName : newFile.md5, fileExtension);
 
-    return { error: 'Could not save file' };
+    ret = { error: 'Could not save file' };
   }
 
-  return {
-    mimetype: file.getMimetype(newFile),
-    size: newFileSize,
-    name: newFileName,
-    dir: process.env.FILES_STOREPATH,
-    extension: fileExtension
-  };
+  return ret;
 };
 
 Files.prototype.save = async function (fileBody) {
-  const fileThumb = await thumb.make({
-    name: fileBody.name,
-    ext: fileBody.extension
-  });
-  if (!fileThumb) return { errors: 'Could not generate thumb' };
-
   return await BaseModel.prototype.save.call(this, fileBody);
 };
 

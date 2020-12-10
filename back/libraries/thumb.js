@@ -4,9 +4,9 @@ const fs = require('fs');
 const path = require('path');
 
 const util = require('util');
-const { execFile } = require('child_process');
+const child_process = require('child_process');
 
-const spawn = util.promisify(execFile);
+const spawn = util.promisify(child_process.execFile);
 
 const rootDir = __dirname.split('/').slice(0, -1).join('/');
 const thumbDir = path.join(rootDir, process.env.FILES_THUMB_STOREPATH);
@@ -20,20 +20,23 @@ const make = async ({ name, ext }) => {
       : process.env.FILES_THUMB_DIM;
 
   try {
-    let filePath = path.join(process.env.FILES_STOREPATH, `${name}.${ext}`);
-    const thumbPath = path.join(thumbDir, `${name}.${getThumbExt(ext)}`);
+    let filePath = path.join(
+      rootDir,
+      process.env.FILES_STOREPATH,
+      name + '.' + ext
+    );
+    const thumbPath = path.join(thumbDir, name + '.' + getThumbExt(ext));
 
-    if (!fs.existsSync(thumbPath))
-      await spawn(...getCmd(ext, filePath, thumbPath, thumbsize));
-
-    return true;
+    const args = getCmd(ext, filePath, thumbPath, thumbsize);
+    await spawn(...args, { shell: true });
   } catch (error) {
     console.error(error);
-    return false;
+    throw error;
   }
 };
 
 const getCmd = (ext, filePath, thumbPath, thumbSize) => {
+  console.log(ext);
   switch (ext) {
     case 'pdf':
       return [

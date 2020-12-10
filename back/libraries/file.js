@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
 const util = require('util');
 const child_process = require('child_process');
@@ -10,7 +11,7 @@ const readFile = util.promisify(fs.readFile);
 const renameFile = util.promisify(fs.rename);
 const deleteFile = util.promisify(fs.rm);
 
-const spawn = util.promisify(child_process.exec);
+const spawn = util.promisify(child_process.execFile);
 
 const FILE_SIGNATURES = new Map([
   ['89504e47', { mimetype: 'image/png', extensions: ['png'] }],
@@ -40,10 +41,10 @@ const check = (file) => {
 const getExtension = (file) => {
   let fileExtension = file.name.split('.').pop().toLowerCase();
 
-  if (
-    !FILE_SIGNATURES.get(getFileHeader(file)).extensions.includes(fileExtension)
-  )
-    return fileExtension[0];
+  const FILE_SIGNATURE_EXTENSIONS = FILE_SIGNATURES.get(getFileHeader(file))
+    .extensions;
+  if (!FILE_SIGNATURE_EXTENSIONS?.includes(fileExtension))
+    return FILE_SIGNATURE_EXTENSIONS[0];
 
   return fileExtension;
 };
@@ -51,7 +52,11 @@ const getExtension = (file) => {
 const saveToDisk = async (file, ext) => {
   try {
     const rootDir = __dirname.split('/').slice(0, -1).join('/');
-    const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${file.md5}.${ext}`;
+    const fileAbsolutePath = path.join(
+      rootDir,
+      process.env.FILES_STOREPATH,
+      file.md5 + '.' + ext
+    );
 
     await file.mv(fileAbsolutePath);
   } catch (error) {
@@ -64,10 +69,14 @@ const getMimetype = (file) => FILE_SIGNATURES.get(getFileHeader(file)).mimetype;
 
 const purgeMetadata = async (name, ext) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
-  const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
+  const fileAbsolutePath = path.join(
+    rootDir,
+    process.env.FILES_STOREPATH,
+    name + '.' + ext
+  );
 
   try {
-    await spawn(`mat2 --inplace ${fileAbsolutePath}`);
+    await spawn('mat2', ['--inplace', fileAbsolutePath], { shell: true });
   } catch (error) {
     console.error(error);
     throw error;
@@ -76,7 +85,11 @@ const purgeMetadata = async (name, ext) => {
 
 const getSize = async (name, ext) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
-  const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
+  const fileAbsolutePath = path.join(
+    rootDir,
+    process.env.FILES_STOREPATH,
+    name + '.' + ext
+  );
 
   try {
     const size = (await fileStat(fileAbsolutePath)).size;
@@ -90,7 +103,11 @@ const getSize = async (name, ext) => {
 
 const getName = async (name, ext, checksum) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
-  const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
+  const fileAbsolutePath = path.join(
+    rootDir,
+    process.env.FILES_STOREPATH,
+    name + '.' + ext
+  );
 
   try {
     const fileBuffer = await readFile(fileAbsolutePath);
@@ -131,7 +148,11 @@ const getFileHeader = (file) => {
 
 const removeFromDisk = async (name, ext) => {
   const rootDir = __dirname.split('/').slice(0, -1).join('/');
-  const fileAbsolutePath = `${rootDir}/${process.env.FILES_STOREPATH}/${name}.${ext}`;
+  const fileAbsolutePath = path.join(
+    rootDir,
+    process.env.FILES_STOREPATH,
+    name + '.' + ext
+  );
 
   try {
     await deleteFile(fileAbsolutePath);
