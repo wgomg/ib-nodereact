@@ -9,15 +9,15 @@ function Bans() {
 
   this.schema = {
     post: {
-      staff_id: { type: 'table', required: true },
-      report_id: { type: 'table', required: true },
-      ipaddress: { type: 'ipaddr', required: true },
+      staff_id: { type: 'int', required: true },
+      report_id: { type: 'int', required: true },
+      ipaddress: { type: 'string', required: true },
       fingerprint: { type: 'string', required: true }
     },
     file: {
-      staff_id: { type: 'table', required: true },
-      report_id: { type: 'table', required: true },
-      file_name: { type: 'alphanum', required: true }
+      staff_id: { type: 'int', required: true },
+      report_id: { type: 'int', required: true },
+      file_checksum: { type: 'string', required: true }
     }
   };
 }

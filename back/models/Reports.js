@@ -4,9 +4,9 @@ const BaseModel = require('./BaseModel');
 
 function Reports() {
   BaseModel.call(this, {
-    post_id: { type: 'table', required: true },
-    board_id: { type: 'table', required: true },
-    rule_id: { type: 'table', required: true },
+    post_id: { type: 'int', required: true },
+    board_id: { type: 'int', required: true },
+    rule_id: { type: 'int', required: true },
     solved: { type: 'bool' }
   });
 }

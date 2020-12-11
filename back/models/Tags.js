@@ -4,22 +4,38 @@ const BaseModel = require('./BaseModel');
 
 function Tags() {
   BaseModel.call(this, {
-    tag: { type: 'tag', length: 3, required: true },
+    tag: {
+      type: 'string',
+      regex: '^([^a-zA-Z0_9 ])',
+      minlength: 2,
+      maxlength: 3,
+      required: true
+    },
     name: {
-      type: 'alpha',
-      length: 10,
-      minLength: 2,
+      type: 'string',
+      regex: '^([a-z])',
+      minlength: 2,
+      maxlength: 10,
       required: true,
       unique: true
     },
     prefix_replacer: {
       type: 'string',
-      length: 50,
+      regex: '^([<>="a-zA-Z/\\-_0-9])',
+      minlength: 3,
+      maxlength: 50,
       required: true,
       unique: true
     },
-    postfix_replacer: { type: 'string', length: 50, required: true },
-    css: { type: 'css', length: 250 },
+    post_replacer: {
+      type: 'string',
+      regex: '^([<>a-zA-Z/])',
+      minlength: 4,
+      maxlength: 50,
+      required: true,
+      unique: true
+    },
+    css: { type: 'string', maxlength: 250 },
     full_line: { type: 'bool' }
   });
 }

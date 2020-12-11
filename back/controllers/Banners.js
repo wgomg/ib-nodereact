@@ -22,9 +22,11 @@ Banners.prototype.save = BaseController.prototype.routeFunction(
       return { data: { errors: { file: 'A file is required' } } };
 
     const Files = new (require('../models/Files'))();
-    const file = await Files.save(files[0]);
-
-    if (file?.errors) return { data: file.errors };
+    const fileBody = await Files.preprocess(files[0]);
+    let errors = Files.validate(fileBody);
+    if (errors) return { errors };
+    const file = await Files.save(fileBody);
+    if (file?.errors) return { data: file };
 
     const reportBody = {
       board_id: body.board_id,
@@ -32,6 +34,8 @@ Banners.prototype.save = BaseController.prototype.routeFunction(
     };
 
     const Banners = this.model;
+    errors = Banners.validate(reportBody);
+    if (errors) return { errors };
 
     let banner = await Banners.save(reportBody);
 

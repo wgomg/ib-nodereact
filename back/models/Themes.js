@@ -5,13 +5,14 @@ const BaseModel = require('./BaseModel');
 function Themes() {
   BaseModel.call(this, {
     name: {
-      type: 'alpha',
-      length: 10,
-      minLength: 2,
+      type: 'string',
+      regex: '^([a-zA-Z])',
+      minlength: 2,
+      maxlength: 10,
       required: true,
       unique: true
     },
-    css: { type: 'css', length: 10000, required: true }
+    css: { type: 'string', maxlength: 10000, required: true }
   });
 }
 

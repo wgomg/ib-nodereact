@@ -143,6 +143,16 @@ BaseController.prototype.get = async function (filters = [], fields) {
   return { data };
 };
 
+// GET
+BaseController.prototype.getSchema = BaseController.prototype.routeFunction(
+  { http: 'GET', auth: { required: false } },
+  function () {
+    const Model = this.model;
+
+    return Model.getSchema();
+  }
+);
+
 // DELETE
 BaseController.prototype.delete = BaseController.prototype.routeFunction(
   { http: 'DELETE' },

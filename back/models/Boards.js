@@ -4,9 +4,29 @@ const BaseModel = require('./BaseModel');
 
 function Boards() {
   BaseModel.call(this, {
-    name: { type: 'alpha', length: 45, required: true, unique: true },
-    uri: { type: 'boarduri', length: 4, required: true, unique: true },
-    description: { type: 'alphanum', length: 250, required: true },
+    name: {
+      type: 'string',
+      regex: '^([a-zA-Z ])',
+      minlength: 4,
+      maxlength: 45,
+      required: true,
+      unique: true
+    },
+    uri: {
+      type: 'string',
+      regex: '^([a-zA-Z ])',
+      minlength: 1,
+      maxlength: 4,
+      required: true,
+      unique: true
+    },
+    description: {
+      type: 'string',
+      regex: '^([a-zA-Z0-9 ])',
+      minlength: 10,
+      maxlength: 250,
+      required: true
+    }
   });
 }
 
@@ -20,7 +40,7 @@ Boards.prototype.getThreads = async function (board_id) {
     (thread) => {
       delete thread.board_id;
       return thread;
-    },
+    }
   );
 };
 

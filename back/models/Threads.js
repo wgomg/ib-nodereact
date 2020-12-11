@@ -6,8 +6,14 @@ function Threads() {
   BaseModel.call(
     this,
     {
-      board_id: { type: 'table', required: true },
-      subject: { type: 'alphanum', length: 45, required: true }
+      board_id: { type: 'int', required: true },
+      subject: {
+        type: 'string',
+        regex: '^([a-zA-Z0_9 ])',
+        minlength: 4,
+        maxlength: 45,
+        required: true
+      }
     },
     false
   );

@@ -8,10 +8,20 @@ const BaseModel = require('./BaseModel');
 function Files() {
   BaseModel.call(this, {
     mimetype: { type: 'string', length: 45, required: true },
-    name: { type: 'alphanum', length: 164, required: true },
-    extension: { type: 'ext', length: 4, required: true },
-    size: { type: 'num', required: true },
-    dir: { type: 'dir', length: 20, required: true }
+    name: { type: 'string', length: 164, required: true },
+    extension: {
+      type: 'string',
+      regex: '^([a-z4])',
+      minlength: 3,
+      maxlength: 4,
+      required: true
+    },
+    size: { type: 'int', required: true },
+    dir: {
+      type: 'string',
+      maxlength: 30,
+      required: true
+    }
   });
 }
 

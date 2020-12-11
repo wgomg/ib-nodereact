@@ -2,18 +2,27 @@
 
 const cache = require('../libraries/cache');
 const markdown = require('../libraries/markdown');
-const thumb = require('../libraries/thumb');
 const BaseModel = require('./BaseModel');
 
 function Posts() {
   BaseModel.call(
     this,
     {
-      thread_id: { type: 'table', required: true },
-      text: { type: 'string', length: 3000, required: true },
-      name: { type: 'alphanum', length: 10 },
-      file_id: { type: 'table' },
-      has_ban: { type: 'bool' }
+      thread_id: { type: 'int', required: true },
+      text: { type: 'string', minlength: 5, maxlength: 3000, required: true },
+      name: {
+        type: 'string',
+        regex: '^([a-zA-Z0-9 ])',
+        minlength: 3,
+        maxlength: 10
+      },
+      file_id: { type: 'int' },
+      has_ban: { type: 'bool' },
+      video_url: {
+        type: 'string',
+        regex:
+          '^(http(s)?:\\/\\/)?((w){3}.)?(streamable|dai(.ly|lymotion)|vimeo|youtu(be|.be))?(\\.com)?\\/.+'
+      }
     },
     false
   );
