@@ -234,6 +234,16 @@ BaseController.prototype.getRoutes = function () {
         reqProps: funcArgs,
         route
       };
+    })
+    .sort((route1, route2) => {
+      const r1 = route1.route.toLowerCase();
+      const r2 = route2.route.toLowerCase();
+
+      if (r1 < r2) return -1;
+
+      if (r1 > r2) return 1;
+
+      return 0;
     });
 
   return routes;

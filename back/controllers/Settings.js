@@ -15,7 +15,7 @@ Settings.prototype.save = BaseController.prototype.routeFunction(
     auth: { required: true, access: 'admin' }
   },
   async function (body) {
-    return await BaseController.prototype.save.call(body);
+    return await BaseController.prototype.save.call(this, body);
   }
 );
 
@@ -25,7 +25,7 @@ Settings.prototype.update = BaseController.prototype.routeFunction(
     auth: { required: true, access: 'admin' }
   },
   async function (body) {
-    return await BaseController.prototype.update.call(body);
+    return await BaseController.prototype.update.call(this, body);
   }
 );
 
@@ -45,7 +45,7 @@ Settings.prototype.delete = BaseController.prototype.routeFunction(
     auth: { required: true, access: 'admin' }
   },
   async function (body) {
-    return await BaseController.prototype.delete.call(body);
+    return await BaseController.prototype.delete.call(this, body);
   }
 );
 
