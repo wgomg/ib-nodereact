@@ -29,8 +29,6 @@ Themes.prototype.get = BaseController.prototype.routeFunction(
       { field: 'theme_id', value: theme_id }
     ]);
 
-    console.log(theme);
-
     return { data: theme?.data[0] ?? [] };
   }
 );
